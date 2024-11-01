@@ -81,23 +81,23 @@ const CriteriaFilterPanel = ({ criteria, setCriteria, onUpdateSearch, initialTra
                 <span>Max: {typeof criteria[attr]?.max === 'number' ? criteria[attr].max.toFixed(1) : '0.0'}</span>
               </div>
               <div className="sliders">
-                <input
-                  type="range"
-                  value={criteria[attr]?.min || 0}
-                  onChange={(e) => handleRangeChange(e, 'min', attr)}
-                  min="-1"
-                  max="1"
-                  step="0.1"
-                  className="range-slider"
+              <input
+                    type="range"
+                    value={criteria[attr]?.min || 0}
+                    onChange={(e) => handleRangeChange(e, 'min', attr)}
+                    min={attr === 'tempo' ? 80 : -1}
+                    max={attr === 'tempo' ? 200 : 1}
+                    step={attr === 'tempo' ? 1 : 0.1}
+                    className="range-slider"
                 />
                 <input
-                  type="range"
-                  value={criteria[attr]?.max || 0}
-                  onChange={(e) => handleRangeChange(e, 'max', attr)}
-                  min="-1"
-                  max="1"
-                  step="0.1"
-                  className="range-slider"
+                    type="range"
+                    value={criteria[attr]?.max || 0}
+                    onChange={(e) => handleRangeChange(e, 'max', attr)}
+                    min={attr === 'tempo' ? 80 : -1}
+                    max={attr === 'tempo' ? 200 : 1}
+                    step={attr === 'tempo' ? 1 : 0.1}
+                    className="range-slider"
                 />
               </div>
             </div>
@@ -105,7 +105,7 @@ const CriteriaFilterPanel = ({ criteria, setCriteria, onUpdateSearch, initialTra
         </div>
       ))}
 
-      <button onClick={onUpdateSearch}>Update Search</button>
+      <button onClick={onUpdateSearch}>Search Similar</button>
     </div>
   );
 };

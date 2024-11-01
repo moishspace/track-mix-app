@@ -67,33 +67,58 @@ const fetchSimilarTracks = async (trackId, criteria) => {
   const criteriaParams = {
     trackId,
     genre: criteria.genre || trackData?.genres,
-    tempo: criteria.tempo || trackData?.tempo,
-    min_danceability: criteria.min_danceability || trackData?.danceability - 0.1,
-    max_danceability: criteria.max_danceability || trackData?.danceability + 0.1,
-    min_energy: criteria.min_energy || trackData?.energy - 0.1,
-    max_energy: criteria.max_energy || trackData?.energy + 0.1,
-    min_valence: criteria.min_valence || trackData?.valence - 0.1,
-    max_valence: criteria.max_valence || trackData?.valence + 0.1,
-    min_acousticness: criteria.min_acousticness || trackData?.acousticness - 0.1,
-    max_acousticness: criteria.max_acousticness || trackData?.acousticness + 0.1,
-    min_instrumentalness: criteria.min_instrumentalness || trackData?.instrumentalness - 0.1,
-    max_instrumentalness: criteria.max_instrumentalness || trackData?.instrumentalness + 0.1,
-    min_liveness: criteria.min_liveness || trackData?.liveness - 0.1,
-    max_liveness: criteria.max_liveness || trackData?.liveness + 0.1,
+    min_tempo: criteria.tempo?.min || trackData?.tempo - 2,
+    max_tempo: criteria.tempo?.max || trackData?.tempo + 2,
+    min_danceability: criteria.danceability?.min || trackData?.danceability - 0.1,
+    max_danceability: criteria.danceability?.max || trackData?.danceability + 0.1,
+    min_energy: criteria.energy?.min || trackData?.energy - 0.1,
+    max_energy: criteria.energy?.max || trackData?.energy + 0.1,
+    min_valence: criteria.valence?.min || trackData?.valence - 0.1,
+    max_valence: criteria.valence?.max || trackData?.valence + 0.1,
+    min_acousticness: criteria.acousticness?.min || trackData?.acousticness - 0.1,
+    max_acousticness: criteria.acousticness?.max || trackData?.acousticness + 0.1,
+    min_instrumentalness: criteria.instrumentalness?.min || trackData?.instrumentalness - 0.1,
+    max_instrumentalness: criteria.instrumentalness?.max || trackData?.instrumentalness + 0.1,
+    min_liveness: criteria.liveness?.min || trackData?.liveness - 0.1,
+    max_liveness: criteria.liveness?.max || trackData?.liveness + 0.1,
   };
 
   let similarTracks = await searchSimilarTracks(criteriaParams);
+  console.log('Search Criteria',criteriaParams);
   console.log('Similar tracks received:', similarTracks);
 
-  // Position original track if it’s in the results
   const trackIndex = similarTracks.findIndex((track) => track.id === trackId);
+  let originalTrack;
+
   if (trackIndex !== -1) {
-    const [originalTrack] = similarTracks.splice(trackIndex, 1);
-    similarTracks = [originalTrack, ...similarTracks];
+    // If found, remove it from the list and add it at the start
+    [originalTrack] = similarTracks.splice(trackIndex, 1);
+  } else {
+    // Otherwise, retrieve the original track's details from filteredTracks or make a new API call
+    originalTrack = filteredTracks.find((track) => track.id === trackId) || trackDetails[trackId];
+
+    if (originalTrack) {
+      // Ensure track has necessary metadata; if not, fetch it
+      originalTrack = {
+        id: trackId,
+        name: originalTrack.name || "Unknown",
+        album: originalTrack.album || { name: "Unknown" },
+        artists: originalTrack.artists || [{ name: "Unknown" }],
+        releaseDate: originalTrack.releaseDate || "Unknown",
+        ...trackDetails[trackId], // Include detailed audio features if present
+      };
+    } else {
+      console.warn(`No details found for track ${trackId}, skipping add to top.`);
+    }
   }
 
-  // Update filtered tracks and details state
+  // Add the original track to the start of the list if it exists
+  if (originalTrack) similarTracks = [originalTrack, ...similarTracks];
+
+  // Update the table with similar tracks
   setFilteredTracks(similarTracks);
+
+  // Fetch details for each similar track and update trackDetails state
   const trackIds = similarTracks.map((track) => track.id);
   const detailsObject = await fetchDetailsWithDelays(trackIds);
   setTrackDetails((prevDetails) => ({ ...prevDetails, ...detailsObject }));
@@ -121,21 +146,22 @@ const onUpdateSearch = () => {
 
     // Combine user-selected criteria with track data
     const criteriaParams = {
-      trackId, 
+      trackId,
       genre: criteria.genre || trackData?.genres,
-      tempo: criteria.tempo || trackData?.tempo,
-      min_danceability: criteria.min_danceability || trackData?.danceability - 0.1,
-      max_danceability: criteria.max_danceability || trackData?.danceability + 0.1,
-      min_energy: criteria.min_energy || trackData?.energy - 0.1,
-      max_energy: criteria.max_energy || trackData?.energy + 0.1,
-      min_valence: criteria.min_valence || trackData?.valence - 0.1,
-      max_valence: criteria.max_valence || trackData?.valence + 0.1,
-      min_acousticness: criteria.min_acousticness || trackData?.acousticness - 0.1,
-      max_acousticness: criteria.max_acousticness || trackData?.acousticness + 0.1,
-      min_instrumentalness: criteria.min_instrumentalness || trackData?.instrumentalness - 0.1,
-      max_instrumentalness: criteria.max_instrumentalness || trackData?.instrumentalness + 0.1,
-      min_liveness: criteria.min_liveness || trackData?.liveness - 0.1,
-      max_liveness: criteria.max_liveness || trackData?.liveness + 0.1,
+      min_tempo: criteria.tempo?.min || trackData?.tempo - 2,
+      max_tempo: criteria.tempo?.max || trackData?.tempo + 2,
+      min_danceability: criteria.danceability?.min || trackData?.danceability - 0.1,
+      max_danceability: criteria.danceability?.max || trackData?.danceability + 0.1,
+      min_energy: criteria.energy?.min || trackData?.energy - 0.1,
+      max_energy: criteria.energy?.max || trackData?.energy + 0.1,
+      min_valence: criteria.valence?.min || trackData?.valence - 0.1,
+      max_valence: criteria.valence?.max || trackData?.valence + 0.1,
+      min_acousticness: criteria.acousticness?.min || trackData?.acousticness - 0.1,
+      max_acousticness: criteria.acousticness?.max || trackData?.acousticness + 0.1,
+      min_instrumentalness: criteria.instrumentalness?.min || trackData?.instrumentalness - 0.1,
+      max_instrumentalness: criteria.instrumentalness?.max || trackData?.instrumentalness + 0.1,
+      min_liveness: criteria.liveness?.min || trackData?.liveness - 0.1,
+      max_liveness: criteria.liveness?.max || trackData?.liveness + 0.1,
     };
   
     let similarTracks = await searchSimilarTracks(criteriaParams);
@@ -239,6 +265,7 @@ const onUpdateSearch = () => {
     ...track,
     artistsName: track.artists?.[0]?.name || 'Unknown', // Flatten the first artist name
     albumName: track.album?.name || 'Unknown', 
+    releaseDate: track.album?.release_date || 'Unknown',
     danceability: trackDetails[track.id]?.danceability || '',
     energy: trackDetails[track.id]?.energy || '',
     tempo: trackDetails[track.id]?.tempo || '',
@@ -297,7 +324,7 @@ const onUpdateSearch = () => {
     {
       field: 'releaseDate',
       headerName: 'Release Date',
-      minWidth: 80,
+      minWidth: 120,
       flex: 1,
       sortable: true,
     },
@@ -310,7 +337,7 @@ const onUpdateSearch = () => {
     },
     {
       field: 'tempo',
-      headerName: 'Tempo',
+      headerName: 'BPM',
       minWidth: 80,
       flex: 1,
       sortable: true,

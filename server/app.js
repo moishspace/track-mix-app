@@ -135,20 +135,20 @@ app.get('/api/similar-tracks', async (req, res) => {
   const {
     trackId,
     genre,
-    tempo,
-    tempoRange,
-    danceability,
-    danceabilityRange,
-    energy,
-    energyRange,
-    valence,
-    valenceRange,
-    acousticness,
-    acousticnessRange,
-    instrumentalness,
-    instrumentalnessRange,
-    liveness,
-    livenessRange,
+    min_tempo,
+    max_tempo,
+    min_danceability,
+    max_danceability,
+    min_energy,
+    max_energy,
+    min_valence,
+    max_valence,
+    min_acousticness,
+    max_acousticness,
+    min_instrumentalness,
+    max_instrumentalness,
+    min_liveness,
+    max_liveness,
     key,
   } = req.query;
 
@@ -159,59 +159,66 @@ app.get('/api/similar-tracks', async (req, res) => {
   try {
     const params = {
       seed_tracks: trackId, // Anchor recommendations to this track
-      limit: 50, // Number of recommendations to fetch
+      limit: 20, // Number of recommendations to fetch
     };
 
     // Apply genre directly
     if (genre) params.seed_genres = genre;
 
-    // Apply flexible range for tempo
-    if (tempo && !isNaN(tempo)) {
-      const range = tempoRange ? parseFloat(tempoRange) : 2;
-      params.min_tempo = parseFloat(tempo) - range;
-      params.max_tempo = parseFloat(tempo) + range;
+    // Apply min/max for tempo
+    if (min_tempo && !isNaN(min_tempo)) {
+      params.min_tempo = parseFloat(min_tempo);
+    }
+    if (max_tempo && !isNaN(max_tempo)) {
+      params.max_tempo = parseFloat(max_tempo);
     }
 
-    // Apply flexible range for danceability
-    if (danceability && !isNaN(danceability)) {
-      const range = danceabilityRange ? parseFloat(danceabilityRange) : 0.1;
-      params.min_danceability = parseFloat(danceability) - range;
-      params.max_danceability = parseFloat(danceability) + range;
+    // Apply min/max for danceability
+    if (min_danceability && !isNaN(min_danceability)) {
+      params.min_danceability = parseFloat(min_danceability);
+    }
+    if (max_danceability && !isNaN(max_danceability)) {
+      params.max_danceability = parseFloat(max_danceability);
     }
 
-    // Apply flexible range for energy
-    if (energy && !isNaN(energy)) {
-      const range = energyRange ? parseFloat(energyRange) : 0.1;
-      params.min_energy = parseFloat(energy) - range;
-      params.max_energy = parseFloat(energy) + range;
+    // Apply min/max for energy
+    if (min_energy && !isNaN(min_energy)) {
+      params.min_energy = parseFloat(min_energy);
+    }
+    if (max_energy && !isNaN(max_energy)) {
+      params.max_energy = parseFloat(max_energy);
     }
 
-    // Apply flexible range for valence
-    if (valence && !isNaN(valence)) {
-      const range = valenceRange ? parseFloat(valenceRange) : 0.1;
-      params.min_valence = parseFloat(valence) - range;
-      params.max_valence = parseFloat(valence) + range;
+    // Apply min/max for valence
+    if (min_valence && !isNaN(min_valence)) {
+      params.min_valence = parseFloat(min_valence);
+    }
+    if (max_valence && !isNaN(max_valence)) {
+      params.max_valence = parseFloat(max_valence);
     }
 
-    // Apply flexible range for acousticness
-    if (acousticness && !isNaN(acousticness)) {
-      const range = acousticnessRange ? parseFloat(acousticnessRange) : 0.1;
-      params.min_acousticness = parseFloat(acousticness) - range;
-      params.max_acousticness = parseFloat(acousticness) + range;
+    // Apply min/max for acousticness
+    if (min_acousticness && !isNaN(min_acousticness)) {
+      params.min_acousticness = parseFloat(min_acousticness);
+    }
+    if (max_acousticness && !isNaN(max_acousticness)) {
+      params.max_acousticness = parseFloat(max_acousticness);
     }
 
-    // Apply flexible range for instrumentalness
-    if (instrumentalness && !isNaN(instrumentalness)) {
-      const range = instrumentalnessRange ? parseFloat(instrumentalnessRange) : 0.1;
-      params.min_instrumentalness = parseFloat(instrumentalness) - range;
-      params.max_instrumentalness = parseFloat(instrumentalness) + range;
+    // Apply min/max for instrumentalness
+    if (min_instrumentalness && !isNaN(min_instrumentalness)) {
+      params.min_instrumentalness = parseFloat(min_instrumentalness);
+    }
+    if (max_instrumentalness && !isNaN(max_instrumentalness)) {
+      params.max_instrumentalness = parseFloat(max_instrumentalness);
     }
 
-    // Apply flexible range for liveness
-    if (liveness && !isNaN(liveness)) {
-      const range = livenessRange ? parseFloat(livenessRange) : 0.1;
-      params.min_liveness = parseFloat(liveness) - range;
-      params.max_liveness = parseFloat(liveness) + range;
+    // Apply min/max for liveness
+    if (min_liveness && !isNaN(min_liveness)) {
+      params.min_liveness = parseFloat(min_liveness);
+    }
+    if (max_liveness && !isNaN(max_liveness)) {
+      params.max_liveness = parseFloat(max_liveness);
     }
 
     // Apply target for key
