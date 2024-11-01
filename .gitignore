@@ -21,3 +21,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# .gitignore file contents
+package-lock.json
+*.log
+build/
+dist/
+.env

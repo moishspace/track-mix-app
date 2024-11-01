@@ -1,0 +1,22 @@
+@mixin kendo-listbox--theme-base() {
+
+    // Listbox
+    .k-listbox {
+        .k-list-scroller {
+            @include fill(
+                $kendo-listbox-text,
+                $kendo-listbox-bg,
+                $kendo-listbox-border
+            );
+        }
+        .k-drop-hint {
+            border-top-color: $kendo-color-primary;
+        }
+    }
+
+}
+
+
+@mixin kendo-listbox--theme() {
+    @include kendo-listbox--theme-base();
+}

@@ -1,0 +1,25 @@
+@mixin kendo-typography--theme-base() {
+
+    .k-body {
+        @include fill(
+            $kendo-body-text,
+            $kendo-body-bg
+        );
+    }
+
+    // Code snippet
+    .k-pre,
+    .k-code {
+        @include fill(
+            $kendo-code-text,
+            $kendo-code-bg,
+            $kendo-code-border
+        );
+    }
+
+}
+
+
+@mixin kendo-typography--theme() {
+    @include kendo-typography--theme-base();
+}

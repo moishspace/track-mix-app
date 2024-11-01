@@ -1,0 +1,103 @@
+/* Filter Panel Styling */
+.filter-panel {
+    width: 200px;
+    padding: 8px;
+    background-color: #f7f9fc;
+    border-radius: 5px;
+    color: #333;
+    font-family: 'Roboto', sans-serif;
+    font-size: 0.8rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    margin-right: 20px;
+  }
+  
+  /* Headings */
+  .filter-panel h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1565c0;
+    margin-bottom: 8px;
+  }
+  
+  /* Filter Item */
+  .filter-item {
+    margin-bottom: 8px;
+  }
+  
+  /* Category Label Checkbox and Text */
+.filter-item label {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.8rem;
+}
+  
+  /* Add margin to the text next to the checkbox */
+  .filter-item label input[type="checkbox"] {
+    margin-right: 6px; /* Adds space between checkbox and text */
+  }
+
+  /* Text Input */
+  .filter-panel input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    margin-top: 4px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    color: #333;
+  }
+  
+  /* Range Wrapper */
+  .range-wrapper {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 4px;
+  }
+  
+  /* Range Label */
+  .range-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #666;
+    width: 100%;
+    margin-bottom: 2px;
+  }
+  
+  /* Sliders */
+  .sliders {
+    display: flex;
+    gap: 4px;
+  }
+  
+  .range-slider {
+    width: 48%; /* Each slider takes half the space */
+    margin: 0;
+  }
+  
+  /* Button Styling */
+  .filter-panel button {
+    width: 100%;
+    padding: 6px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+    background-color: #1565c0;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .filter-panel button:hover {
+    background-color: #0d47a1;
+  }
+
+  .initial-value {
+    font-size: 0.9em;
+    color: #777;
+    margin-left: 5px;
+  }

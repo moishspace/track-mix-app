@@ -1,0 +1,72 @@
+/* Base styling for the entire DataGrid */
+.custom-data-grid {
+    background-color: #f3f4f6 !important; /* Light gray background */
+    font-family: 'Roboto', sans-serif !important; /* Professional font family */
+    font-size: 14px !important; /* Base font size for readability */
+    color: #333333 !important; /* Dark gray text color */
+}
+
+/* Header styling */
+.custom-data-grid .MuiDataGrid-columnHeader {
+    background-color: #c1c1c1 !important; /* Light gray background for header */
+    font-family: 'Roboto', sans-serif !important; /* Consistent font for header */
+    letter-spacing: 0.5px; /* Slight letter spacing */
+    color: #537a96 !important; /* Text color for header titles */
+    font-weight: 600 !important; /* Slightly bolder font for headers */
+    font-size: 15px !important; /* Larger font for headers */
+    border-right: 1px solid #e0e0e0 !important; /* Border between header columns */
+}
+
+/* Row styling */
+.custom-data-grid .MuiDataGrid-row {
+    background-color: #f9fafb !important; /* Light background for rows */
+    border-bottom: 1px solid #e2e8f0 !important; /* Subtle row separator */
+}
+
+/* Alternating row background */
+.custom-data-grid .MuiDataGrid-row:nth-child(even) {
+    background-color: #e2e8f0 !important; /* Slightly darker background for even rows */
+}
+
+/* Cell styling */
+.custom-data-grid .MuiDataGrid-cell {
+    display: block; /* Ensures text wrapping */
+    white-space: normal !important; /* Allows text to wrap */
+    overflow-wrap: break-word !important; /* Wraps text without breaking words */
+    word-break: break-word !important; /* Prevents words from splitting */
+    line-height: 1.2 !important; /* Adjusts line height for readability */
+    padding: 10px !important; /* Adds padding for cell content */
+    color: #333333 !important; /* Text color */
+    background-color: inherit !important; /* Aligns cell color with row */
+    border-right: 1px solid #e0e0e0 !important; /* Border between columns */
+}
+
+/* Styling for cells in the Track Name column */
+.custom-data-grid .track-name-cell {
+    color: #197791 !important; /* Distinct color for track name */
+    font-weight: bold; /* Emphasize track name */
+}
+
+/* Adjust font weight and alignment for the entire grid */
+.custom-data-grid .MuiDataGrid-columnHeader, 
+.custom-data-grid .MuiDataGrid-cell {
+    font-weight: 500 !important; /* Medium font weight for consistency */
+    text-align: left !important; /* Aligns text to the left */
+}
+
+/* Optional: Style the row on hover for an interactive look */
+.custom-data-grid .MuiDataGrid-row:hover {
+    background-color: #e3f2fd !important; /* Light blue background on hover */
+}
+
+/* Main container for filter panel and table side by side */
+.main-container {
+    display: flex;
+    align-items: flex-start;
+    padding: 20px;
+  }
+  
+  .selected-row {
+    background-color: #e0f7fa !important; /* Light blue for selected row */
+    color: #00796b; /* Darker text color for contrast */
+  }

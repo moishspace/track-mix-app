@@ -1,0 +1,20 @@
+@mixin kendo-overlay--theme-base() {
+
+    // Overlay
+    .k-overlay {
+        background-color: $kendo-overlay-bg;
+    }
+
+
+    @each $name, $color in $kendo-overlay-theme-colors {
+        .k-overlay-#{$name} {
+            background-color: $color;
+        }
+    }
+
+}
+
+
+@mixin kendo-overlay--theme() {
+    @include kendo-overlay--theme-base();
+}
