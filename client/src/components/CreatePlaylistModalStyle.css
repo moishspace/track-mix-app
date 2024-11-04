@@ -1,0 +1,139 @@
+/* Modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* Modal content box */
+.modal-content {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    color: #333;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Modal title */
+.modal-content h3 {
+    background-color: #737986;
+    font-size: 15px;
+    font-weight: bold;
+    color: #fdfeff;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* Label styling for text inputs */
+.modal-content label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+/* Checkbox container for "Public" label and checkbox */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #333;
+    margin-bottom: 15px;
+    gap: 8px;
+}
+
+/* Text input */
+.modal-content input[type="text"],
+.modal-content textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 0.9rem;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    box-sizing: border-box;
+}
+
+/* Textarea for description */
+.modal-content textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Custom Checkbox styling */
+.modal-content input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #8e880d;
+    border-radius: 3px;
+    background-color: #fff;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Checked state */
+.modal-content input[type="checkbox"]:checked {
+    background-color: #8e880d;
+    border-color: #8e880d;
+}
+
+/* Checkmark icon when checked */
+.modal-content input[type="checkbox"]:checked::before {
+    content: '✓';
+    color: white;
+    font-size: 14px;
+    position: absolute;
+    top: -2px;
+    left: 1px;
+}
+
+/* Modal buttons container */
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* Primary action button */
+.action-button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #fdfeff;
+    background-color: #737986;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+    background-color: #5a5f6a;
+}
+
+/* Secondary action button */
+.action-button.secondary {
+    background-color: #cccccc;
+    color: #333;
+}
+
+.action-button.secondary:hover {
+    background-color: #aaaaaa;
+}

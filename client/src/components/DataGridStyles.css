@@ -96,20 +96,18 @@
  }
 
  /* Container for the buttons and dropdowns */
-.button-container {
+ .button-container {
     display: flex;
-    justify-content: flex-start; /* Align items to the left */
-    align-items: center; /* Center items vertically */
-    gap: 10px; /* Space between each button or dropdown */
-    padding: 10px 0; /* Space above and below */
+    align-items: center; /* Align items vertically centered */
+    gap: 10px;
+    padding: 10px 0;
 }
 
-  /* Add to List Button */
-.add-to-list-button {
-    margin-top: 10px; /* Space between the table and button */
-    padding: 10px;
-    background-color: #737986; /* Match the color scheme */
-    color: #fdfeff;
+/* Adjusts the Export to CSV and Add to List button styling */
+.action-button {
+    padding: 10px 20px;
+    background-color: #737986; /* Matching color */
+    color: #fdfeff; /* Light color for text */
     font-size: 14px;
     font-weight: bold;
     text-align: center;
@@ -117,8 +115,51 @@
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    height: 40px; /* Consistent height with dropdown */
+    min-width: 120px; /* Set minimum width for consistency */
 }
 
-.add-to-list-button:hover {
+.action-button:hover {
     background-color: #5a5f6a; /* Darker shade on hover */
 }
+
+.action-button.primary {
+    background-color: #737986; /* Different color for primary action */
+}
+
+.action-button.secondary {
+    background-color: #737986; /* Different color for secondary action */
+}
+
+/* Styling for the dropdown to match button */
+.playlist-dropdown {
+    padding: 10px 20px;
+    background-color: #ffffff;
+    color: #333;
+    font-size: 14px;
+    border: 1px solid #d3d3d3;
+    border-radius: 4px;
+    height: 40px; /* Consistent height with buttons */
+    min-width: 160px; /* Set minimum width for dropdown */
+}
+
+/* Align both buttons and dropdown to the same height */
+.button-group-container, .button-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Border styling for button group container */
+.button-group-container {
+    padding: 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+  
+  .playlist-dropdown:hover, .playlist-dropdown:focus {
+    border-color: #737986; /* Slight color change on hover and focus */
+    background-color: #f5f5f5; /* Light background on hover for subtle feedback */
+  }

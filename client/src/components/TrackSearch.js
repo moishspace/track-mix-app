@@ -1,8 +1,9 @@
 import './DataGridStyles.css';
 import React, { useState, useEffect, useMemo } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { searchTracks, searchSimilarTracks } from '../services/api';
+import { searchTracks, searchSimilarTracks, fetchPlaylists, createPlaylist } from '../services/api';
 import CriteriaFilterPanel from './CriteriaFilterPanel';
+import CreatePlaylistModal from './CreatePlaylistModal';
 
 const fetchDetailsWithDelays = async (trackIds, delayMs = 1000) => {
   const details = {};
@@ -25,7 +26,12 @@ const TrackSearch = ({ searchTerm }) => {
   const [contextMenu, setContextMenu] = useState(null);
   const [criteria, setCriteria] = useState({});
   const [selectedTrack, setSelectedTrack] = useState(null);
-
+  const [playlists, setPlaylists] = useState([]);
+  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  const openCreatePlaylistModal = () => setIsModalOpen(true);
+  const closeCreatePlaylistModal = () => setIsModalOpen(false);
 
   useEffect(() => {
     if (searchTerm) {
@@ -44,6 +50,29 @@ const TrackSearch = ({ searchTerm }) => {
   // useEffect(() => {
   //   console.log('Filtered tracks updated:', filteredTracks);
   // }, [filteredTracks]);
+
+    // Fetch playlists on component mount
+    useEffect(() => {
+      const loadPlaylists = async () => {
+        const fetchedPlaylists = await fetchPlaylists(); // API call to fetch playlists
+        setPlaylists(fetchedPlaylists);
+      };
+      loadPlaylists();
+    }, []);
+  
+    const handleCreatePlaylist = async (playlistData) => {
+      try {
+        const newPlaylist = await createPlaylist(playlistData);
+        setPlaylists([...playlists, newPlaylist]); // Update playlists state
+        setSelectedPlaylist(newPlaylist.id); // Set new playlist as selected
+        closeCreatePlaylistModal();
+      } catch (error) {
+        console.error("Error creating playlist:", error);
+      }
+    };
+
+    const handlePlaylistChange = (event) => setSelectedPlaylist(event.target.value);
+
 
   // Handle right-click to show context menu
   const handleRowRightClick = (event, row) => {
@@ -389,8 +418,22 @@ return (
         </div>
         {/* Move the button inside table-container to place it below the table */}
         <div className="button-container">
-          <button className="add-to-list-button">Add to List</button>
-          <button className="add-to-list-button" onClick={handleExportToCSV}>Export to CSV</button>
+        <button className="action-button" onClick={handleExportToCSV}>Export to CSV</button>
+          <div className="button-group-container">
+            <button className="action-button">Add to Playlist</button>  
+            <select className="playlist-dropdown" value={selectedPlaylist || ""} onChange={handlePlaylistChange}>
+              <option value="" disabled>Select a Playlist</option>
+              {playlists.map((playlist) => (
+                <option key={playlist.id} value={playlist.id}>{playlist.name}</option>
+              ))}
+            </select>
+            <button className="action-button" onClick={openCreatePlaylistModal}>Create New Playlist</button>
+            <CreatePlaylistModal
+              isOpen={isModalOpen}
+              onClose={closeCreatePlaylistModal}
+              onCreate={handleCreatePlaylist}
+            />
+          </div>
         </div>
       </div>
   </div>

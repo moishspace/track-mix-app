@@ -70,7 +70,7 @@ const getTrackDetailsWithRetry = async (trackId, retries = 3, delayMs = 1000) =>
 
 // Routes
 app.get('/api/login', (req, res) => {
-  const scope = 'user-read-private user-read-email';
+  const scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private';
   const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${CLIENT_ID}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
   res.redirect(authUrl);
 });
@@ -235,6 +235,55 @@ app.get('/api/similar-tracks', async (req, res) => {
   } catch (error) {
     console.error('Error fetching similar tracks:', error);
     res.status(500).json({ error: 'Failed to fetch similar tracks' });
+  }
+});
+
+
+app.get('/api/spotify-playlists', async (req, res) => {
+  if (!accessToken) {
+    return res.status(400).json({ error: 'Access token is required' });
+  }
+
+  try {
+    const response = await axios.get('https://api.spotify.com/v1/me/playlists', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    });
+    res.json(response.data); // Send the playlists data back to the client
+  } catch (error) {
+    if (error.response) {
+      console.error(`Error fetching playlists: ${error.response.status}`, error.response.data);
+      res.status(error.response.status).json(error.response.data); 
+    } else {
+      console.error(`Network or unknown error: ${error.message}`);
+      res.status(500).json({ error: 'Failed to fetch playlists' });
+    }
+  }
+});
+
+app.post('/api/create-playlist', async (req, res) => {
+  const { name, description, public: isPublic } = req.body;
+  if (!accessToken) {
+    return res.status(400).json({ error: 'Access token is required' });
+  }
+
+  try {
+    const userProfileResponse = await axios.get('https://api.spotify.com/v1/me', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const userId = userProfileResponse.data.id;
+
+    const playlistResponse = await axios.post(`https://api.spotify.com/v1/users/${userId}/playlists`,
+      { name, description, public: isPublic },
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+
+    res.json(playlistResponse.data); // Return the newly created playlist details
+  } catch (error) {
+    console.error("Error creating playlist:", error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to create playlist' });
   }
 });
 
