@@ -1,103 +1,182 @@
 /* Filter Panel Styling */
 .filter-panel {
-    width: 200px;
-    padding: 8px;
-    background-color: #f7f9fc;
-    border-radius: 5px;
-    color: #333;
-    font-family: 'Roboto', sans-serif;
-    font-size: 0.8rem;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-    margin-right: 20px;
-  }
-  
-  /* Headings */
-  .filter-panel h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1565c0;
-    margin-bottom: 8px;
-  }
-  
-  /* Filter Item */
-  .filter-item {
-    margin-bottom: 8px;
-  }
-  
-  /* Category Label Checkbox and Text */
-.filter-item label {
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    color: #333;
-    font-size: 0.8rem;
+  width: 250px; /* Adjust width as needed to ensure sliders fit side by side */
+  padding: 15px;
+  background-color: #ffffff; /* White background */
+  border-radius: 8px;
+  color: #333;
+  font-family: 'Roboto', sans-serif;
+  font-size: 0.8rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  margin-right: 20px;
 }
-  
-  /* Add margin to the text next to the checkbox */
-  .filter-item label input[type="checkbox"] {
-    margin-right: 6px; /* Adds space between checkbox and text */
-  }
 
-  /* Text Input */
-  .filter-panel input[type="text"] {
-    width: 100%;
-    padding: 5px;
-    margin-top: 4px;
-    border: 1px solid #ddd;
-    border-radius: 3px;
-    font-size: 0.8rem;
-    color: #333;
-  }
-  
-  /* Range Wrapper */
-  .range-wrapper {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    margin-top: 4px;
-  }
-  
-  /* Range Label */
-  .range-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.7rem;
-    color: #666;
-    width: 100%;
-    margin-bottom: 2px;
-  }
-  
-  /* Sliders */
-  .sliders {
-    display: flex;
-    gap: 4px;
-  }
-  
-  .range-slider {
-    width: 48%; /* Each slider takes half the space */
-    margin: 0;
-  }
-  
-  /* Button Styling */
-  .filter-panel button {
-    width: 100%;
-    padding: 6px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: white;
-    background-color: #1565c0;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .filter-panel button:hover {
-    background-color: #0d47a1;
-  }
+/* Headings */
+.filter-panel h3 {
+  background-color: #737986; /* Match table header background color */
+  font-family: 'Roboto', sans-serif; /* Consistent font */
+  font-size: 15px; /* Match table header font size */
+  font-weight: bolder; /* Bold font for emphasis */
+  letter-spacing: 0.5px; /* Slight letter spacing */
+  color: #fdfeff; /* Text color for header titles */
+  padding: 10px 15px; /* Add padding for spacing */
+  margin-bottom: 25px; /* Space below title */
+  border-radius: 4px; /* Slight rounding to match overall design */
+  text-align: center; /* Center-align text */
+}
 
-  .initial-value {
-    font-size: 0.9em;
-    color: #777;
-    margin-left: 5px;
-  }
+/* Filter Item */
+.filter-item {
+  margin-bottom: 20px; /* Spacing between filter items */
+}
+
+/* Category Label Checkbox and Text */
+.filter-item label {
+  display: flex;
+  align-items: center;
+  font-family: 'Roboto', sans-serif; /* Match font-family with table */
+  font-size: 0.8rem; /* Adjust font size if needed */
+  font-weight: 500;
+  color: #333;
+  font-size: 0.8rem;
+  text-align: left;
+}
+
+/* Genre Text Input */
+.filter-panel input[type="text"] {
+  width: 100%; /* Full width to match sliders */
+  padding: 5px;
+  margin-top: 8px; /* Match the space from label */
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  color: #333;
+  text-align: left; /* Align text to the left */
+}
+
+.filter-item label input[type="checkbox"] {
+  margin-right: 8px; /* Adjust the spacing as needed */
+}
+
+/* Custom checkbox styling */
+.filter-item input[type="checkbox"] {
+  -webkit-appearance: none; /* Remove default styling */
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #8e880d; /* Border color when unchecked */
+  border-radius: 3px; /* Optional: rounded corners */
+  background-color: #fff; /* Background color when unchecked */
+  cursor: pointer;
+  position: relative;
+}
+
+/* Checked state */
+.filter-item input[type="checkbox"]:checked {
+  background-color: #8e880d; /* Custom color when checked */
+  border-color: #8e880d; /* Optional: border color when checked */
+}
+
+/* Checkmark icon when checked */
+.filter-item input[type="checkbox"]:checked::before {
+  content: '✓'; /* Checkmark symbol */
+  color: white;
+  font-size: 14px;
+  position: absolute;
+  top: -2px; /* Adjust positioning as needed */
+  left: 1px;
+}
+
+/* Range Wrapper */
+.range-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px; /* Space between label and sliders */
+  margin-top: 8px;
+}
+
+/* Label Wrapper for Min and Max */
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 4px; /* Space between labels and sliders */
+}
+
+/* Sliders Container */
+.sliders {
+  display: flex;
+  gap: 8px; /* Space between sliders */
+  width: 100%;
+}
+
+/* Each Range Slider */
+.range-slider {
+  width: 48%; /* Each slider takes half the space */
+}
+
+/* Range Slider Styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background-color: #f0f0f0; /* Light background for the track */
+  border-radius: 5px;
+  outline: none;
+}
+
+/* Chrome, Safari, Edge Track */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px !important;
+  background-color: #737986; /* Desired color for the track */
+  border-radius: 5px;
+}
+
+/* Chrome, Safari, Edge Thumb */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background-color: #8e880d; /* Thumb color */
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: -4px; /* Center the thumb on the track */
+}
+
+/* Firefox Thumb */
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background-color: #8e880d; /* Thumb color */
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Firefox Track */
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  background-color: #8e880d; /* Track color */
+  border-radius: 5px;
+}
+
+/* Button Styling */
+.filter-panel button {
+  width: 100%;
+  padding: 10px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+  background-color: #aba30f;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.filter-panel button:hover {
+  background-color: #8e880d;
+}

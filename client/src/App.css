@@ -18,7 +18,7 @@ body, html {
   justify-content: center; /* Center content vertically */
   text-align: center; /* Center text inside the container */
   min-height: 100vh;
-  background: linear-gradient(to right, #00b4db, #0083b0);
+  background: linear-gradient(to right, #393e40, #052a38);
   color: white;
   padding: 5vh 20px 0;
   overflow: hidden;
@@ -44,6 +44,25 @@ body, html {
   margin-bottom: 20px;
   max-width: 600px;
   margin: 0 auto;
+}
+
+
+/* Title Styling */
+.title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  letter-spacing: 1.5px;
+  color: #ffffff; /* Optional highlight color */
+}
+
+/* Description Styling */
+.description {
+  font-size: 1.2rem;
+  margin-bottom: 30px; /* Increased bottom margin for spacing */
+  max-width: 600px;
+  margin: 0 auto 20px;
+  color: #d1d1d1;
 }
 
 /* Center the search container */
@@ -81,8 +100,8 @@ body, html {
   padding: 10px 20px;
   font-size: 1rem;
   font-weight: bold;
-  color: #00b4db;
-  background-color: white;
+  color: #f7f7f7;
+  background-color: #aba30f;
   border: none;
   border-radius: 0 8px 8px 0;
   cursor: pointer;
@@ -91,7 +110,7 @@ body, html {
 }
 
 .search-button:hover {
-  background-color: #ffda79;
+  background-color: #8e880d;
 }
 
 /* Main Flex Container for Panel and Table */
@@ -103,92 +122,7 @@ body, html {
   gap: 10px;
   overflow: hidden;
   box-sizing: border-box;
-}
-
-/* Criteria Panel Styling */
-.filter-panel, .criteria-panel {
-  background-color: #ffffff;
-  color: #333;
-  border-radius: 8px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  padding: 15px;
-  width: 250px;
-  height: calc(100vh - 180px); /* Adjust based on header/footer */
-  overflow-y: auto;
-  font-size: 0.9rem;
-}
-
-.criteria-panel h3 {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-}
-
-.criteria-panel .filter-group {
-  margin-bottom: 15px;
-}
-
-.criteria-panel label {
-  font-size: 0.85rem;
-}
-
-.criteria-panel input[type="text"], .criteria-panel input[type="range"] {
-  width: 100%;
-  margin-top: 5px;
-}
-
-.range-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: #666;
-  margin-top: -8px;
-  margin-bottom: 5px;
-}
-
-/* Table Container */
-.table-container {
-  flex: 1;
-  overflow-y: auto;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 10px;
-}
-
-/* Custom Data Grid Styling */
-.custom-data-grid {
-  width: 100%;
-  height: 100%;
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  color: #333333;
-}
-
-.custom-data-grid .MuiDataGrid-columnHeader {
-  background-color: #06a242e4;
-  color: #ffffff;
-  font-weight: bold;
-  text-align: center;
-}
-
-.custom-data-grid .MuiDataGrid-row {
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.custom-data-grid .MuiDataGrid-row:nth-child(even) {
-  background-color: #e2e8f0;
-}
-
-.custom-data-grid .MuiDataGrid-cell {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  color: #333333;
-}
-
-.custom-data-grid .MuiDataGrid-row:hover {
-  background-color: #e3f2fd;
+  padding-top: 40px;
 }
 
 /* Button Styling */

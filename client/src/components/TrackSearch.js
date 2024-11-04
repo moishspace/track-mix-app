@@ -41,9 +41,9 @@ const TrackSearch = ({ searchTerm }) => {
     }
   }, [searchTerm]);
 
-  useEffect(() => {
-    console.log('Filtered tracks updated:', filteredTracks);
-  }, [filteredTracks]);
+  // useEffect(() => {
+  //   console.log('Filtered tracks updated:', filteredTracks);
+  // }, [filteredTracks]);
 
   // Handle right-click to show context menu
   const handleRowRightClick = (event, row) => {
@@ -56,95 +56,14 @@ const TrackSearch = ({ searchTerm }) => {
   };
 
   // Close the context menu
-  const handleCloseContextMenu = () => {
-    setContextMenu(null);
-  };
+  // const handleCloseContextMenu = () => {
+  //   setContextMenu(null);
+  // };
 
   // Helper function for fetching similar tracks
-const fetchSimilarTracks = async (trackId, criteria) => {
-  const trackData = trackDetails[trackId];
-
-  const criteriaParams = {
-    trackId,
-    genre: criteria.genre || trackData?.genres,
-    min_tempo: criteria.tempo?.min || trackData?.tempo - 2,
-    max_tempo: criteria.tempo?.max || trackData?.tempo + 2,
-    min_danceability: criteria.danceability?.min || trackData?.danceability - 0.1,
-    max_danceability: criteria.danceability?.max || trackData?.danceability + 0.1,
-    min_energy: criteria.energy?.min || trackData?.energy - 0.1,
-    max_energy: criteria.energy?.max || trackData?.energy + 0.1,
-    min_valence: criteria.valence?.min || trackData?.valence - 0.1,
-    max_valence: criteria.valence?.max || trackData?.valence + 0.1,
-    min_acousticness: criteria.acousticness?.min || trackData?.acousticness - 0.1,
-    max_acousticness: criteria.acousticness?.max || trackData?.acousticness + 0.1,
-    min_instrumentalness: criteria.instrumentalness?.min || trackData?.instrumentalness - 0.1,
-    max_instrumentalness: criteria.instrumentalness?.max || trackData?.instrumentalness + 0.1,
-    min_liveness: criteria.liveness?.min || trackData?.liveness - 0.1,
-    max_liveness: criteria.liveness?.max || trackData?.liveness + 0.1,
-  };
-
-  let similarTracks = await searchSimilarTracks(criteriaParams);
-  console.log('Search Criteria',criteriaParams);
-  console.log('Similar tracks received:', similarTracks);
-
-  const trackIndex = similarTracks.findIndex((track) => track.id === trackId);
-  let originalTrack;
-
-  if (trackIndex !== -1) {
-    // If found, remove it from the list and add it at the start
-    [originalTrack] = similarTracks.splice(trackIndex, 1);
-  } else {
-    // Otherwise, retrieve the original track's details from filteredTracks or make a new API call
-    originalTrack = filteredTracks.find((track) => track.id === trackId) || trackDetails[trackId];
-
-    if (originalTrack) {
-      // Ensure track has necessary metadata; if not, fetch it
-      originalTrack = {
-        id: trackId,
-        name: originalTrack.name || "Unknown",
-        album: originalTrack.album || { name: "Unknown" },
-        artists: originalTrack.artists || [{ name: "Unknown" }],
-        releaseDate: originalTrack.releaseDate || "Unknown",
-        ...trackDetails[trackId], // Include detailed audio features if present
-      };
-    } else {
-      console.warn(`No details found for track ${trackId}, skipping add to top.`);
-    }
-  }
-
-  // Add the original track to the start of the list if it exists
-  if (originalTrack) similarTracks = [originalTrack, ...similarTracks];
-
-  // Update the table with similar tracks
-  setFilteredTracks(similarTracks);
-
-  // Fetch details for each similar track and update trackDetails state
-  const trackIds = similarTracks.map((track) => track.id);
-  const detailsObject = await fetchDetailsWithDelays(trackIds);
-  setTrackDetails((prevDetails) => ({ ...prevDetails, ...detailsObject }));
-};
-
-// // Updated handleGetSimilarTracks function
-// const handleGetSimilarTracks = () => {
-//   const trackId = contextMenu?.row?.id;
-//   if (trackId) fetchSimilarTracks(trackId, criteria);
-// };
-
-// Updated onUpdateSearch function
-const onUpdateSearch = () => {
-  if (selectedTrack) {
-    fetchSimilarTracks(selectedTrack.id, criteria);
-  } else {
-    alert("Please select a track to find similar tracks.");
-  }
-};
-
-  // Handle "Get Similar" click
-  const handleGetSimilarTracks = async () => {
-    const trackId = contextMenu.row.id;
+  const fetchSimilarTracks = async (trackId, criteria) => {
     const trackData = trackDetails[trackId];
 
-    // Combine user-selected criteria with track data
     const criteriaParams = {
       trackId,
       genre: criteria.genre || trackData?.genres,
@@ -163,20 +82,21 @@ const onUpdateSearch = () => {
       min_liveness: criteria.liveness?.min || trackData?.liveness - 0.1,
       max_liveness: criteria.liveness?.max || trackData?.liveness + 0.1,
     };
-  
+
     let similarTracks = await searchSimilarTracks(criteriaParams);
+    console.log('Search Criteria',criteriaParams);
     console.log('Similar tracks received:', similarTracks);
-  
+
     const trackIndex = similarTracks.findIndex((track) => track.id === trackId);
     let originalTrack;
-  
+
     if (trackIndex !== -1) {
       // If found, remove it from the list and add it at the start
       [originalTrack] = similarTracks.splice(trackIndex, 1);
     } else {
       // Otherwise, retrieve the original track's details from filteredTracks or make a new API call
       originalTrack = filteredTracks.find((track) => track.id === trackId) || trackDetails[trackId];
-  
+
       if (originalTrack) {
         // Ensure track has necessary metadata; if not, fetch it
         originalTrack = {
@@ -191,22 +111,38 @@ const onUpdateSearch = () => {
         console.warn(`No details found for track ${trackId}, skipping add to top.`);
       }
     }
-  
+
     // Add the original track to the start of the list if it exists
     if (originalTrack) similarTracks = [originalTrack, ...similarTracks];
 
     // Update the table with similar tracks
     setFilteredTracks(similarTracks);
-  
+
     // Fetch details for each similar track and update trackDetails state
     const trackIds = similarTracks.map((track) => track.id);
     const detailsObject = await fetchDetailsWithDelays(trackIds);
     setTrackDetails((prevDetails) => ({ ...prevDetails, ...detailsObject }));
-  
-    handleCloseContextMenu();
+  };
+
+  const onUpdateSearch = () => {
+    if (selectedTrack) {
+      // Filter criteria to include only active items
+      const activeCriteria = Object.fromEntries(
+        Object.entries(criteria).filter(([key, value]) => value && value.active)
+      );
+
+      fetchSimilarTracks(selectedTrack.id, activeCriteria);
+    } else {
+      alert("Please select a track to find similar tracks.");
+    }
   };
 
   const handleExportToCSV = () => {
+    if (!filteredTracks || filteredTracks.length === 0) {
+      alert("No data available to export.");
+      return;
+    }
+
     const csvContent = filteredTracks.map((track) => ({
       Name: track.name || 'Unknown',
       Artist: track.artists?.[0]?.name || 'Unknown',
@@ -331,7 +267,7 @@ const onUpdateSearch = () => {
     {
       field: 'genre',
       headerName: 'Genre',
-      minWidth: 100,
+      minWidth: 140,
       flex: 1,
       sortable: true,
     },
@@ -391,16 +327,17 @@ const onUpdateSearch = () => {
       flex: 1,
       sortable: true,
     },
-], [trackDetails, selectedTrack]);
-  return (
-    <div className="flex-container">
-        <CriteriaFilterPanel 
-          criteria={criteria} 
-          setCriteria={setCriteria} 
-          onUpdateSearch={onUpdateSearch} 
-          initialTrackDetails={selectedTrack}
-        />
-        <div className="table-container">
+], []);
+return (
+  <div className="flex-container">
+      <CriteriaFilterPanel 
+        criteria={criteria} 
+        setCriteria={setCriteria} 
+        onUpdateSearch={onUpdateSearch} 
+        initialTrackDetails={selectedTrack}
+      />
+      <div className="table-container">
+        <div className="custom-data-grid">
           <DataGrid
             className="custom-data-grid"
             rows={processedTracks}
@@ -409,12 +346,11 @@ const onUpdateSearch = () => {
             rowHeight={90}
             getRowId={(row) => row.id}
             disableSelectionOnClick
-            // disableVirtualization={true}
             onRowClick={(params) => handleRowClick(params.row)}
             getRowClassName={(params) => (params.row.id === selectedTrack?.id ? 'selected-row' : '')}
             onRowContextMenu={(event, params) => {
-              event.preventDefault(); // Prevent the default context menu
-              const row = filteredTracks.find((track) => track.id === params.id); // Get row data
+              event.preventDefault();
+              const row = filteredTracks.find((track) => track.id === params.id);
               handleRowRightClick(event, row);
             }}
           />
@@ -434,31 +370,8 @@ const onUpdateSearch = () => {
                 display: 'flex',
                 flexDirection: 'column',
               }}
-              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the menu
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* "Get Similar Tracks" Menu Item */}
-              <div
-                onClick={handleGetSimilarTracks}
-                style={{
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                  color: '#333',
-                }}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = '#f0f0f0')}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = 'white')}
-              >
-                Get Similar Tracks
-              </div>
-
-              {/* Divider line */}
-              <div
-                style={{
-                  borderBottom: '1px solid #ddd',
-                  margin: '8px 0',
-                }}
-              ></div>
-
-              {/* "Export to CSV" Menu Item */}
               <div
                 onClick={handleExportToCSV}
                 style={{
@@ -474,8 +387,14 @@ const onUpdateSearch = () => {
             </div>
           )}
         </div>
+        {/* Move the button inside table-container to place it below the table */}
+        <div className="button-container">
+          <button className="add-to-list-button">Add to List</button>
+          <button className="add-to-list-button" onClick={handleExportToCSV}>Export to CSV</button>
+        </div>
       </div>
-  );
+  </div>
+);
 };
 
 export default TrackSearch;
