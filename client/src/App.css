@@ -130,8 +130,8 @@ body, html {
   padding: 10px 20px;
   font-size: 1rem;
   font-weight: bold;
-  color: #00b4db;
-  background-color: white;
+  color: #ffffff;
+  background-color: #aba30f;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -139,5 +139,5 @@ body, html {
 }
 
 .login-button:hover {
-  background-color: #ffda79;
+  background-color: #8e880d;
 }

@@ -105,7 +105,9 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
   return (
     <div>
       <h1 className="title">Music Similarity App</h1>
-      <p className="description">Search for track by entering a track name, artist, or album below.</p>
+      {!isAuthorized ? (
+      <p className="description">Discover music based on rhythm and style. Login to start exploring!</p>
+      ) : (<p className="description">Search for track by entering a track name, artist, or album below.</p>) }
 
       {!isAuthorized ? (
         <button className="login-button" onClick={handleLogin}>
