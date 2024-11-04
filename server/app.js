@@ -287,6 +287,75 @@ app.post('/api/create-playlist', async (req, res) => {
   }
 });
 
+app.post('/api/add-tracks-to-playlist', async (req, res) => {
+  const { playlistId, trackIds } = req.body;
+  if (!accessToken) {
+    return res.status(400).json({ error: 'Access token is required' });
+  }
+
+  if (!playlistId || !trackIds || trackIds.length === 0) {
+    return res.status(400).json({ error: 'Playlist ID and track IDs are required' });
+  }
+
+  try {
+    const response = await axios.post(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      { uris: trackIds.map((id) => `spotify:track:${id}`) },
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error adding tracks to playlist:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json(error.response?.data || { error: 'Failed to add tracks to playlist' });
+  }
+});
+
+
+// Route to delete a playlist
+app.delete('/api/delete-playlist/:playlistId', async (req, res) => {
+  const { playlistId } = req.params;
+  if (!accessToken) {
+    return res.status(400).json({ error: 'Access token is required' });
+  }
+
+  try {
+    const response = await axios.delete(`https://api.spotify.com/v1/playlists/${playlistId}/followers`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    res.status(204).send(); 
+  } catch (error) {
+    console.error("Error deleting playlist:", error.response?.data || error.message);
+    res.status(error.response?.status || 500).json(error.response?.data || { error: 'Failed to delete playlist' });
+  }
+});
+
+// Route to fetch tracks from a specific playlist
+app.get('/api/playlist-tracks', async (req, res) => {
+  const { playlistId } = req.query;
+  if (!accessToken) {
+    return res.status(400).json({ error: 'Access token is required' });
+  }
+
+  if (!playlistId ) {
+    return res.status(400).json({ error: 'Playlist ID is required' });
+  }
+
+  try {
+    const response = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching playlist tracks:', error.response?.data || error.message);
+    res.status(error.response?.status || 500).json(error.response?.data || { error: 'Failed to fetch playlist tracks' });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

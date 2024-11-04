@@ -1,7 +1,7 @@
 import './DataGridStyles.css';
 import React, { useState, useEffect, useMemo } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { searchTracks, searchSimilarTracks, fetchPlaylists, createPlaylist } from '../services/api';
+import { searchTracks, searchSimilarTracks, fetchPlaylists, createPlaylist, addTracksToPlaylist, deletePlaylist, fetchPlaylistTracks } from '../services/api';
 import CriteriaFilterPanel from './CriteriaFilterPanel';
 import CreatePlaylistModal from './CreatePlaylistModal';
 
@@ -11,7 +11,7 @@ const fetchDetailsWithDelays = async (trackIds, delayMs = 1000) => {
     try {
       const response = await fetch(`http://localhost:3001/api/track-details-with-retry?trackId=${trackId}`);
       details[trackId] = await response.json();
-      console.log(`Fetched details for track ${trackId}`); // Simplified logging
+      // console.log(`Fetched details for track ${trackId}`); // Simplified logging
     } catch (error) {
       console.error(`Error fetching details for track ${trackId}:`, error);
     }
@@ -29,13 +29,16 @@ const TrackSearch = ({ searchTerm }) => {
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTrackIds, setSelectedTrackIds] = useState([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [playlistToDelete, setPlaylistToDelete] = useState(null);
   
   const openCreatePlaylistModal = () => setIsModalOpen(true);
   const closeCreatePlaylistModal = () => setIsModalOpen(false);
 
   useEffect(() => {
     if (searchTerm) {
-      console.log(`Searching for tracks with term: ${searchTerm}`);
+      // console.log(`Searching for tracks with term: ${searchTerm}`);
       searchTracks(searchTerm)
         .then(async (tracks) => {
           setFilteredTracks(tracks);
@@ -51,28 +54,102 @@ const TrackSearch = ({ searchTerm }) => {
   //   console.log('Filtered tracks updated:', filteredTracks);
   // }, [filteredTracks]);
 
-    // Fetch playlists on component mount
-    useEffect(() => {
-      const loadPlaylists = async () => {
-        const fetchedPlaylists = await fetchPlaylists(); // API call to fetch playlists
-        setPlaylists(fetchedPlaylists);
-      };
-      loadPlaylists();
-    }, []);
-  
-    const handleCreatePlaylist = async (playlistData) => {
-      try {
-        const newPlaylist = await createPlaylist(playlistData);
-        setPlaylists([...playlists, newPlaylist]); // Update playlists state
-        setSelectedPlaylist(newPlaylist.id); // Set new playlist as selected
-        closeCreatePlaylistModal();
-      } catch (error) {
-        console.error("Error creating playlist:", error);
-      }
+  // Fetch playlists on component mount
+  useEffect(() => {
+    const loadPlaylists = async () => {
+      const fetchedPlaylists = await fetchPlaylists(); // API call to fetch playlists
+      setPlaylists(fetchedPlaylists);
     };
+    loadPlaylists();
+  }, []);
 
-    const handlePlaylistChange = (event) => setSelectedPlaylist(event.target.value);
+  const handleCreatePlaylist = async (playlistData) => {
+    try {
+      const newPlaylist = await createPlaylist(playlistData);
+      setPlaylists([...playlists, newPlaylist]); // Update playlists state
+      setSelectedPlaylist(newPlaylist.id); // Set new playlist as selected
+      closeCreatePlaylistModal();
+    } catch (error) {
+      console.error("Error creating playlist:", error);
+    }
+  };
 
+  const handlePlaylistChange = (event) => setSelectedPlaylist(event.target.value);
+
+  const handleSelectionChange = (newSelection) => {setSelectedTrackIds(newSelection); };
+
+  const handleAddToPlaylist = async () => {
+    if (!selectedPlaylist) {
+      alert("Please select a playlist.");
+      return;
+    }
+    if (selectedTrackIds.length === 0) {
+      alert("Please select at least one track to add.");
+      return;
+    }
+  
+    try {
+      await addTracksToPlaylist(selectedPlaylist, selectedTrackIds);
+      alert("Tracks added to playlist successfully!");
+    } catch (error) {
+      console.error("Error adding tracks to playlist:", error);
+      alert("Failed to add tracks to playlist.");
+    }
+  };
+
+
+  const handleDeletePlaylist = async () => {
+    try {
+      // console.log('Playlist to delete:', playlistToDelete);
+      await deletePlaylist(playlistToDelete.id);
+      setPlaylists(playlists.filter(p => p.id !== playlistToDelete.id));
+      setPlaylistToDelete(null);
+      setShowDeleteConfirm(false);
+      alert(`Playlist "${playlistToDelete.name}" deleted successfully!`);
+    } catch (error) {
+      console.error("Error deleting playlist:", error);
+      alert("Failed to delete playlist.");
+    }
+  };
+
+  const openDeleteConfirm = (playlist) => {
+    setPlaylistToDelete(playlist);
+    setShowDeleteConfirm(true);
+  };
+
+  const closeDeleteConfirm = () => {
+    setPlaylistToDelete(null);
+    setShowDeleteConfirm(false);
+  };
+
+  const handleShowPlaylist = async () => {
+    if (!selectedPlaylist) {
+      alert("Please select a playlist to show.");
+      return;
+    }
+  
+    try {
+      const playlistData = await fetchPlaylistTracks(selectedPlaylist);
+      const processedTracks = playlistData.map(item => ({
+        id: item.track?.id || 'unknown-id',
+        name: item.track?.name || 'Unknown Track',
+        artistsName: item.track?.artists ? item.track.artists.map((artist) => artist.name).join(', ') : 'Unknown Artist',
+        albumName: item.track?.album?.name || 'Unknown Album',
+        releaseDate: item.track?.album?.release_date || 'Unknown Date',
+        preview_url: item.track?.preview_url || null,
+      }));
+      
+      setFilteredTracks(processedTracks);
+  
+      // Fetch additional track details if missing
+      const trackIds = processedTracks.map(track => track.id);
+      const detailsObject = await fetchDetailsWithDelays(trackIds);
+      setTrackDetails((prevDetails) => ({ ...prevDetails, ...detailsObject }));
+      
+    } catch (error) {
+      console.error("Error fetching playlist tracks:", error);
+    }
+  };
 
   // Handle right-click to show context menu
   const handleRowRightClick = (event, row) => {
@@ -212,25 +289,47 @@ const TrackSearch = ({ searchTerm }) => {
   }, []);
 
   const handleRowClick = (row) => {
-    setSelectedTrack(row); // Track row selection
-    setCriteria({
-      genre: row.genres ? row.genres[0] : '',
-      tempo: { min: row.tempo - 2, max: row.tempo + 2 },
-      danceability: { min: row.danceability - 0.1, max: row.danceability + 0.1 },
-      energy: { min: row.energy - 0.1, max: row.energy + 0.1 },
-      valence: { min: row.valence - 0.1, max: row.valence + 0.1 },
-      acousticness: { min: row.acousticness - 0.1, max: row.acousticness + 0.1 },
-      instrumentalness: { min: row.instrumentalness - 0.1, max: row.instrumentalness + 0.1 },
-      liveness: { min: row.liveness - 0.1, max: row.liveness + 0.1 },
-    });
+
+    if (row.field !== '__check__') { // Check if not checkbox
+      setSelectedTrack(row); // Track row selection
+      setCriteria({
+        genre: row.genres ? row.genres[0] : '',
+        tempo: { min: row.tempo - 2, max: row.tempo + 2 },
+        danceability: { min: row.danceability - 0.1, max: row.danceability + 0.1 },
+        energy: { min: row.energy - 0.1, max: row.energy + 0.1 },
+        valence: { min: row.valence - 0.1, max: row.valence + 0.1 },
+        acousticness: { min: row.acousticness - 0.1, max: row.acousticness + 0.1 },
+        instrumentalness: { min: row.instrumentalness - 0.1, max: row.instrumentalness + 0.1 },
+        liveness: { min: row.liveness - 0.1, max: row.liveness + 0.1 },
+      });
+    }
   };
 
   // Preprocess filteredTracks to include trackDetails properties directly
+  // const processedTracks = filteredTracks.map(track => ({
+  //   ...track,
+  //   artistsName: track.artists?.[0]?.name || 'Unknown', // Flatten the first artist name
+  //   albumName: track.album?.name || 'Unknown', 
+  //   releaseDate: track.album?.release_date || 'Unknown',
+  //   danceability: trackDetails[track.id]?.danceability || '',
+  //   energy: trackDetails[track.id]?.energy || '',
+  //   tempo: trackDetails[track.id]?.tempo || '',
+  //   key: trackDetails[track.id]?.key || '',
+  //   valence: trackDetails[track.id]?.valence || '',
+  //   acousticness: trackDetails[track.id]?.acousticness || '',
+  //   instrumentalness: trackDetails[track.id]?.instrumentalness || '',
+  //   liveness: trackDetails[track.id]?.liveness || '',
+  //   genre: trackDetails[track.id]?.genres?.join(', ') || '',
+  // }));
+
+  // Preprocess filteredTracks to include trackDetails properties directly
   const processedTracks = filteredTracks.map(track => ({
-    ...track,
-    artistsName: track.artists?.[0]?.name || 'Unknown', // Flatten the first artist name
-    albumName: track.album?.name || 'Unknown', 
-    releaseDate: track.album?.release_date || 'Unknown',
+    id: track.id,
+    name: track.name || 'Unknown Track',
+    artistsName: track.artistsName || (track.artists ? track.artists.map(artist => artist.name).join(', ') : 'Unknown Artist'),
+    albumName: track.albumName || track.album?.name || 'Unknown Album',
+    releaseDate: track.releaseDate || track.album?.release_date || 'Unknown Date',
+    preview_url: track.preview_url || null,
     danceability: trackDetails[track.id]?.danceability || '',
     energy: trackDetails[track.id]?.energy || '',
     tempo: trackDetails[track.id]?.tempo || '',
@@ -248,8 +347,7 @@ const TrackSearch = ({ searchTerm }) => {
       headerName: 'Track Name',
       minWidth: 150,
       flex: 1,
-      sortable: true,
-      // No renderCell needed for sorting to work directly
+      sortable: true
     },
     {
       field: 'preview',
@@ -275,16 +373,14 @@ const TrackSearch = ({ searchTerm }) => {
       headerName: 'Artist Name',
       minWidth: 150,
       flex: 1,
-      sortable: true,
-      // Direct data access in field; assuming filteredTracks includes artist names at top level
+      sortable: true
     },
     {
       field: 'albumName',
       headerName: 'Album Name',
       minWidth: 150,
       flex: 1,
-      sortable: true,
-      // Direct data access in field for sorting
+      sortable: true
     },
     {
       field: 'releaseDate',
@@ -373,7 +469,9 @@ return (
             columns={columns}
             pageSize={10}
             rowHeight={90}
-            getRowId={(row) => row.id}
+            checkboxSelection
+            onRowSelectionModelChange={(newSelection) => handleSelectionChange(newSelection)}
+            getRowId={(row) => row.track?.id || row.id}
             disableSelectionOnClick
             onRowClick={(params) => handleRowClick(params.row)}
             getRowClassName={(params) => (params.row.id === selectedTrack?.id ? 'selected-row' : '')}
@@ -418,9 +516,8 @@ return (
         </div>
         {/* Move the button inside table-container to place it below the table */}
         <div className="button-container">
-        <button className="action-button" onClick={handleExportToCSV}>Export to CSV</button>
           <div className="button-group-container">
-            <button className="action-button">Add to Playlist</button>  
+            <button className="action-button" onClick={handleAddToPlaylist}>Add to Playlist</button>  
             <select className="playlist-dropdown" value={selectedPlaylist || ""} onChange={handlePlaylistChange}>
               <option value="" disabled>Select a Playlist</option>
               {playlists.map((playlist) => (
@@ -428,12 +525,28 @@ return (
               ))}
             </select>
             <button className="action-button" onClick={openCreatePlaylistModal}>Create New Playlist</button>
+            <button className="action-button" onClick={() => openDeleteConfirm(playlists.find(p => p.id === selectedPlaylist))}> Delete Playlist</button>
+            <button className="action-button" onClick={handleShowPlaylist}>Show Playlist</button>
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+              <div className="modal-overlay">
+                <div className="modal-content">
+                  <h3>Confirm Delete</h3>
+                  <p>Are you sure you want to delete the playlist "{playlistToDelete?.name}"?</p>
+                  <div className="modal-buttons">
+                    <button onClick={handleDeletePlaylist} className="action-button">Yes, Delete</button>
+                    <button onClick={closeDeleteConfirm} className="action-button secondary">Cancel</button>
+                  </div>
+                </div>
+              </div>
+            )}
             <CreatePlaylistModal
               isOpen={isModalOpen}
               onClose={closeCreatePlaylistModal}
               onCreate={handleCreatePlaylist}
             />
           </div>
+          <button className="action-button" onClick={handleExportToCSV}>Export to CSV</button>
         </div>
       </div>
   </div>

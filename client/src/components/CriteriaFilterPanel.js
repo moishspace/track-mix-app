@@ -3,7 +3,6 @@ import './CriteriaFilterPanelStyle.css';
 
 const CriteriaFilterPanel = ({ criteria, setCriteria, onUpdateSearch, initialTrackDetails }) => {
   useEffect(() => {
-    console.log('initialTrackDetails', initialTrackDetails)
     if (initialTrackDetails) {
       setCriteria({
         genre: initialTrackDetails.genre || '', 

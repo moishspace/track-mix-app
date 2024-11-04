@@ -94,7 +94,7 @@
   flex-direction: column;
   align-items: center;
   gap: 4px; /* Space between label and sliders */
-  margin-top: 8px;
+  margin-top: 20px;
 }
 
 /* Label Wrapper for Min and Max */
@@ -110,7 +110,7 @@
 /* Sliders Container */
 .sliders {
   display: flex;
-  gap: 8px; /* Space between sliders */
+  gap: 10px; /* Space between sliders */
   width: 100%;
 }
 
@@ -124,7 +124,7 @@ input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 8px;
+  height: 2px;
   background-color: #f0f0f0; /* Light background for the track */
   border-radius: 5px;
   outline: none;
@@ -132,20 +132,21 @@ input[type="range"] {
 
 /* Chrome, Safari, Edge Track */
 input[type="range"]::-webkit-slider-runnable-track {
-  height: 8px !important;
-  background-color: #737986; /* Desired color for the track */
+  height: 2px !important;
+  background-color: #b6b9bf; /* Desired color for the track */
   border-radius: 5px;
 }
 
 /* Chrome, Safari, Edge Thumb */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   background-color: #8e880d; /* Thumb color */
+  border: 5px solid #ffffff; /* Thumb border color */
   border-radius: 50%;
   cursor: pointer;
-  margin-top: -4px; /* Center the thumb on the track */
+  margin-top: -9px; /* Center the thumb on the track */
 }
 
 /* Firefox Thumb */
@@ -167,6 +168,7 @@ input[type="range"]::-moz-range-track {
 /* Button Styling */
 .filter-panel button {
   width: 100%;
+  margin-top: 20px;
   padding: 10px;
   font-size: 0.8rem;
   font-weight: bold;

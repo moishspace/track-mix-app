@@ -31,7 +31,9 @@
 
 /* Cell styling */
 .custom-data-grid .MuiDataGrid-cell {
-    display: block; /* Ensures text wrapping */
+    display: flex; /* Use flex layout */
+    align-items: center; /* Center-aligns text horizontally within flex container */
+    justify-content: center; /* Center-aligns text horizontally */
     white-space: normal !important; /* Allows text to wrap */
     overflow-wrap: break-word !important; /* Wraps text without breaking words */
     word-break: break-word !important; /* Prevents words from splitting */
@@ -40,6 +42,7 @@
     color: #333333 !important; /* Text color */
     background-color: inherit !important; /* Aligns cell color with row */
     border-right: 1px solid #e0e0e0 !important; /* Border between columns */
+    text-align: center; /* Center-aligns text within the cell */
 }
 
 /* Styling for cells in the Track Name column */
@@ -89,10 +92,11 @@
 /* Custom Data Grid Styling */
 .custom-data-grid {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 60px); /* Adjust height to fit buttons */
     font-family: 'Roboto', sans-serif;
     font-size: 14px;
     color: #333333;
+    overflow: auto; /* Allow scrolling within the grid if needed */
  }
 
  /* Container for the buttons and dropdowns */
@@ -162,4 +166,54 @@
   .playlist-dropdown:hover, .playlist-dropdown:focus {
     border-color: #737986; /* Slight color change on hover and focus */
     background-color: #f5f5f5; /* Light background on hover for subtle feedback */
+  }
+
+
+  /* Modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  /* Modal content */
+  .modal-content {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    color: #333;
+    text-align: center;
+  }
+  
+  .modal-content h3 {
+    margin-bottom: 10px;
+  }
+  
+  .modal-content p {
+    margin-bottom: 20px;
+  }
+  
+  /* Modal buttons */
+  .modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  
+  .action-button.secondary {
+    background-color: #cccccc;
+    color: #333;
+  }
+  
+  .action-button.secondary:hover {
+    background-color: #aaaaaa;
   }

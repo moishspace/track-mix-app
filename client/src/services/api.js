@@ -97,3 +97,88 @@ export const createPlaylist = async ({ name, description, isPublic }) => {
     throw error; // Rethrow for handling by calling code if needed
   }
 };
+
+export const addTracksToPlaylist = async (playlistId, trackIds) => {
+  const accessToken = localStorage.getItem('access_token'); // or retrieve from state/context
+
+  if (!accessToken) {
+    console.error("No access token available.");
+    throw new Error("Access token is required to add tracks to the playlist.");
+  }
+
+  try {
+    const response = await axios.post(
+      `${API_URL}/add-tracks-to-playlist`,
+      { playlistId, trackIds },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding tracks to playlist:", error);
+    throw error;
+  }
+};
+
+
+// export const deletePlaylist = async (playlistId) => {
+//   const accessToken = localStorage.getItem('access_token');
+
+//   if (!accessToken) {
+//     console.error("No access token found for creating playlist.");
+//     return;
+//   }
+  
+//   try {
+//     const response = await axios.delete(`${API_URL}/delete-playlist`, {
+//       headers: { Authorization: `Bearer ${accessToken}` },
+//       data: { playlistId },
+//     });
+//     return response.data;
+//   } catch (error) {
+//     console.error("Error deleting playlist:", error);
+//     throw error;
+//   }
+// };
+
+export const deletePlaylist = async (playlistId) => {
+  const accessToken = localStorage.getItem('access_token');
+
+  if (!accessToken) {
+    console.error("No access token found for deleting playlist.");
+    return;
+  }
+
+  try {
+    const response = await axios.delete(`${API_URL}/delete-playlist/${playlistId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting playlist:", error);
+    throw error;
+  }
+};
+
+// Fetch tracks from a playlist by its ID
+export const fetchPlaylistTracks = async (playlistId) => {
+  const accessToken = localStorage.getItem('access_token');
+
+  if (!accessToken) {
+    console.error("No access token found for creating playlist.");
+    return;
+  }
+  try {
+    const response = await axios.get(`${API_URL}/playlist-tracks`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      params: { playlistId },
+    });
+    return response.data.items; // Assuming `items` contains the track data
+  } catch (error) {
+    console.error("Error fetching playlist tracks:", error);
+    throw error;
+  }
+};
