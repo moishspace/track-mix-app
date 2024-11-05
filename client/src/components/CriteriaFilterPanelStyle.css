@@ -190,3 +190,52 @@ input[type="range"]::-moz-range-track {
   background-color: #e0e0e0; /* Slightly darker on hover */
   color: #111111; /* Darker text color on hover */
 }
+
+/* Tooltip styling */
+.filter-item label[data-tooltip] {
+  position: relative;
+  cursor: pointer; /* Indicates that there's more information */
+}
+
+/* Tooltip text styling */
+.filter-item label[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%; /* Position above the label */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  pointer-events: none; /* Prevent tooltip from blocking clicks */
+  z-index: 10;
+}
+
+/* Tooltip arrow styling */
+.filter-item label[data-tooltip]::before {
+  content: '';
+  position: absolute;
+  bottom: 95%; /* Adjust to align the arrow with tooltip */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #333 transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  z-index: 10;
+}
+
+/* Show tooltip on hover */
+.filter-item label[data-tooltip]:hover::after,
+.filter-item label[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+}

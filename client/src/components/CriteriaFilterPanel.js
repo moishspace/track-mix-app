@@ -96,7 +96,17 @@ const CriteriaFilterPanel = ({ criteria, setCriteria, onUpdateSearch, initialTra
 {/* Range sliders for numeric criteria */}
 {['tempo', 'danceability', 'energy', 'valence', 'acousticness', 'instrumentalness', 'liveness'].map((attr) => (
   <div className="filter-item" key={attr}>
-    <label>
+    <label
+      data-tooltip={
+        attr === 'tempo' ? 'Speed in beats per minute'
+        : attr === 'danceability' ? 'Suitability for dancing'
+        : attr === 'energy' ? 'Intensity and activity level'
+        : attr === 'valence' ? 'Mood positivity or negativity'
+        : attr === 'acousticness' ? 'Presence of acoustic sounds'
+        : attr === 'instrumentalness' ? 'Likelihood of no vocals'
+        : 'Audience presence or live sound'
+      }
+    >
       <input
         type="checkbox"
         name={attr}
