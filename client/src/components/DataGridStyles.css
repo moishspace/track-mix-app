@@ -125,7 +125,7 @@
     /* color: #696969; 
     background-color: #f0f0f0;  */
     color: #f0f0f0; 
-    background-color: #696969; 
+    background-color: #777; 
     border: 1px solid #d3d3d3; 
     border-radius: 15px; 
     cursor: pointer;
@@ -147,7 +147,7 @@
 }
 
 .action-button.secondary:hover {
-    background-color: #aaaaaa;
+    background-color: #333;
 }
 
 /* Styling for the dropdown to match button */
