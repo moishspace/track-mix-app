@@ -24,11 +24,20 @@
     border-bottom: 1px solid #e2e8f0 !important; /* Subtle row separator */
 }
 
-/* Alternating row background */
+/* Alternating row colors */
 .custom-data-grid .MuiDataGrid-row:nth-child(even) {
-    background-color: #e2e8f0 !important; /* Slightly darker background for even rows */
+    background-color: #e2e8f0 !important; /* Light gray for even rows */
 }
 
+.custom-data-grid .MuiDataGrid-row:nth-child(odd) {
+    background-color: #f9fafb !important; /* Slightly lighter for odd rows */
+}
+
+/* Selected row color */
+.custom-data-grid .selected-row {
+    background-color: #e0f7fa !important; /* Light blue for the selected row */
+    color: #00796b; /* Darker text color for contrast */
+}
 /* Cell styling */
 .custom-data-grid .MuiDataGrid-cell {
     display: flex; /* Use flex layout */
@@ -59,9 +68,9 @@
 }
 
 /* Optional: Style the row on hover for an interactive look */
-.custom-data-grid .MuiDataGrid-row:hover {
+/*.custom-data-grid .MuiDataGrid-row:hover {
     background-color: #e3f2fd !important; /* Light blue background on hover */
-}
+/*}
 
 /* Main container for filter panel and table side by side */
 .main-container {
@@ -107,32 +116,38 @@
     padding: 10px 0;
 }
 
-/* Adjusts the Export to CSV and Add to List button styling */
+
+/* Primary action button */
 .action-button {
-    padding: 10px 20px;
-    background-color: #737986; /* Matching color */
-    color: #fdfeff; /* Light color for text */
-    font-size: 14px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
     font-weight: bold;
-    text-align: center;
-    border: none;
-    border-radius: 4px;
+    /* color: #696969; 
+    background-color: #f0f0f0;  */
+    color: #f0f0f0; 
+    background-color: #696969; 
+    border: 1px solid #d3d3d3; 
+    border-radius: 15px; 
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    height: 40px; /* Consistent height with dropdown */
-    min-width: 120px; /* Set minimum width for consistency */
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-width: 120px; 
+    box-sizing: border-box;
 }
 
 .action-button:hover {
-    background-color: #5a5f6a; /* Darker shade on hover */
+    color: #e0e0e0; 
+    background-color: #111111; 
 }
 
-.action-button.primary {
-    background-color: #737986; /* Different color for primary action */
-}
-
+/* Secondary action button */
 .action-button.secondary {
-    background-color: #737986; /* Different color for secondary action */
+    color: #cccccc;
+    background-color: #333;
+}
+
+.action-button.secondary:hover {
+    background-color: #aaaaaa;
 }
 
 /* Styling for the dropdown to match button */
@@ -163,57 +178,35 @@
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
   
-  .playlist-dropdown:hover, .playlist-dropdown:focus {
+.playlist-dropdown:hover, .playlist-dropdown:focus {
     border-color: #737986; /* Slight color change on hover and focus */
     background-color: #f5f5f5; /* Light background on hover for subtle feedback */
-  }
+}
 
+/* Custom styling for header checkbox */
+.custom-data-grid .MuiDataGrid-columnHeader .MuiCheckbox-root {
+    color: #e1e1d4; /* Custom color for header checkbox when unchecked */
+}
 
-  /* Modal overlay */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
-  /* Modal content */
-  .modal-content {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    width: 400px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-    color: #333;
-    text-align: center;
-  }
-  
-  .modal-content h3 {
-    margin-bottom: 10px;
-  }
-  
-  .modal-content p {
-    margin-bottom: 20px;
-  }
-  
-  /* Modal buttons */
-  .modal-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-  }
-  
-  .action-button.secondary {
-    background-color: #cccccc;
-    color: #333;
-  }
-  
-  .action-button.secondary:hover {
-    background-color: #aaaaaa;
-  }
+.custom-data-grid .MuiDataGrid-columnHeader .MuiCheckbox-root.Mui-checked {
+    color: #ffffff; /* Custom color for header checkbox when checked */
+}
+
+/* Custom styling for row checkboxes */
+.custom-data-grid .MuiDataGrid-cellCheckbox .MuiCheckbox-root {
+    color: #737986; /* Custom color for row checkbox when unchecked */
+}
+
+.custom-data-grid .MuiDataGrid-cellCheckbox .MuiCheckbox-root.Mui-checked {
+    color: #5a5f6a; /* Custom color for row checkbox when checked */
+}
+
+/* Optional: Change hover effect for header checkbox */
+.custom-data-grid .MuiDataGrid-columnHeader .MuiCheckbox-root:hover {
+    background-color: #c2c2c2; /* Light gray background on hover */
+}
+
+/* Optional: Change hover effect for row checkboxes */
+.custom-data-grid .MuiDataGrid-cellCheckbox .MuiCheckbox-root:hover {
+    background-color: #e0e0e0; /* Slightly darker background on hover */
+}

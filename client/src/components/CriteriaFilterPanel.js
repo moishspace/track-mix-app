@@ -134,7 +134,7 @@ const CriteriaFilterPanel = ({ criteria, setCriteria, onUpdateSearch, initialTra
   </div>
 ))}
 
-      <button onClick={onUpdateSearch}>Search Similar</button>
+      <button onClick={onUpdateSearch}>Search</button>
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { searchTracks, searchSimilarTracks, fetchPlaylists, createPlaylist, addT
 import CriteriaFilterPanel from './CriteriaFilterPanel';
 import CreatePlaylistModal from './CreatePlaylistModal';
 
-const fetchDetailsWithDelays = async (trackIds, delayMs = 1000) => {
+const fetchDetailsWithDelays = async (trackIds, delayMs = 100) => {
   const details = {};
   for (const trackId of trackIds) {
     try {
@@ -105,7 +105,7 @@ const TrackSearch = ({ searchTerm }) => {
       setPlaylists(playlists.filter(p => p.id !== playlistToDelete.id));
       setPlaylistToDelete(null);
       setShowDeleteConfirm(false);
-      alert(`Playlist "${playlistToDelete.name}" deleted successfully!`);
+      // alert(`Playlist "${playlistToDelete.name}" deleted successfully!`);
     } catch (error) {
       console.error("Error deleting playlist:", error);
       alert("Failed to delete playlist.");
@@ -306,23 +306,6 @@ const TrackSearch = ({ searchTerm }) => {
   };
 
   // Preprocess filteredTracks to include trackDetails properties directly
-  // const processedTracks = filteredTracks.map(track => ({
-  //   ...track,
-  //   artistsName: track.artists?.[0]?.name || 'Unknown', // Flatten the first artist name
-  //   albumName: track.album?.name || 'Unknown', 
-  //   releaseDate: track.album?.release_date || 'Unknown',
-  //   danceability: trackDetails[track.id]?.danceability || '',
-  //   energy: trackDetails[track.id]?.energy || '',
-  //   tempo: trackDetails[track.id]?.tempo || '',
-  //   key: trackDetails[track.id]?.key || '',
-  //   valence: trackDetails[track.id]?.valence || '',
-  //   acousticness: trackDetails[track.id]?.acousticness || '',
-  //   instrumentalness: trackDetails[track.id]?.instrumentalness || '',
-  //   liveness: trackDetails[track.id]?.liveness || '',
-  //   genre: trackDetails[track.id]?.genres?.join(', ') || '',
-  // }));
-
-  // Preprocess filteredTracks to include trackDetails properties directly
   const processedTracks = filteredTracks.map(track => ({
     id: track.id,
     name: track.name || 'Unknown Track',
@@ -473,8 +456,13 @@ return (
             onRowSelectionModelChange={(newSelection) => handleSelectionChange(newSelection)}
             getRowId={(row) => row.track?.id || row.id}
             disableSelectionOnClick
+            disableColumnMenu
             onRowClick={(params) => handleRowClick(params.row)}
-            getRowClassName={(params) => (params.row.id === selectedTrack?.id ? 'selected-row' : '')}
+            getRowClassName={(params) => {
+              const isSelected = params.row.id === selectedTrack?.id;
+              const isEvenRow = params.indexRelativeToCurrentPage % 2 === 0;
+              return `${isSelected ? 'selected-row' : ''} ${isEvenRow ? 'even-row' : 'odd-row'}`.trim();
+            }}
             onRowContextMenu={(event, params) => {
               event.preventDefault();
               const row = filteredTracks.find((track) => track.id === params.id);
@@ -524,9 +512,9 @@ return (
                 <option key={playlist.id} value={playlist.id}>{playlist.name}</option>
               ))}
             </select>
-            <button className="action-button" onClick={openCreatePlaylistModal}>Create New Playlist</button>
-            <button className="action-button" onClick={() => openDeleteConfirm(playlists.find(p => p.id === selectedPlaylist))}> Delete Playlist</button>
             <button className="action-button" onClick={handleShowPlaylist}>Show Playlist</button>
+            <button className="action-button" onClick={openCreatePlaylistModal}>Create Playlist</button>
+            <button className="action-button" onClick={() => openDeleteConfirm(playlists.find(p => p.id === selectedPlaylist))}> Delete Playlist</button>
             {/* Delete Confirmation Modal */}
             {showDeleteConfirm && (
               <div className="modal-overlay">

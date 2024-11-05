@@ -1,34 +1,40 @@
 /* Filter Panel Styling */
 .filter-panel {
-  width: 350px; /* Adjust width as needed to ensure sliders fit side by side */
-  padding: 15px;
-  background-color: #ffffff; /* White background */
+  position: relative;
+  width: 350px;
+  padding: 0 15px 15px; /* Top padding removed, with side padding maintained for inner content */
+  background-color: #ffffff;
   border-radius: 8px;
   color: #333;
   font-family: 'Roboto', sans-serif;
   font-size: 0.8rem;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
   margin-right: 20px;
-  max-height:800px;
+  max-height: 800px;
+  box-sizing: border-box;
 }
 
 /* Headings */
 .filter-panel h3 {
-  background-color: #737986; /* Match table header background color */
-  font-family: 'Roboto', sans-serif; /* Consistent font */
-  font-size: 15px; /* Match table header font size */
-  font-weight: bolder; /* Bold font for emphasis */
-  letter-spacing: 0.5px; /* Slight letter spacing */
-  color: #fdfeff; /* Text color for header titles */
-  padding: 10px 15px; /* Add padding for spacing */
-  margin-bottom: 25px; /* Space below title */
-  border-radius: 4px; /* Slight rounding to match overall design */
-  text-align: center; /* Center-align text */
+  width: calc(100% + 30px); /* Expands to cover the entire width, accounting for panel padding */
+  margin-left: -15px; /* Shifts to the left to remove padding */
+  background-color: #f7f7f8; /* Light gray background */
+  color: #3c3c3d; /* Dark text color */
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 15px; /* Padding inside the title for spacing */
+  margin-top: 0; /* Remove top margin */
+  border-bottom: 1px solid #e0e0e1;
+  text-align: left;
+  box-sizing: border-box;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 }
 
 /* Filter Item */
 .filter-item {
-  margin-bottom: 20px; /* Spacing between filter items */
+  margin-top: 30px; /* Spacing between filter items */
 }
 
 /* Category Label Checkbox and Text */
@@ -36,18 +42,18 @@
   display: flex;
   align-items: center;
   font-family: 'Roboto', sans-serif; /* Match font-family with table */
-  font-size: 0.8rem; /* Adjust font size if needed */
+  font-size: 0.9rem; /* Adjust font size if needed */
   font-weight: 500;
   color: #333;
-  font-size: 0.8rem;
   text-align: left;
+  margin: 0 0 1px;
 }
 
 /* Genre Text Input */
 .filter-panel input[type="text"] {
   width: 100%; /* Full width to match sliders */
   padding: 5px;
-  margin-top: 8px; /* Match the space from label */
+  margin-top: 10px; /* Match the space from label */
   border: 1px solid #ddd;
   border-radius: 3px;
   font-size: 0.8rem;
@@ -70,22 +76,19 @@
   background-color: #fff; /* Background color when unchecked */
   cursor: pointer;
   position: relative;
+  transition: background-color 0.2s, box-shadow 0.2s; /* Smooth transition */
 }
 
 /* Checked state */
 .filter-item input[type="checkbox"]:checked {
-  background-color: #8e880d; /* Custom color when checked */
-  border-color: #8e880d; /* Optional: border color when checked */
+  background-color: #8f8f8f; /* Filled color when checked */
+  border-color: #a3a3ae; /* Optional: border color when checked */
+  box-shadow: inset 0px 0px 4px rgba(0, 0, 0, 0.2); /* Gives a pressed-in effect */
 }
 
-/* Checkmark icon when checked */
-.filter-item input[type="checkbox"]:checked::before {
-  content: '✓'; /* Checkmark symbol */
-  color: white;
-  font-size: 14px;
-  position: absolute;
-  top: -2px; /* Adjust positioning as needed */
-  left: 1px;
+/* Custom checkmark icon when checked */
+.filter-item input[type="checkbox"]::before {
+  content: none; /* Ensure no content is displayed */
 }
 
 /* Range Wrapper */
@@ -94,7 +97,7 @@
   flex-direction: column;
   align-items: center;
   gap: 4px; /* Space between label and sliders */
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 /* Label Wrapper for Min and Max */
@@ -133,7 +136,7 @@ input[type="range"] {
 /* Chrome, Safari, Edge Track */
 input[type="range"]::-webkit-slider-runnable-track {
   height: 2px !important;
-  background-color: #b6b9bf; /* Desired color for the track */
+  background-color: rgb(207, 207, 207); /* Desired color for the track */
   border-radius: 5px;
 }
 
@@ -167,19 +170,23 @@ input[type="range"]::-moz-range-track {
 
 /* Button Styling */
 .filter-panel button {
-  width: 100%;
-  margin-top: 20px;
-  padding: 10px;
-  font-size: 0.8rem;
+  position: absolute;
+  bottom: 20px; /* 20px from the bottom of the panel */
+  left: 15px;
+  right: 15px;
+  padding: 12px 0; /* Vertical padding for height and centered text */
+  font-size: 1rem;
   font-weight: bold;
-  color: white;
-  background-color: #aba30f;
-  border: none;
-  border-radius: 3px;
+  color: #696969; /* Darker color for a cleaner look */
+  background-color: #f0f0f0; /* Lighter, clean background similar to the title */
+  border: 1px solid #d3d3d3; /* Subtle border for button definition */
+  border-radius: 20px; /* Larger radius for a smoother look */
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  text-align: center;
 }
 
 .filter-panel button:hover {
-  background-color: #8e880d;
+  background-color: #e0e0e0; /* Slightly darker on hover */
+  color: #111111; /* Darker text color on hover */
 }

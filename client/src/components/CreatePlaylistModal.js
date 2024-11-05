@@ -17,17 +17,19 @@ const CreatePlaylistModal = ({ isOpen, onClose, onCreate }) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <h3>Create New Playlist</h3>
-        <label>
-          Name:
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
-        </label>
-        <label>
-          Description:
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
-        </label>
-        <div className="checkbox-container">
-          <span>Public:</span>
-          <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)}/>
+        <div className="modal-body">
+          <label>
+            Name:
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+          </label>
+          <label>
+            Description:
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+          </label>
+          <div className="checkbox-container">
+            <span>Public:</span>
+            <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)}/>
+          </div>
         </div>
         <div className="modal-buttons">
           <button onClick={handleCreate} className="action-button">Create</button>
