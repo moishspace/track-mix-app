@@ -25,11 +25,11 @@
 }
 
 /* Alternating row colors */
-.custom-data-grid .MuiDataGrid-row:nth-child(even) {
+.custom-data-grid .even-row {
     background-color: #e2e8f0 !important; /* Light gray for even rows */
 }
 
-.custom-data-grid .MuiDataGrid-row:nth-child(odd) {
+.custom-data-grid .odd-row {
     background-color: #f9fafb !important; /* Slightly lighter for odd rows */
 }
 

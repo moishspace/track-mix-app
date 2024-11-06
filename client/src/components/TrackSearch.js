@@ -511,7 +511,10 @@ return (
             </div>
           )}
         </div>
-        <SpotifyWebPlayer trackUri={selectedTrack ? [`spotify:track:${selectedTrack.id}`] : []} />
+        <SpotifyWebPlayer
+          playlistUris={filteredTracks.map(track => `spotify:track:${track.id}`)} // All track URIs
+          initialTrackIndex={filteredTracks.findIndex(track => track.id === selectedTrack?.id )} // Current track index
+        />
         {/* Move the button inside table-container to place it below the table */}
         <div className="button-container">
           <div className="button-group-container">

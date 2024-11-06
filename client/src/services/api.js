@@ -2,13 +2,22 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:3001/api';
 
-export const getAccessToken = async () => {
+export const getAccessToken = async (retries = 3) => {
   try {
     const response = await axios.get(`${API_URL}/get-access-token`);
     const accessToken = response.data.accessToken;
     localStorage.setItem('access_token', accessToken); // Store it for later use
     return accessToken;
   } catch (error) {
+    if (error.response && error.response.status === 403) {
+      console.warn("Access forbidden, possibly due to missing or invalid scopes or expired token");
+      throw error;
+    }
+    else if (error.response?.status === 429 && retries > 0) {
+      const retryAfter = parseInt(error.response.headers['retry-after'] || '1', 10) * 100; // Retry after `retry-after` or 1 second
+      await new Promise(resolve => setTimeout(resolve, retryAfter));
+      return getAccessToken(retries - 1);
+    }
     console.error('Error fetching access token:', error);
     throw error;
   }
