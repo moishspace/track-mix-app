@@ -15,9 +15,29 @@ const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
 
 let accessToken = null;
 let refreshToken = null;
+let accessTokenExpiresAt = null; 
 
-// Refresh access token
+
+async function ensureValidAccessToken(req, res, next) {
+  if (!accessToken || tokenIsExpired()) {
+    console.log("Access token expired or missing, refreshing...");
+    await refreshAccessToken();
+  }
+  next();
+}
+
+// Helper function to check if the access token is expired
+const tokenIsExpired = () => {
+  return !accessTokenExpiresAt || Date.now() >= accessTokenExpiresAt;
+};
+
+// Refresh access token using refresh token
 async function refreshAccessToken() {
+  if (!refreshToken) {
+    console.error('No refresh token available. User needs to re-authenticate.');
+    return;
+  }
+
   try {
     const response = await axios.post('https://accounts.spotify.com/api/token', null, {
       params: {
@@ -28,7 +48,10 @@ async function refreshAccessToken() {
       },
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
+
     accessToken = response.data.access_token;
+    accessTokenExpiresAt = Date.now() + response.data.expires_in * 1000; // Set expiration
+    console.log('Access token refreshed successfully.');
   } catch (error) {
     console.error('Error refreshing access token:', error.response?.data || error.message);
   }
@@ -70,7 +93,7 @@ const getTrackDetailsWithRetry = async (trackId, retries = 3, delayMs = 1000) =>
 
 // Routes
 app.get('/api/login', (req, res) => {
-  const scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private';
+  const scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-read-playback-state user-modify-playback-state streaming';
   const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${CLIENT_ID}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
   res.redirect(authUrl);
 });
@@ -90,7 +113,7 @@ app.get('/api/callback', async (req, res) => {
     });
 
     accessToken = response.data.access_token;
-    refreshToken = response.data.refresh_token;
+    refreshToken = response.data.refresh_token || refreshToken; // Save only if provided
     res.redirect('http://localhost:3000/?success=true');
   } catch (error) {
     console.error('Error exchanging code:', error.response?.data || error.message);
@@ -98,7 +121,19 @@ app.get('/api/callback', async (req, res) => {
   }
 });
 
-app.get('/api/search-tracks', async (req, res) => {
+app.get('/api/get-access-token', async (req, res) => {
+  try {
+    if (!accessToken || tokenIsExpired()) {
+      await refreshAccessToken();
+    }
+    res.json({ accessToken });
+  } catch (error) {
+    console.error('Error providing access token:', error.message);
+    res.status(500).json({ error: 'Failed to get access token' });
+  }
+});
+
+app.get('/api/search-tracks', ensureValidAccessToken, async (req, res) => {
   const query = req.query.query;
   if (!query) return res.status(400).json({ error: 'No search query provided' });
 
@@ -114,7 +149,7 @@ app.get('/api/search-tracks', async (req, res) => {
   }
 });
 
-app.get('/api/track-details-with-retry', async (req, res) => {
+app.get('/api/track-details-with-retry', ensureValidAccessToken, async (req, res) => {
   const trackId = req.query.trackId;
   if (!trackId) return res.status(400).json({ error: 'Track ID is required' });
 
@@ -130,8 +165,7 @@ app.get('/api/track-details-with-retry', async (req, res) => {
   }
 });
 
-// server.js or app.js
-app.get('/api/similar-tracks', async (req, res) => {
+app.get('/api/similar-tracks', ensureValidAccessToken, async (req, res) => {
   const {
     trackId,
     genre,
@@ -239,18 +273,14 @@ app.get('/api/similar-tracks', async (req, res) => {
 });
 
 
-app.get('/api/spotify-playlists', async (req, res) => {
-  if (!accessToken) {
-    return res.status(400).json({ error: 'Access token is required' });
-  }
-
+app.get('/api/spotify-playlists', ensureValidAccessToken, async (req, res) => {
   try {
     const response = await axios.get('https://api.spotify.com/v1/me/playlists', {
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
     });
-    res.json(response.data); // Send the playlists data back to the client
+    res.json(response.data);
   } catch (error) {
     if (error.response) {
       console.error(`Error fetching playlists: ${error.response.status}`, error.response.data);
@@ -262,10 +292,10 @@ app.get('/api/spotify-playlists', async (req, res) => {
   }
 });
 
-app.post('/api/create-playlist', async (req, res) => {
+app.post('/api/create-playlist', ensureValidAccessToken, async (req, res) => {
   const { name, description, public: isPublic } = req.body;
-  if (!accessToken) {
-    return res.status(400).json({ error: 'Access token is required' });
+  if ( name.length === 0) {
+    return res.status(400).json({ error: 'Playlist name is required' });
   }
 
   try {
@@ -287,12 +317,8 @@ app.post('/api/create-playlist', async (req, res) => {
   }
 });
 
-app.post('/api/add-tracks-to-playlist', async (req, res) => {
+app.post('/api/add-tracks-to-playlist', ensureValidAccessToken, async (req, res) => {
   const { playlistId, trackIds } = req.body;
-  if (!accessToken) {
-    return res.status(400).json({ error: 'Access token is required' });
-  }
-
   if (!playlistId || !trackIds || trackIds.length === 0) {
     return res.status(400).json({ error: 'Playlist ID and track IDs are required' });
   }
@@ -301,9 +327,7 @@ app.post('/api/add-tracks-to-playlist', async (req, res) => {
     const response = await axios.post(
       `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
       { uris: trackIds.map((id) => `spotify:track:${id}`) },
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
+      { headers: { Authorization: `Bearer ${accessToken}` }, }
     );
     res.json(response.data);
   } catch (error) {
@@ -312,12 +336,10 @@ app.post('/api/add-tracks-to-playlist', async (req, res) => {
   }
 });
 
-
-// Route to delete a playlist
-app.delete('/api/delete-playlist/:playlistId', async (req, res) => {
+app.delete('/api/delete-playlist/:playlistId', ensureValidAccessToken, async (req, res) => {
   const { playlistId } = req.params;
-  if (!accessToken) {
-    return res.status(400).json({ error: 'Access token is required' });
+  if (!playlistId) {
+    return res.status(400).json({ error: 'Playlist ID is required' });
   }
 
   try {
@@ -333,24 +355,19 @@ app.delete('/api/delete-playlist/:playlistId', async (req, res) => {
   }
 });
 
-// Route to fetch tracks from a specific playlist
-app.get('/api/playlist-tracks', async (req, res) => {
+app.get('/api/playlist-tracks', ensureValidAccessToken, async (req, res) => {
   const { playlistId } = req.query;
-  if (!accessToken) {
-    return res.status(400).json({ error: 'Access token is required' });
-  }
-
-  if (!playlistId ) {
+  if (!playlistId) {
     return res.status(400).json({ error: 'Playlist ID is required' });
   }
 
   try {
     const response = await axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
     res.json(response.data);
   } catch (error) {
-    console.error('Error fetching playlist tracks:', error.response?.data || error.message);
+    console.error('Error fetching playlist tracks:', error);
     res.status(error.response?.status || 500).json(error.response?.data || { error: 'Failed to fetch playlist tracks' });
   }
 });

@@ -4,6 +4,8 @@ import { DataGrid } from '@mui/x-data-grid';
 import { searchTracks, searchSimilarTracks, fetchPlaylists, createPlaylist, addTracksToPlaylist, deletePlaylist, fetchPlaylistTracks } from '../services/api';
 import CriteriaFilterPanel from './CriteriaFilterPanel';
 import CreatePlaylistModal from './CreatePlaylistModal';
+import SpotifyWebPlayer from './SpotifyWebPlayer';
+
 
 const fetchDetailsWithDelays = async (trackIds, delayMs = 100) => {
   const details = {};
@@ -62,6 +64,13 @@ const TrackSearch = ({ searchTerm }) => {
     };
     loadPlaylists();
   }, []);
+
+  // Function to handle the end of a track (for autoplaying next track, if desired)
+  const handleTrackEnd = () => {
+    const currentIndex = filteredTracks.findIndex(track => track.id === selectedTrack.id);
+    const nextIndex = (currentIndex + 1) % filteredTracks.length;
+    setSelectedTrack(filteredTracks[nextIndex]);
+  };
 
   const handleCreatePlaylist = async (playlistData) => {
     try {
@@ -190,8 +199,8 @@ const TrackSearch = ({ searchTerm }) => {
     };
 
     let similarTracks = await searchSimilarTracks(criteriaParams);
-    console.log('Search Criteria',criteriaParams);
-    console.log('Similar tracks received:', similarTracks);
+    // console.log('Search Criteria',criteriaParams);
+    // console.log('Similar tracks received:', similarTracks);
 
     const trackIndex = similarTracks.findIndex((track) => track.id === trackId);
     let originalTrack;
@@ -502,6 +511,7 @@ return (
             </div>
           )}
         </div>
+        <SpotifyWebPlayer trackUri={selectedTrack ? [`spotify:track:${selectedTrack.id}`] : []} />
         {/* Move the button inside table-container to place it below the table */}
         <div className="button-container">
           <div className="button-group-container">
