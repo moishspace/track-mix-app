@@ -1,6 +1,8 @@
 import './DataGridStyles.css';
 import React, { useState, useEffect, useMemo } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
+import { Checkbox } from '@mui/material'; 
+import ErrorBoundary from './ErrorBoundary';
 import { searchTracks, searchSimilarTracks, fetchPlaylists, createPlaylist, addTracksToPlaylist, deletePlaylist, fetchPlaylistTracks } from '../services/api';
 import CriteriaFilterPanel from './CriteriaFilterPanel';
 import CreatePlaylistModal from './CreatePlaylistModal';
@@ -32,6 +34,7 @@ const TrackSearch = ({ searchTerm }) => {
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTrackIds, setSelectedTrackIds] = useState([]);
+  const [selectAllChecked, setSelectAllChecked] = useState(false); 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [playlistToDelete, setPlaylistToDelete] = useState(null);
   
@@ -65,11 +68,38 @@ const TrackSearch = ({ searchTerm }) => {
     loadPlaylists();
   }, []);
 
-  // Function to handle the end of a track (for autoplaying next track, if desired)
-  const handleTrackEnd = () => {
-    const currentIndex = filteredTracks.findIndex(track => track.id === selectedTrack.id);
-    const nextIndex = (currentIndex + 1) % filteredTracks.length;
-    setSelectedTrack(filteredTracks[nextIndex]);
+  useEffect(() => {
+    if (searchTerm) {
+      searchTracks(searchTerm).then((tracks) => {
+        setFilteredTracks(tracks);
+        setSelectAllChecked(false); // Reset selection when new tracks are fetched
+      });
+    }
+  }, [searchTerm]);
+
+  useEffect(() => {
+    // Sync selectAllChecked with selectedTrackIds
+    setSelectAllChecked(
+      selectedTrackIds.length > 0 && selectedTrackIds.length === filteredTracks.length
+    );
+  }, [selectedTrackIds, filteredTracks]);
+
+  const handleCheckboxClick = (id) => {
+    setSelectedTrackIds((prev) => {
+      const newSelection = prev.includes(id)
+        ? prev.filter((selectedId) => selectedId !== id)
+        : [...prev, id];
+      return newSelection;
+    });
+  };
+
+  const handleSelectAllClick = () => {
+    if (selectAllChecked) {
+      setSelectedTrackIds([]);
+    } else {
+      setSelectedTrackIds(filteredTracks.map((track) => track.id)); // Select all
+    }
+    setSelectAllChecked(!selectAllChecked); 
   };
 
   const handleCreatePlaylist = async (playlistData) => {
@@ -335,6 +365,28 @@ const TrackSearch = ({ searchTerm }) => {
 
   const columns = useMemo(() => [
     {
+      field: 'select',
+      headerName: (
+        <Checkbox className="header-checkbox"
+          checked={selectAllChecked}
+          indeterminate={selectedTrackIds.length > 0 && selectedTrackIds.length < filteredTracks.length}
+          onChange={handleSelectAllClick}
+        />
+      ),
+      renderCell: (params) => (
+        <Checkbox className="row-checkbox"
+          checked={selectedTrackIds.includes(params.row.id)}
+          onClick={(event) => {
+            event.stopPropagation();
+            handleCheckboxClick(params.row.id);
+          }}
+        />
+      ),
+      sortable: false,
+      width: 50,
+      align: 'center',
+    },
+    {
       field: 'name',
       headerName: 'Track Name',
       minWidth: 150,
@@ -444,7 +496,7 @@ const TrackSearch = ({ searchTerm }) => {
       flex: 1,
       sortable: true,
     },
-], []);
+], [selectAllChecked, selectedTrackIds]);
 return (
   <div className="flex-container">
       <CriteriaFilterPanel 
@@ -461,7 +513,7 @@ return (
             columns={columns}
             pageSize={10}
             rowHeight={90}
-            checkboxSelection
+            /*checkboxSelection*/
             onRowSelectionModelChange={(newSelection) => handleSelectionChange(newSelection)}
             getRowId={(row) => row.track?.id || row.id}
             disableSelectionOnClick
@@ -511,10 +563,12 @@ return (
             </div>
           )}
         </div>
+        <ErrorBoundary>
         <SpotifyWebPlayer
           playlistUris={filteredTracks.map(track => `spotify:track:${track.id}`)} // All track URIs
           initialTrackIndex={filteredTracks.findIndex(track => track.id === selectedTrack?.id )} // Current track index
         />
+        </ErrorBoundary>
         {/* Move the button inside table-container to place it below the table */}
         <div className="button-container">
           <div className="button-group-container">

@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import SpotifyPlayer from 'react-spotify-web-playback';
 import { getAccessToken } from '../services/api';
 
-const SpotifyWebPlayer = ({ playlistUris = [], initialTrackIndex = 0 }) => { // Default to empty array if undefined
+const SpotifyWebPlayer = ({ playlistUris = [], initialTrackIndex = 0 }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [play, setPlay] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(initialTrackIndex);
+
+  // To track the previous index and avoid infinite re-render loop
+  const prevTrackIndexRef = useRef(initialTrackIndex);
 
   useEffect(() => {
     const fetchToken = async () => {
@@ -18,10 +21,11 @@ const SpotifyWebPlayer = ({ playlistUris = [], initialTrackIndex = 0 }) => { // 
   const uris = Array.isArray(playlistUris) ? playlistUris : [];
 
   useEffect(() => {
-    if (currentTrackIndex !== initialTrackIndex) {
+    if (prevTrackIndexRef.current !== initialTrackIndex) {
       setPlay(false); // Prevents autoplay when switching tracks
+      setCurrentTrackIndex(initialTrackIndex); // Update to the new track
+      prevTrackIndexRef.current = initialTrackIndex;
     }
-    setCurrentTrackIndex(initialTrackIndex); // Update to the new track
   }, [playlistUris, initialTrackIndex]);
 
   return (
@@ -33,7 +37,7 @@ const SpotifyWebPlayer = ({ playlistUris = [], initialTrackIndex = 0 }) => { // 
         <SpotifyPlayer
           token={accessToken}
           uris={uris} // Use the verified array
-          offset={initialTrackIndex}
+          offset={currentTrackIndex}
           play={play} // Controlled playback state
           showSaveIcon
           styles={{

@@ -14,7 +14,7 @@ export const getAccessToken = async (retries = 3) => {
       throw error;
     }
     else if (error.response?.status === 429 && retries > 0) {
-      const retryAfter = parseInt(error.response.headers['retry-after'] || '1', 10) * 100; // Retry after `retry-after` or 1 second
+      const retryAfter = parseInt(error.response.headers['retry-after'] || '1', 10) * 1000; // Retry after `retry-after` or 1 second
       await new Promise(resolve => setTimeout(resolve, retryAfter));
       return getAccessToken(retries - 1);
     }

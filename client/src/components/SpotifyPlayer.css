@@ -1,0 +1,42 @@
+.spotify-player-container {
+  background-color: #1e1e1e;
+  padding: 20px;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.track-title {
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.time-slider-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.elapsed-time,
+.total-time {
+  font-size: 0.875em;
+  color: #8e8d8d;
+  width: 40px; /* Fixed width for consistent alignment */
+  text-align: center;
+}
+
+.MuiSlider-root {
+  width: 60%; /* Makes the slider smaller */
+  margin: 0 8px; /* 8px space on each side */
+}
+
+.player-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}

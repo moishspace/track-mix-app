@@ -90,7 +90,7 @@
     flex-direction: column; /* Stack items vertically */
     align-items: stretch; /* Ensure full width */
     width: 100%; /* Ensure container takes full width */
-    max-height: 800px; /* Adjust height as needed */
+    max-height: 100%; /* Adjust height as needed */
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -101,7 +101,7 @@
 /* Custom Data Grid Styling */
 .custom-data-grid {
     width: 100%;
-    height: calc(100% - 60px); /* Adjust height to fit buttons */
+    height: 100%;
     font-family: 'Roboto', sans-serif;
     font-size: 14px;
     color: #333333;
@@ -183,30 +183,51 @@
     background-color: #f5f5f5; /* Light background on hover for subtle feedback */
 }
 
+
 /* Custom styling for header checkbox */
-.custom-data-grid .MuiDataGrid-columnHeader .MuiCheckbox-root {
-    color: #e1e1d4; /* Custom color for header checkbox when unchecked */
+.header-checkbox {
+    color: #e1e1d4 !important; /* Default unchecked color */
 }
 
-.custom-data-grid .MuiDataGrid-columnHeader .MuiCheckbox-root.Mui-checked {
-    color: #ffffff; /* Custom color for header checkbox when checked */
+.header-checkbox.Mui-checked {
+    color: #ffffff !important; /* Checked color */
 }
 
 /* Custom styling for row checkboxes */
-.custom-data-grid .MuiDataGrid-cellCheckbox .MuiCheckbox-root {
-    color: #737986; /* Custom color for row checkbox when unchecked */
+.row-checkbox {
+    color: #737986 !important; /* Default unchecked color */
 }
 
-.custom-data-grid .MuiDataGrid-cellCheckbox .MuiCheckbox-root.Mui-checked {
-    color: #5a5f6a; /* Custom color for row checkbox when checked */
+.row-checkbox.Mui-checked {
+    color: #5a5f6a !important; /* Checked color */
 }
 
-/* Optional: Change hover effect for header checkbox */
-.custom-data-grid .MuiDataGrid-columnHeader .MuiCheckbox-root:hover {
-    background-color: #c2c2c2; /* Light gray background on hover */
+/* Remove hover effect for header checkbox */
+.header-checkbox:hover {
+    background-color: transparent !important;
+    box-shadow: none !important;
 }
 
-/* Optional: Change hover effect for row checkboxes */
-.custom-data-grid .MuiDataGrid-cellCheckbox .MuiCheckbox-root:hover {
-    background-color: #e0e0e0; /* Slightly darker background on hover */
+/* Remove hover effect for row checkboxes */
+.row-checkbox:hover {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Remove focus outline and shadow for header checkbox */
+.header-checkbox:focus, 
+.header-checkbox:active,
+.header-checkbox .MuiTouchRipple-root {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+/* Remove focus outline and shadow for row checkboxes */
+.row-checkbox:focus, 
+.row-checkbox:active,
+.row-checkbox .MuiTouchRipple-root {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
 }
