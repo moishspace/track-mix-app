@@ -8,7 +8,6 @@ import CriteriaFilterPanel from './CriteriaFilterPanel';
 import CreatePlaylistModal from './CreatePlaylistModal';
 import SpotifyWebPlayer from './SpotifyWebPlayer';
 
-
 const fetchDetailsWithDelays = async (trackIds, delayMs = 100) => {
   const details = {};
   for (const trackId of trackIds) {
@@ -43,7 +42,6 @@ const TrackSearch = ({ searchTerm }) => {
 
   useEffect(() => {
     if (searchTerm) {
-      // console.log(`Searching for tracks with term: ${searchTerm}`);
       searchTracks(searchTerm)
         .then(async (tracks) => {
           setFilteredTracks(tracks);
@@ -136,15 +134,12 @@ const TrackSearch = ({ searchTerm }) => {
     }
   };
 
-
   const handleDeletePlaylist = async () => {
     try {
-      // console.log('Playlist to delete:', playlistToDelete);
       await deletePlaylist(playlistToDelete.id);
       setPlaylists(playlists.filter(p => p.id !== playlistToDelete.id));
       setPlaylistToDelete(null);
       setShowDeleteConfirm(false);
-      // alert(`Playlist "${playlistToDelete.name}" deleted successfully!`);
     } catch (error) {
       console.error("Error deleting playlist:", error);
       alert("Failed to delete playlist.");
@@ -171,16 +166,16 @@ const TrackSearch = ({ searchTerm }) => {
       const playlistData = await fetchPlaylistTracks(selectedPlaylist);
       const processedTracks = playlistData.map(item => ({
         id: item.track?.id || 'unknown-id',
-        name: item.track?.name || 'Unknown Track',
-        artistsName: item.track?.artists ? item.track.artists.map((artist) => artist.name).join(', ') : 'Unknown Artist',
-        albumName: item.track?.album?.name || 'Unknown Album',
-        releaseDate: item.track?.album?.release_date || 'Unknown Date',
+        name: item.track?.name || '',
+        artistsName: item.track?.artists ? item.track.artists.map((artist) => artist.name).join(', ') : '',
+        albumName: item.track?.album?.name || '',
+        releaseDate: item.track?.album?.release_date || '',
         preview_url: item.track?.preview_url || null,
+        albumImageUrl: item.track?.album?.images[0]?.url || null,
       }));
       
       setFilteredTracks(processedTracks);
   
-      // Fetch additional track details if missing
       const trackIds = processedTracks.map(track => track.id);
       const detailsObject = await fetchDetailsWithDelays(trackIds);
       setTrackDetails((prevDetails) => ({ ...prevDetails, ...detailsObject }));
@@ -293,6 +288,7 @@ const TrackSearch = ({ searchTerm }) => {
       Artist: track.artists?.[0]?.name || 'Unknown',
       Album: track.album?.name || 'Unknown',
       ReleaseDate: track.album?.release_date || 'Unknown',
+      Duration: track.duration_ms ? `${Math.floor(track.duration_ms / 60000)}:${String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, '0')}` : 'N/A', 
       Tempo: trackDetails[track.id]?.tempo || '',
       Key: trackDetails[track.id]?.key || '',
       Danceability: trackDetails[track.id]?.danceability || '',
@@ -348,13 +344,15 @@ const TrackSearch = ({ searchTerm }) => {
   const processedTracks = filteredTracks.map(track => ({
     id: track.id,
     name: track.name || 'Unknown Track',
-    artistsName: track.artistsName || (track.artists ? track.artists.map(artist => artist.name).join(', ') : 'Unknown Artist'),
-    albumName: track.albumName || track.album?.name || 'Unknown Album',
-    releaseDate: track.releaseDate || track.album?.release_date || 'Unknown Date',
+    artistsName: track.artistsName || (track.artists ? track.artists.map(artist => artist.name).join(', ') : ''),
+    albumName: track.albumName || track.album?.name || '',
+    releaseDate: track.releaseDate || track.album?.release_date || '',
+    albumImageUrl: track.albumImageUrl || '',
     preview_url: track.preview_url || null,
+    duration: trackDetails[track.id]?.duration_ms ? `${Math.floor(trackDetails[track.id]?.duration_ms / 60000)}:${String(Math.floor((trackDetails[track.id]?.duration_ms % 60000) / 1000)).padStart(2, '0')}` : 'N/A', 
     danceability: trackDetails[track.id]?.danceability || '',
     energy: trackDetails[track.id]?.energy || '',
-    tempo: trackDetails[track.id]?.tempo || '',
+    tempo: trackDetails[track.id]?.tempo ? Math.round(trackDetails[track.id].tempo) : '', 
     key: trackDetails[track.id]?.key || '',
     valence: trackDetails[track.id]?.valence || '',
     acousticness: trackDetails[track.id]?.acousticness || '',
@@ -387,30 +385,25 @@ const TrackSearch = ({ searchTerm }) => {
       align: 'center',
     },
     {
+      field: 'albumImageUrl',
+      headerName: 'Album Art',
+      minWidth: 80,
+      flex: 1,
+      sortable: false,
+      renderCell: (params) => (
+        <img
+          src={params.row.albumImageUrl || 'default-placeholder-image-url'} // Use a placeholder if no image
+          alt="Album Art"
+          style={{ width: 60, height: 60, borderRadius: '4px' }}
+        />
+      ),
+    },
+    {
       field: 'name',
       headerName: 'Track Name',
       minWidth: 150,
       flex: 1,
       sortable: true
-    },
-    {
-      field: 'preview',
-      headerName: 'Preview',
-      minWidth: 400,
-      flex: 1,
-      sortable: false, // Sorting is not meaningful here due to the iframe
-      renderCell: (params) => (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-          <iframe
-            src={`https://open.spotify.com/embed/track/${params.row.id}`}
-            width="380"
-            height="80"
-            allow="encrypted-media"
-            style={{ border: 'none' }}
-            title={`Spotify preview of ${params.row.id}`}
-          ></iframe>
-        </div>
-      ),
     },
     {
       field: 'artistsName',
@@ -437,6 +430,13 @@ const TrackSearch = ({ searchTerm }) => {
       field: 'genre',
       headerName: 'Genre',
       minWidth: 140,
+      flex: 1,
+      sortable: true,
+    },
+    {
+      field: 'duration',
+      headerName: 'Duration',
+      minWidth: 100,
       flex: 1,
       sortable: true,
     },
@@ -496,9 +496,10 @@ const TrackSearch = ({ searchTerm }) => {
       flex: 1,
       sortable: true,
     },
-], [selectAllChecked, selectedTrackIds]);
-return (
-  <div className="flex-container">
+  ], [selectAllChecked, selectedTrackIds]);
+
+  return (
+    <div className="flex-container">
       <CriteriaFilterPanel 
         criteria={criteria} 
         setCriteria={setCriteria} 
@@ -514,11 +515,14 @@ return (
             pageSize={10}
             rowHeight={90}
             /*checkboxSelection*/
-            onRowSelectionModelChange={(newSelection) => handleSelectionChange(newSelection)}
             getRowId={(row) => row.track?.id || row.id}
             disableSelectionOnClick
             disableColumnMenu
-            onRowClick={(params) => handleRowClick(params.row)}
+            onRowClick={(params, event) => {
+              if (!event.target.closest('input[type="checkbox"]')) {
+                handleRowClick(params.row);
+              }
+            }}
             getRowClassName={(params) => {
               const isSelected = params.row.id === selectedTrack?.id;
               const isEvenRow = params.indexRelativeToCurrentPage % 2 === 0;
