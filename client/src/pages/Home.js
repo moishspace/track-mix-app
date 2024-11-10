@@ -1,14 +1,23 @@
-// Home.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import TrackSearch from '../components/TrackSearch';
+import './HomeStyle.css';
 
 const Home = ({ isAuthorized, setIsAuthorized }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [submittedTerm, setSubmittedTerm] = useState('');
+  const [searchHistory, setSearchHistory] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef(null);
 
   const location = useLocation();
+
+  // Load search history from localStorage on component mount
+  useEffect(() => {
+    const storedHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    setSearchHistory(storedHistory);
+  }, []);
 
   // Check for the success or error parameters in URL
   useEffect(() => {
@@ -17,16 +26,63 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
       setIsAuthorized(true);
     } else if (params.get('error')) {
       console.error('Authorization failed. Please try again.');
-      toast.error('Authorization failed. Please try again.'); // Replace alert with toast
+      toast.error('Authorization failed. Please try again.');
     }
   }, [location.search, setIsAuthorized]);
 
-  const handleInputChange = (e) => setSearchTerm(e.target.value);
+  // Close suggestions list on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (inputRef.current && !inputRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
 
-  const handleSearchSubmit = () => setSubmittedTerm(searchTerm);
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  const handleInputChange = (e) => {
+    setSearchTerm(e.target.value);
+    setShowSuggestions(true);
+  };
+
+  const handleSearchSubmit = () => {
+    if (searchTerm.trim() === '') return;
+
+    setSubmittedTerm(searchTerm);
+    setShowSuggestions(false);
+
+    // Update search history
+    const updatedHistory = [searchTerm, ...searchHistory.filter((term) => term !== searchTerm)].slice(0, 10);
+    setSearchHistory(updatedHistory);
+
+    // Save updated history to localStorage
+    localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleSearchSubmit();
+  };
+
+  const handleSuggestionClick = (term) => {
+    setSearchTerm(term);
+    setSubmittedTerm(term);
+    setShowSuggestions(false);
+  };
+
+  const handleClearHistory = () => {
+    setSearchHistory([]);
+    localStorage.removeItem('searchHistory');
+    setShowSuggestions(false);
+  };
+
+  const handleRemoveItem = (term) => {
+    const updatedHistory = searchHistory.filter((item) => item !== term);
+    setSearchHistory(updatedHistory);
+    localStorage.setItem('searchHistory', JSON.stringify(updatedHistory));
   };
 
   const handleLogin = () => {
@@ -34,11 +90,13 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
   };
 
   return (
-    <div>
+    <div className="home-container">
       <h1 className="title">Music Similarity App</h1>
       {!isAuthorized ? (
-      <p className="description">Discover music based on rhythm and style. Login to start exploring!</p>
-      ) : (<p className="description">Search for track by entering a track name, artist, or album below.</p>) }
+        <p className="description">Discover music based on rhythm and style. Login to start exploring!</p>
+      ) : (
+        <p className="description">Search for a track by entering a track name, artist, or album below.</p>
+      )}
 
       {!isAuthorized ? (
         <button className="login-button" onClick={handleLogin}>
@@ -46,8 +104,9 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
         </button>
       ) : (
         <div className="search-container">
-          <div className="search-bar">
+          <div className="search-bar" style={{ position: 'relative' }}>
             <input
+              ref={inputRef}
               type="text"
               placeholder="Enter track, artist, or album..."
               value={searchTerm}
@@ -56,8 +115,28 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
               className="text-input"
             />
             <button onClick={handleSearchSubmit} className="search-button">
-              Search
+              <i className="fas fa-search"></i>
             </button>
+
+            {/* Autocomplete Suggestions */}
+            {showSuggestions && searchHistory.length > 0 && (
+              <div className="suggestions-dropdown">
+                {searchHistory.map((term, index) => (
+                  <div key={index} className="suggestion-item">
+                    <span onClick={() => handleSuggestionClick(term)} className="suggestion-text">
+                      {term}
+                    </span>
+                    <i
+                      className="fas fa-trash remove-icon"
+                      onClick={() => handleRemoveItem(term)}
+                    ></i>
+                  </div>
+                ))}
+                <div className="clear-history" onClick={handleClearHistory}>
+                  Clear List
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

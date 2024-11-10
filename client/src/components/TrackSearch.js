@@ -3,25 +3,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { Checkbox } from '@mui/material'; 
 import ErrorBoundary from './ErrorBoundary';
-import { searchTracks, searchSimilarTracks, fetchPlaylists, createPlaylist, addTracksToPlaylist, deletePlaylist, fetchPlaylistTracks } from '../services/api';
+import { searchTracks, fetchDetailsWithDelays, searchSimilarTracks, fetchPlaylists, createPlaylist, addTracksToPlaylist, deletePlaylist, fetchPlaylistTracks } from '../services/api';
 import CriteriaFilterPanel from './CriteriaFilterPanel';
 import CreatePlaylistModal from './CreatePlaylistModal';
 import SpotifyWebPlayer from './SpotifyWebPlayer';
-
-const fetchDetailsWithDelays = async (trackIds, delayMs = 100) => {
-  const details = {};
-  for (const trackId of trackIds) {
-    try {
-      const response = await fetch(`http://localhost:3001/api/track-details-with-retry?trackId=${trackId}`);
-      details[trackId] = await response.json();
-      // console.log(`Fetched details for track ${trackId}`); // Simplified logging
-    } catch (error) {
-      console.error(`Error fetching details for track ${trackId}:`, error);
-    }
-    await new Promise((resolve) => setTimeout(resolve, delayMs));
-  }
-  return details;
-};
 
 const TrackSearch = ({ searchTerm }) => {
   const [filteredTracks, setFilteredTracks] = useState([]);
@@ -42,14 +27,33 @@ const TrackSearch = ({ searchTerm }) => {
 
   useEffect(() => {
     if (searchTerm) {
-      searchTracks(searchTerm)
-        .then(async (tracks) => {
-          setFilteredTracks(tracks);
+      (async () => {
+        try {
+          const tracks = await searchTracks(searchTerm);
+          if (tracks.length === 0) {
+            setFilteredTracks([]);
+            setSelectAllChecked(false);
+            return;
+          }
+  
+          // Fetch full details for all tracks
           const trackIds = tracks.map((track) => track.id);
           const detailsObject = await fetchDetailsWithDelays(trackIds);
+  
+          // Create updated tracks list with the full details
+          const updatedTracks = tracks.map((track) => ({
+            ...track,
+            ...detailsObject[track.id],
+          }));
+  
+          // Update the state with the enhanced tracks list
+          setFilteredTracks(updatedTracks);
+          setSelectAllChecked(false);
           setTrackDetails(detailsObject);
-        })
-        .catch((error) => console.error('Error fetching tracks:', error));
+        } catch (error) {
+          console.error('Error fetching tracks:', error);
+        }
+      })();
     }
   }, [searchTerm]);
 
@@ -65,15 +69,6 @@ const TrackSearch = ({ searchTerm }) => {
     };
     loadPlaylists();
   }, []);
-
-  useEffect(() => {
-    if (searchTerm) {
-      searchTracks(searchTerm).then((tracks) => {
-        setFilteredTracks(tracks);
-        setSelectAllChecked(false); // Reset selection when new tracks are fetched
-      });
-    }
-  }, [searchTerm]);
 
   useEffect(() => {
     // Sync selectAllChecked with selectedTrackIds
@@ -173,13 +168,12 @@ const TrackSearch = ({ searchTerm }) => {
         preview_url: item.track?.preview_url || null,
         albumImageUrl: item.track?.album?.images[0]?.url || null,
       }));
-      
+
       setFilteredTracks(processedTracks);
   
       const trackIds = processedTracks.map(track => track.id);
       const detailsObject = await fetchDetailsWithDelays(trackIds);
       setTrackDetails((prevDetails) => ({ ...prevDetails, ...detailsObject }));
-      
     } catch (error) {
       console.error("Error fetching playlist tracks:", error);
     }
@@ -341,25 +335,49 @@ const TrackSearch = ({ searchTerm }) => {
   };
 
   // Preprocess filteredTracks to include trackDetails properties directly
-  const processedTracks = filteredTracks.map(track => ({
-    id: track.id,
-    name: track.name || 'Unknown Track',
-    artistsName: track.artistsName || (track.artists ? track.artists.map(artist => artist.name).join(', ') : ''),
-    albumName: track.albumName || track.album?.name || '',
-    releaseDate: track.releaseDate || track.album?.release_date || '',
-    albumImageUrl: track.albumImageUrl || '',
-    preview_url: track.preview_url || null,
-    duration: trackDetails[track.id]?.duration_ms ? `${Math.floor(trackDetails[track.id]?.duration_ms / 60000)}:${String(Math.floor((trackDetails[track.id]?.duration_ms % 60000) / 1000)).padStart(2, '0')}` : 'N/A', 
-    danceability: trackDetails[track.id]?.danceability || '',
-    energy: trackDetails[track.id]?.energy || '',
-    tempo: trackDetails[track.id]?.tempo ? Math.round(trackDetails[track.id].tempo) : '', 
-    key: trackDetails[track.id]?.key || '',
-    valence: trackDetails[track.id]?.valence || '',
-    acousticness: trackDetails[track.id]?.acousticness || '',
-    instrumentalness: trackDetails[track.id]?.instrumentalness || '',
-    liveness: trackDetails[track.id]?.liveness || '',
-    genre: trackDetails[track.id]?.genres?.join(', ') || '',
-  }));
+  // const processedTracks = filteredTracks.map(track => ({
+  //   id: track.id,
+  //   name: track.name || 'Unknown Track',
+  //   artistsName: track.artistsName || (track.artists ? track.artists.map(artist => artist.name).join(', ') : ''),
+  //   albumName: track.albumName || track.album?.name || '',
+  //   releaseDate: track.releaseDate || track.album?.release_date || '',
+  //   albumImageUrl: track.albumImageUrl  || '',
+  //   preview_url: track.preview_url || null,
+  //   duration: trackDetails[track.id]?.duration_ms ? `${Math.floor(trackDetails[track.id]?.duration_ms / 60000)}:${String(Math.floor((trackDetails[track.id]?.duration_ms % 60000) / 1000)).padStart(2, '0')}` : 'N/A', 
+  //   danceability: trackDetails[track.id]?.danceability || '',
+  //   energy: trackDetails[track.id]?.energy || '',
+  //   tempo: trackDetails[track.id]?.tempo ? Math.round(trackDetails[track.id].tempo) : '', 
+  //   key: trackDetails[track.id]?.key || '',
+  //   valence: trackDetails[track.id]?.valence || '',
+  //   acousticness: trackDetails[track.id]?.acousticness || '',
+  //   instrumentalness: trackDetails[track.id]?.instrumentalness || '',
+  //   liveness: trackDetails[track.id]?.liveness || '',
+  //   genre: trackDetails[track.id]?.genres?.join(', ') || '',
+  // }));
+
+  const processedTracks = filteredTracks.map((track) => {
+    // console.log('Processing track:', track);
+   
+    return {
+      id: track.id,
+      name: track.name || 'Unknown Track',
+      artistsName: track.artistsName || (track.artists ? track.artists.map((artist) => artist.name).join(', ') : ''),
+      albumName: track.albumName || track.album?.name || '',
+      releaseDate: track.releaseDate || track.album?.release_date || '',
+      albumImageUrl: track.albumImageUrl || track.album?.images[0]?.url || '',
+      preview_url: track.preview_url || null,
+      duration: trackDetails[track.id]?.duration_ms ? `${Math.floor(trackDetails[track.id]?.duration_ms / 60000)}:${String( Math.floor((trackDetails[track.id]?.duration_ms % 60000) / 1000)).padStart(2, '0')}` : 'N/A',
+      danceability: trackDetails[track.id]?.danceability || '',
+      energy: trackDetails[track.id]?.energy || '',
+      tempo: trackDetails[track.id]?.tempo ? Math.round(trackDetails[track.id].tempo) : '',
+      key: trackDetails[track.id]?.key || '',
+      valence: trackDetails[track.id]?.valence || '',
+      acousticness: trackDetails[track.id]?.acousticness || '',
+      instrumentalness: trackDetails[track.id]?.instrumentalness || '',
+      liveness: trackDetails[track.id]?.liveness || '',
+      genre: trackDetails[track.id]?.genres?.join(', ') || '',
+    };
+  });
 
   const columns = useMemo(() => [
     {
@@ -510,6 +528,7 @@ const TrackSearch = ({ searchTerm }) => {
         <div className="custom-data-grid">
           <DataGrid
             className="custom-data-grid"
+            key={filteredTracks.length}
             rows={processedTracks}
             columns={columns}
             pageSize={10}
