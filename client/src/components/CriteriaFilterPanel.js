@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import './CriteriaFilterPanelStyle.css';
+import '../styles/CriteriaFilterPanelStyle.css';
 
-const CriteriaFilterPanel = ({ criteria, setCriteria, onUpdateSearch, initialTrackDetails }) => {
+const CriteriaFilterPanel = ({ criteria, setCriteria, onSearchSimilar, initialTrackDetails }) => {
   useEffect(() => {
     if (initialTrackDetails) {
       setCriteria({
@@ -144,7 +144,7 @@ const CriteriaFilterPanel = ({ criteria, setCriteria, onUpdateSearch, initialTra
   </div>
 ))}
 
-      <button onClick={onUpdateSearch}>Search</button>
+      <button onClick={onSearchSimilar}>Search</button>
     </div>
   );
 };

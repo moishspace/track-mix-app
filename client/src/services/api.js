@@ -49,14 +49,15 @@ export const searchTracks = async (query) => {
   );
 };
 
-export const getTrackDetails = async (trackId) => {
-  try {
-    const response = await axios.get(`${API_URL}/track-details-with-retry`, { params: { trackId } });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching track details:', error);
-    throw error;
-  }
+export const getTrackDetails = async (query) => {
+  return withRetry(() =>
+    axios.get(`${API_URL}/track-details-with-retry`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`, // Use the latest token from local storage
+      },
+      params: { query },
+    }).then(response => response.data)
+  );
 };
 
 export const searchSimilarTracks = async (criteria) => {
@@ -105,6 +106,17 @@ export const fetchPlaylists = async () => {
   );
 };
 
+export const fetchPlaylistTracks = async (playlistId) => {
+  return withRetry(() =>
+    axios.get(`${API_URL}/playlist-tracks`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`, // Use the latest token from local storage
+      },
+      params: { playlistId },
+    }).then(response => response.data.items) // Assuming `items` contains the track data
+  );
+};
+
 export const createPlaylist = async ({ name, description, isPublic }) => {
   return withRetry(() =>
     axios.post(
@@ -141,13 +153,61 @@ export const deletePlaylist = async (playlistId) => {
   );
 };
 
-export const fetchPlaylistTracks = async (playlistId) => {
+export const fetchTrackDetails = async (trackId) => {
   return withRetry(() =>
-    axios.get(`${API_URL}/playlist-tracks`, {
+    axios.get(`${API_URL}/track-details-with-retry`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+      params: { trackId },
+    }).then(response => response.data)
+  );
+};
+
+export const fetchTrackAnalysis = async (trackId) => {
+  return withRetry(() =>
+    axios.get(`${API_URL}/track-analysis`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+      params: { trackId },
+    }).then(response => response.data)
+  );
+};
+
+export const fetchAudioFeatures = async (trackId) => {
+  return withRetry(() =>
+    axios.get(`${API_URL}/audio-features`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`, // Use the latest token from local storage
       },
-      params: { playlistId },
-    }).then(response => response.data.items) // Assuming `items` contains the track data
+      params: { trackId },
+    }).then(response => response.data)
   );
+};
+
+
+export const fetchAndUpdateTrackDetails = async (trackId, setTrackDetails) => {
+  if (!trackId) {
+    console.error("Track ID is required for fetching details.");
+    return;
+  }
+
+  try {
+    // Fetch track details from the backend
+    const trackResponse = await axios.get(`${API_URL}/fetch_and_update_track_details`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
+      params: { trackId },
+    });
+
+    const trackDetails = trackResponse.data;
+
+    // Update the state with the combined details, including analysis
+    setTrackDetails((prevDetails) => ({
+      ...prevDetails,
+      [trackId]: {
+        ...prevDetails[trackId],
+        ...trackDetails,
+        analysis: trackDetails.analysis || prevDetails[trackId]?.analysis || {}, // Ensure analysis is preserved
+      },
+    }));
+  } catch (error) {
+    console.error(`Error fetching and updating track details for ${trackId}:`, error.response?.data || error.message);
+  }
 };

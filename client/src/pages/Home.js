@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import TrackSearch from '../components/TrackSearch';
 import './HomeStyle.css';
+import { gridColumnGroupsLookupSelector } from '@mui/x-data-grid';
 
 const Home = ({ isAuthorized, setIsAuthorized }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,7 +11,6 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
   const [searchHistory, setSearchHistory] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef(null);
-
   const location = useLocation();
 
   // Load search history from localStorage on component mount
@@ -42,7 +42,7 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, []);
+  }, [searchTerm]);
 
   const handleInputChange = (e) => {
     setSearchTerm(e.target.value);

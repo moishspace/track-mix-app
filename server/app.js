@@ -16,7 +16,8 @@ const REDIRECT_URI = process.env.SPOTIFY_REDIRECT_URI;
 let accessToken = null;
 let refreshToken = null;
 let accessTokenExpiresAt = null; 
-
+let isRateLimited = false;
+let rateLimitResetTime = null;
 
 async function ensureValidAccessToken(req, res, next) {
   if (!accessToken || tokenIsExpired()) {
@@ -38,6 +39,10 @@ async function refreshAccessToken() {
     return;
   }
 
+  if (isRateLimited && Date.now() < rateLimitResetTime) {
+    await new Promise((resolve) => setTimeout(resolve, rateLimitResetTime - Date.now()));
+  }
+
   try {
     const response = await axios.post('https://accounts.spotify.com/api/token', null, {
       params: {
@@ -50,22 +55,39 @@ async function refreshAccessToken() {
     });
 
     accessToken = response.data.access_token;
-    accessTokenExpiresAt = Date.now() + response.data.expires_in * 1000; // Set expiration
+    accessTokenExpiresAt = Date.now() + response.data.expires_in * 1000;
     console.log('Access token refreshed successfully.');
   } catch (error) {
-    console.error('Error refreshing access token:', error.response?.data || error.message);
+    if (error.response?.status === 429) {
+      const retryAfter = parseInt(error.response.headers['retry-after'], 10) * 1000;
+      rateLimitResetTime = Date.now() + retryAfter;
+      isRateLimited = true;
+      console.error(`Rate limited. Retry after ${retryAfter / 1000} seconds.`);
+      await new Promise((resolve) => setTimeout(resolve, retryAfter));
+    } else {
+      console.error('Error refreshing access token:', error.response?.data || error.message);
+    }
   }
 }
 
-// Consolidated function to fetch track details with genre and retry logic
-const getTrackDetailsWithRetry = async (trackId, retries = 3, delayMs = 1000) => {
+const getTrackDetailsWithRetry = async (trackId, retries = 5, delayMs = 2000) => {
+  if (isRateLimited && Date.now() < rateLimitResetTime) {
+    const waitTime = rateLimitResetTime - Date.now();
+    await new Promise((resolve) => setTimeout(resolve, waitTime));
+  }
+
   try {
-    const featuresResponse = await axios.get(`https://api.spotify.com/v1/audio-features/${trackId}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-    const trackResponse = await axios.get(`https://api.spotify.com/v1/tracks/${trackId}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const [featuresResponse, trackResponse, analysisResponse] = await Promise.all([
+      axios.get(`https://api.spotify.com/v1/audio-features/${trackId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+      axios.get(`https://api.spotify.com/v1/tracks/${trackId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+      axios.get(`https://api.spotify.com/v1/audio-analysis/${trackId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+    ]);
 
     const artists = trackResponse.data.artists;
     let genres = [];
@@ -80,14 +102,71 @@ const getTrackDetailsWithRetry = async (trackId, retries = 3, delayMs = 1000) =>
       }
     }
 
-    return { ...featuresResponse.data, genres };
+    return {
+      ...featuresResponse.data,
+      ...trackResponse.data,
+      analysis: analysisResponse.data,
+      genres,
+    };
   } catch (error) {
-    if (error.response?.status === 429 && retries > 0) {
-      const retryAfter = parseInt(error.response.headers['retry-after'] || delayMs, 10) * 1000;
-      await new Promise((resolve) => setTimeout(resolve, retryAfter));
+    if (error.response?.status === 429) {
+      const retryAfter = parseInt(error.response.headers['retry-after'], 10);
+      const waitTime = isNaN(retryAfter) ? delayMs : retryAfter * 1000;
+
+      rateLimitResetTime = Date.now() + waitTime;
+      isRateLimited = true;
+
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+
+      if (retries > 0) {
+        return getTrackDetailsWithRetry(trackId, retries - 1, delayMs * 2);
+      } else {
+        console.warn(`Maximum retries reached for track ID ${trackId}. Entering cooldown period.`);
+        rateLimitResetTime = Date.now() + 60000; // Cooldown period of 60 seconds
+        throw new Error(`Max retries reached for track ID ${trackId}`);
+      }
+    } else if (retries > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
       return getTrackDetailsWithRetry(trackId, retries - 1, delayMs * 2);
+    } else {
+      console.error(`Failed to fetch details for track ID ${trackId} after multiple retries.`);
+      throw error;
     }
-    throw error;
+  }
+};
+
+const getAdditionalTrackDetailsWithRetry = async (trackId, retries = 5, delayMs = 2000) => {
+  try {
+    const [featuresResponse, analysisResponse] = await Promise.all([
+      axios.get(`https://api.spotify.com/v1/audio-features/${trackId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+      axios.get(`https://api.spotify.com/v1/audio-analysis/${trackId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }),
+    ]);
+
+    return {
+      features: featuresResponse.data,
+      analysis: analysisResponse.data,
+    };
+  } catch (error) {
+    if (error.response?.status === 429) {
+      const retryAfter = parseInt(error.response.headers['retry-after'], 10) || delayMs / 1000;
+      const waitTime = retryAfter * 1000;
+
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+
+      if (retries > 0) {
+        return getAdditionalTrackDetailsWithRetry(trackId, retries - 1, delayMs * 2);
+      } else {
+        console.warn(`Max retries reached for track ID ${trackId}. Returning without additional details.`);
+        return null; // Return null if retries are exhausted
+      }
+    } else {
+      console.error(`Error fetching additional details for track ID ${trackId}:`, error.message);
+      return null; // Return null if any other error occurs
+    }
   }
 };
 
@@ -375,4 +454,51 @@ app.get('/api/playlist-tracks', ensureValidAccessToken, async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+app.get('/api/track-analysis', ensureValidAccessToken, async (req, res) => {
+  const trackId = req.query.trackId;
+  if (!trackId) return res.status(400).json({ error: 'Track ID is required' });
+
+  try {
+    const response = await axios.get(`https://api.spotify.com/v1/audio-analysis/${trackId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    res.json(response.data);
+  } catch (error) {
+    console.error(`Error fetching track analysis for ID ${trackId}:`, error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({ error: 'Failed to fetch track analysis' });
+  }
+});
+
+
+app.get('/api/fetch_and_update_track_details', ensureValidAccessToken, async (req, res) => {
+  const trackId = req.query.trackId;
+  if (!trackId) {
+    return res.status(400).json({ error: 'Track ID is required' });
+  }
+
+  try {
+    // Step 1: Fetch basic details
+    const basicDetailsResponse = await axios.get(`https://api.spotify.com/v1/tracks/${trackId}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const basicDetails = basicDetailsResponse.data;
+
+    // Step 2: Fetch additional details (features and analysis)
+    const { features, analysis } = await getAdditionalTrackDetailsWithRetry(trackId);
+
+    // Combine all details into a single object
+    const combinedDetails = {
+      ...basicDetails,
+      ...features, // Include audio features directly
+      analysis: analysis || {}, // Include track analysis
+    };
+
+    // Return combined details
+    res.json(combinedDetails);
+  } catch (error) {
+    console.error(`Error fetching combined details for track ID ${trackId}:`, error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({ error: 'Failed to fetch track details' });
+  }
 });

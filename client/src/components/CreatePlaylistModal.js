@@ -1,6 +1,6 @@
 // CreatePlaylistModal.js
 import React, { useState } from 'react';
-import './CreatePlaylistModalStyle.css';
+import '../styles/CreatePlaylistModalStyle.css';
 
 const CreatePlaylistModal = ({ isOpen, onClose, onCreate }) => {
   const [name, setName] = useState('');

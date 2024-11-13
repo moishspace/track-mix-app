@@ -67,6 +67,12 @@
     text-align: left !important; /* Aligns text to the left */
 }
 
+.custom-data-grid .MuiDataGrid-cell:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
 /* Optional: Style the row on hover for an interactive look */
 /*.custom-data-grid .MuiDataGrid-row:hover {
     background-color: #e3f2fd !important; /* Light blue background on hover */
