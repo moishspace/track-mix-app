@@ -1,6 +1,5 @@
-// useTrackSearch.js
 import { useState, useEffect } from 'react';
-import { searchTracks, fetchDetailsWithDelays } from '../services/api';
+import { searchTracks, fetchAndUpdateTrackDetails } from '../services/api';
 
 const useTrackSearch = (searchTerm) => {
   const [filteredTracks, setFilteredTracks] = useState([]);
@@ -10,20 +9,29 @@ const useTrackSearch = (searchTerm) => {
     if (searchTerm) {
       (async () => {
         try {
-          const tracks = await searchTracks(searchTerm);
-          const trackIds = tracks.map((track) => track.id);
-          const details = await fetchDetailsWithDelays(trackIds);
-          const updatedTracks = tracks.map((track) => ({ ...track, ...details[track.id] }));
-          setFilteredTracks(updatedTracks);
-          setTrackDetails(details);
+          // Step 1: Fetch basic track data
+          const basicTracks = await searchTracks(searchTerm);
+
+          // Step 2: Update UI immediately with basic track data
+          setFilteredTracks(basicTracks);
+
+          // Step 3: Fetch additional details and update state directly
+          basicTracks.forEach((track) => {
+            fetchAndUpdateTrackDetails(track.id, setTrackDetails, track);
+          });
         } catch (error) {
-          console.error('Error fetching tracks:', error);
+          console.error("Error fetching search tracks:", error);
         }
       })();
     }
   }, [searchTerm]);
 
-  return { filteredTracks, trackDetails };
+  return {
+    filteredTracks,
+    trackDetails,
+    setFilteredTracks,
+    setTrackDetails,
+  };
 };
 
 export default useTrackSearch;

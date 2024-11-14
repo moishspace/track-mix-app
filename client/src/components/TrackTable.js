@@ -16,23 +16,27 @@ const TrackTable = ({
   const columns = useMemo(() => [
     {
         field: 'select',
-        renderHeader: () => (
-            <Checkbox
+        renderHeader: () => {
+          return (
+          <Checkbox
             className="header-checkbox"
             checked={selectAllChecked}
-            indeterminate={selectedTrackIds.length > 0 && selectedTrackIds.length < processedTracks.length}
+            indeterminate={
+              selectedTrackIds.length > 0 && selectedTrackIds.length < processedTracks.length
+            }
             onChange={handleSelectAllClick}
-            />
-        ),
+          />
+          );
+        },
         renderCell: (params) => (
-            <Checkbox
+          <Checkbox
             className="row-checkbox"
             checked={selectedTrackIds.includes(params.row.id)}
-            onClick={(event) => {
-                event.stopPropagation();
-                handleCheckboxClick(params.row.id);
+            onChange={(event) => {
+              event.stopPropagation();
+              handleCheckboxClick(params.row.id);
             }}
-            />
+          />
         ),
         sortable: false,
         width: 50,

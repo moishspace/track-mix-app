@@ -183,28 +183,29 @@ export const fetchAudioFeatures = async (trackId) => {
 };
 
 
-export const fetchAndUpdateTrackDetails = async (trackId, setTrackDetails) => {
+export const fetchAndUpdateTrackDetails = async (trackId, setTrackDetails, basicDetails = null) => {
   if (!trackId) {
     console.error("Track ID is required for fetching details.");
     return;
   }
 
   try {
-    // Fetch track details from the backend
     const trackResponse = await axios.get(`${API_URL}/fetch_and_update_track_details`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` },
-      params: { trackId },
+      params: { trackId, basicDetails: basicDetails ? JSON.stringify(basicDetails) : null },
     });
 
     const trackDetails = trackResponse.data;
 
-    // Update the state with the combined details, including analysis
+    // Update the state with all combined details
     setTrackDetails((prevDetails) => ({
       ...prevDetails,
       [trackId]: {
         ...prevDetails[trackId],
         ...trackDetails,
-        analysis: trackDetails.analysis || prevDetails[trackId]?.analysis || {}, // Ensure analysis is preserved
+        features: trackDetails.features || prevDetails[trackId]?.features || {},
+        analysis: trackDetails.analysis || prevDetails[trackId]?.analysis || {},
+        genres: trackDetails.genres || prevDetails[trackId]?.genres || [],
       },
     }));
   } catch (error) {

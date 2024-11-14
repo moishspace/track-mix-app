@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import TrackSearch from '../components/TrackSearch';
+import MainDashboard from '../components/MainDashboard';
 import './HomeStyle.css';
 import { gridColumnGroupsLookupSelector } from '@mui/x-data-grid';
 
@@ -141,7 +141,7 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
         </div>
       )}
 
-      {isAuthorized && <TrackSearch searchTerm={submittedTerm} />}
+      {isAuthorized && <MainDashboard searchTerm={submittedTerm} />}
     </div>
   );
 };
