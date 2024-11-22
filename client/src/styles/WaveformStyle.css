@@ -1,36 +1,37 @@
-/* Ensure the waveform fills the entire cell */
-.waveform-full {
-  width: 100%;
-  height: 80px; /* Adjust this to your desired height */
-}
-
-.waveform-full canvas {
-  background: #000 !important;
-}
-
-/* Remove padding and extra styling */
+/* Waveform container and canvas styles */
 .waveform-container {
   width: 100%;
-  height: 80px; /* Set a fixed height for the waveform */
+  height: 80px; /* Set a fixed height for the waveform container */
   margin-top: 10px;
-  overflow: hidden;
+  border-bottom: 2px solid #555;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Customize the cursor appearance */
+.waveform-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #333; /* Dark background for the waveform */
+  border-radius: 0px;
+  position: relative;
+  z-index: 10;
+}
+
+/* Placeholder bar style */
+.waveform-placeholder-bar {
+  background-color: #444; /* Gray for placeholder bars */
+}
+
+/* Cursor customization */
 .wavesurfer-cursor {
-  width: 2px !important;
-  background-color: #FFC857 !important;
+  width: 1px !important;
+  background-color: #FFC857 !important; /* Yellow cursor */
   height: 100% !important;
 }
 
-/* Ensure no scrollbar is visible */
+/* Prevent scrollbars */
 .wavesurfer-scrollbar {
   display: none !important;
-}
-
-.waveform-parent {
-  height: 60px; /* Ensure the parent has a set height */
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }

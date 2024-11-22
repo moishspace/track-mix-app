@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import MainDashboard from '../components/MainDashboard';
-import './HomeStyle.css';
-import { gridColumnGroupsLookupSelector } from '@mui/x-data-grid';
+import '../styles/HomeStyle.css';
 
 const Home = ({ isAuthorized, setIsAuthorized }) => {
   const [searchTerm, setSearchTerm] = useState('');

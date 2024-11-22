@@ -4,9 +4,11 @@ import TrackTable from './TrackTable';
 import PlaylistControls from './PlaylistControls';
 import TrackPlayer from './TrackPlayer';
 import CriteriaFilterPanel from './CriteriaFilterPanel';
+import AudioWaveform from './AudioWaveform';
 import useTrackSearch from '../hooks/useTrackSearch';
 import useSimilarTracks from '../hooks/useSimilarTracks';
 import useTrackTable from '../hooks/useTrackTable';
+import useTrackPlayer from '../hooks/useTrackPlayer';
 import usePlaylist from '../hooks/usePlaylist';
 
 const MainDashboard = ({ searchTerm }) => {
@@ -14,7 +16,6 @@ const MainDashboard = ({ searchTerm }) => {
   const [selectedTrack, setSelectedTrack] = useState(null);
   const [selectedTrackIds, setSelectedTrackIds] = useState([]);
   const [selectAllChecked, setSelectAllChecked] = useState(false);
-
   const { filteredTracks, trackDetails, setFilteredTracks, setTrackDetails } = useTrackSearch(searchTerm);
 
   const {
@@ -36,6 +37,15 @@ const MainDashboard = ({ searchTerm }) => {
   
   const { searchSimilar } = useSimilarTracks(selectedTrack, criteria, setFilteredTracks, setTrackDetails);
 
+  const {
+    playerRef,
+    trackProgress,
+    handleProgressUpdate,
+    handleSeek,
+    handleTrackChange,
+  } = useTrackPlayer(filteredTracks, setSelectedTrack);
+
+
   useEffect(() => {
     const allSelected = selectedTrackIds.length === filteredTracks.length && filteredTracks.length > 0;
     const noneSelected = selectedTrackIds.length === 0;
@@ -55,14 +65,16 @@ const MainDashboard = ({ searchTerm }) => {
   
     return playableTracks.map((track) => {
       const additionalDetails = trackDetails[track.id] || {};
-  
+
       return {
         id: track.id,
         name: track.name || '',
         artistsName: track.artistsName || (Array.isArray(track.artists) ? track.artists.map((artist) => artist.name).join(', ') : ''),
+        album: track?.album,
         albumName: track.album?.name || '',
         releaseDate: track.album?.release_date || '',
         albumImageUrl: track.album?.images[0]?.url || '',
+        duration_ms:track.duration_ms,
         duration: track.duration_ms ? `${Math.floor(track.duration_ms / 60000)}:${String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, '0')}` : '',
         preview_url: track.preview_url || null,
         genre: additionalDetails.genres?.join(', ') || '',
@@ -78,6 +90,8 @@ const MainDashboard = ({ searchTerm }) => {
         beats: additionalDetails.analysis?.beats || [],
         sections: additionalDetails.analysis?.sections || [],
         segments: additionalDetails.analysis?.segments || [],
+        tatums: additionalDetails.analysis?.tatums || [],
+        uri: track.uri,
       };
     });
   }, [filteredTracks, trackDetails]);
@@ -87,6 +101,7 @@ const MainDashboard = ({ searchTerm }) => {
       <CriteriaFilterPanel criteria={criteria} setCriteria={setCriteria} onSearchSimilar={searchSimilar} initialTrackDetails={selectedTrack} />
 
       <div className="table-container">
+        {/* Track Table */}
         <TrackTable
           processedTracks={processedTracks}
           selectAllChecked={selectAllChecked}
@@ -98,7 +113,29 @@ const MainDashboard = ({ searchTerm }) => {
           selectedTrack={selectedTrack}
         />
 
-        <TrackPlayer filteredTracks={filteredTracks} selectedTrack={selectedTrack} />
+        {/* Waveform Component */}
+        <div className="waveform-container">
+        {1 ? (
+          // <Waveform selectedTrack={selectedTrack} trackProgress={trackProgress} />
+          <AudioWaveform
+                selectedTrack={selectedTrack}
+                trackProgress={trackProgress}
+                onSeek={handleSeek}
+              />
+        ) : (
+          <p>Please select a track to display the waveform.</p>
+        )}
+        </div>
+
+       
+        {/* Track Player */}
+        <TrackPlayer 
+            ref={playerRef}
+            filteredTracks={processedTracks} 
+            selectedTrack={selectedTrack} 
+            onProgress={handleProgressUpdate}
+            onTrackChange={handleTrackChange}
+        />
 
         {/* Playlist Controls */}
         <PlaylistControls

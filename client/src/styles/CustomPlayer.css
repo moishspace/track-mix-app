@@ -1,0 +1,172 @@
+.custom-player {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #000;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+  }
+  
+  .track-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+  
+  .track-details {
+    text-align: left;
+  }
+  
+  .track-info img {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+  }
+  
+  .track-info h3 {
+    font-size: 12px;
+    margin: 0;
+    color: #fff;
+    font-weight: bold;
+  }
+  
+  .track-details h3:hover {
+    border-bottom: 1px solid #ffffff; /* Add a white underline on hover */
+  }
+
+  .track-info p {
+    font-size: 12px;
+    color: #ccc;
+    margin: 0;
+  }
+  
+  .track-details a {
+    text-decoration: none; /* Remove the default blue underline */
+    color: #ffffff; /* Set the text color to white */
+  }
+
+  .track-details a:hover {
+    border-bottom: 1px solid #ffffff; /* Add a white underline on hover */
+  }
+
+  .center-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+  }
+  
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .icon-button {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    color: #d7d7d7;
+    transition: transform 0.2s;
+  }
+  
+  .icon-button:hover {
+    transform: scale(1.1);
+    color: #ffffff;
+  }
+  
+  .play-button {
+    width: 36px;
+    height: 36px;
+    cursor:pointer;
+    color: #ffffff;
+  }
+
+  .play-button:hover {
+    transform: scale(1.1); /* Add a subtle scaling effect on hover */
+    color: #ffffff; /* Optional: Change the color on hover */
+  }
+  
+  .progress-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: #404040;
+    border-radius: 5px;
+    appearance: none;
+  }
+  
+  .progress-bar::-webkit-slider-thumb {
+    width: 12px;
+    height: 12px;
+    background: #1db954;
+    border-radius: 50%;
+    cursor: pointer;
+    appearance: none;
+  }
+  
+  .time {
+    font-size: 12px;
+    color: #ccc;
+    user-select: none;
+  }
+  
+  .volume-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 10%;
+    justify-content: flex-end;
+}
+
+.custom-player {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #000;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.track-info {
+    display: flex;
+    align-items: left;
+    gap: 10px;
+    max-width: 250px;
+    flex-shrink: 0; /* Prevent track info from growing */
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    flex-grow: 1; /* Allow this section to grow and stay centered */
+    justify-content: center;
+}
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-grow: 1;
+    justify-content: center;
+    width: 60%
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 10%; /* Set a fixed width */
+    flex-shrink: 0; /* Prevent the volume control from growing */
+    justify-content: flex-end;
+}

@@ -137,8 +137,8 @@ const getTrackDetailsWithRetry = async (trackId, retries = 5, delayMs = 2000) =>
 
 const getAdditionalTrackDetailsWithRetry = async (trackId, artistData = null, retries = 5, delayMs = 2000) => {
   try {
-    // Fetch audio features and audio analysis in parallel
-    const [featuresResponse, analysisResponse] = await Promise.all([
+    // Fetch audio features and analysis in parallel
+    const [featuresResponse, analysisResponse] = await Promise.allSettled([
       axios.get(`https://api.spotify.com/v1/audio-features/${trackId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       }),
@@ -147,23 +147,37 @@ const getAdditionalTrackDetailsWithRetry = async (trackId, artistData = null, re
       }),
     ]);
 
+    // Process features and analysis responses
+    const features = featuresResponse.status === 'fulfilled' ? featuresResponse.value.data : null;
+    const analysis = analysisResponse.status === 'fulfilled' ? analysisResponse.value.data : null;
+
+    if (!features) {
+      console.warn(`Features not available for track ID ${trackId}`);
+    }
+    if (!analysis) {
+      console.warn(`Analysis not available for track ID ${trackId}`);
+    }
+
     // Fetch genres from artists if not already provided
     let genres = [];
-    if (artists?.length) {
-      for (const artist of artists) {
-        const artistResponse = await axios.get(`https://api.spotify.com/v1/artists/${artist.id}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        if (artistResponse.data.genres?.length) {
-          genres = artistResponse.data.genres;
-          break;
+    if (artistData?.length) {
+      for (const artist of artistData) {
+        try {
+          const artistResponse = await axios.get(`https://api.spotify.com/v1/artists/${artist.id}`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          if (artistResponse.data.genres?.length) {
+            genres = [...genres, ...artistResponse.data.genres];
+          }
+        } catch (artistError) {
+          console.error(`Error fetching genres for artist ID ${artist.id}:`, artistError.message);
         }
       }
     }
 
     return {
-      features: featuresResponse.data,
-      analysis: analysisResponse.data,
+      features,
+      analysis,
       genres,
     };
   } catch (error) {
@@ -171,19 +185,20 @@ const getAdditionalTrackDetailsWithRetry = async (trackId, artistData = null, re
       const retryAfter = parseInt(error.response.headers['retry-after'], 10) || delayMs / 1000;
       const waitTime = retryAfter * 1000;
 
-      // Wait for the specified time before retrying
+      console.warn(`Rate limited. Retrying after ${waitTime / 1000} seconds...`);
+
+      // Wait before retrying
       await new Promise((resolve) => setTimeout(resolve, waitTime));
 
       if (retries > 0) {
-        // Retry the request with increased delay
         return getAdditionalTrackDetailsWithRetry(trackId, artistData, retries - 1, delayMs * 2);
       } else {
         console.warn(`Max retries reached for track ID ${trackId}. Returning without additional details.`);
-        return null; // Return null if retries are exhausted
+        return null;
       }
     } else {
       console.error(`Error fetching additional details for track ID ${trackId}:`, error.message);
-      return null; // Return null if any other error occurs
+      return null;
     }
   }
 };
