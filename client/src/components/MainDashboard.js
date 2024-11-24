@@ -13,6 +13,7 @@ import usePlaylist from '../hooks/usePlaylist';
 
 const MainDashboard = ({ searchTerm }) => {
   const [criteria, setCriteria] = useState({});
+  const [currentTrackIndex, setSelectedTrackIndex] = useState(0);
   const [selectedTrack, setSelectedTrack] = useState(null);
   const [selectedTrackIds, setSelectedTrackIds] = useState([]);
   const [selectAllChecked, setSelectAllChecked] = useState(false);
@@ -33,7 +34,7 @@ const MainDashboard = ({ searchTerm }) => {
     handleRowClick,
     handleCheckboxClick,
     handleRowRightClick,
-  } = useTrackTable(filteredTracks, setSelectedTrack, selectedTrackIds, setSelectedTrackIds, selectAllChecked, setSelectAllChecked);
+  } = useTrackTable(filteredTracks, setSelectedTrack, setSelectedTrackIndex, selectedTrackIds, setSelectedTrackIds, selectAllChecked, setSelectAllChecked);
   
   const { searchSimilar } = useSimilarTracks(selectedTrack, criteria, setFilteredTracks, setTrackDetails);
 
@@ -43,7 +44,7 @@ const MainDashboard = ({ searchTerm }) => {
     handleProgressUpdate,
     handleSeek,
     handleTrackChange,
-  } = useTrackPlayer(filteredTracks, setSelectedTrack);
+  } = useTrackPlayer(filteredTracks, setSelectedTrack, currentTrackIndex, setSelectedTrackIndex);
 
 
   useEffect(() => {
@@ -96,6 +97,12 @@ const MainDashboard = ({ searchTerm }) => {
     });
   }, [filteredTracks, trackDetails]);
 
+  useEffect(() => {
+    if (processedTracks[currentTrackIndex]) {
+      setSelectedTrack(processedTracks[currentTrackIndex]);
+    }
+  }, [currentTrackIndex, processedTracks]);
+
   return (
     <div className="flex-container">
       <CriteriaFilterPanel criteria={criteria} setCriteria={setCriteria} onSearchSimilar={searchSimilar} initialTrackDetails={selectedTrack} />
@@ -104,35 +111,36 @@ const MainDashboard = ({ searchTerm }) => {
         {/* Track Table */}
         <TrackTable
           processedTracks={processedTracks}
+          selectedTrack={selectedTrack}
           selectAllChecked={selectAllChecked}
           selectedTrackIds={selectedTrackIds}
           handleSelectAllClick={handleSelectAllClick}
           handleCheckboxClick={handleCheckboxClick}
           handleRowClick={handleRowClick}
           handleRowRightClick={handleRowRightClick}
-          selectedTrack={selectedTrack}
         />
 
         {/* Waveform Component */}
         <div className="waveform-container">
-        {1 ? (
-          // <Waveform selectedTrack={selectedTrack} trackProgress={trackProgress} />
+        {selectedTrack ? (
           <AudioWaveform
-                selectedTrack={selectedTrack}
-                trackProgress={trackProgress}
-                onSeek={handleSeek}
-              />
+              key={selectedTrack?.id || 'default'}
+              selectedTrack={selectedTrack}
+              trackProgress={trackProgress}
+              onSeek={handleSeek}
+            />
         ) : (
           <p>Please select a track to display the waveform.</p>
         )}
         </div>
-
        
         {/* Track Player */}
         <TrackPlayer 
             ref={playerRef}
-            filteredTracks={processedTracks} 
-            selectedTrack={selectedTrack} 
+            processedTracks={processedTracks}
+            selectedTrack={selectedTrack}
+            currentTrackIndex={currentTrackIndex}
+            setCurrentTrackIndex={setSelectedTrackIndex}
             onProgress={handleProgressUpdate}
             onTrackChange={handleTrackChange}
         />

@@ -1,9 +1,8 @@
 import { useRef, useState, useCallback } from 'react';
 
-const useTrackPlayer = (filteredTracks, setSelectedTrack) => {
+const useTrackPlayer = (filteredTracks, setSelectedTrack, currentTrackIndex, setCurrentTrackIndex) => {
   const playerRef = useRef(null);
   const [trackProgress, setTrackProgress] = useState({ position: 0, duration: 0 });
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
 
   const handleProgressUpdate = useCallback((position, duration) => {
     setTrackProgress({ position, duration });

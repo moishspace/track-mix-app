@@ -2,7 +2,7 @@
 import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import SpotifyWebPlayer from './SpotifyWebPlayer';
 
-const TrackPlayer = forwardRef(({ filteredTracks, selectedTrack, onProgress, onTrackChange }, ref) => {
+const TrackPlayer = forwardRef(({ processedTracks, selectedTrack, currentTrackIndex = 0, setCurrentTrackIndex, onProgress, onTrackChange }, ref) => {
   const spotifyPlayerRef = useRef();
 
   // Use `useImperativeHandle` to expose `handleSeek`
@@ -12,11 +12,15 @@ const TrackPlayer = forwardRef(({ filteredTracks, selectedTrack, onProgress, onT
     },
   }));
 
+  const trackIndex = processedTracks.findIndex(track => track.id === selectedTrack?.id);
   return (
     <SpotifyWebPlayer
       ref={spotifyPlayerRef}
-      playlistUris={filteredTracks.map(track => `spotify:track:${track.id}`)}
-      initialTrackIndex={filteredTracks.findIndex(track => track.id === selectedTrack?.id)}
+      processedTracks={processedTracks}
+      playlistUris={processedTracks.map(track => `spotify:track:${track.id}`)}
+      initialTrackIndex={trackIndex}
+      currentTrackIndex={trackIndex}
+      setCurrentTrackIndex={setCurrentTrackIndex}
       onProgress = {onProgress}
       onTrackChange={onTrackChange}
     />

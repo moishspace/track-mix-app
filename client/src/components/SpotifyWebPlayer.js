@@ -2,14 +2,12 @@ import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } f
 import SpotifyPlayer, { spotifyApi } from 'react-spotify-web-playback';
 import { getAccessToken } from '../services/api';
 
-const SpotifyWebPlayer = forwardRef(({ playlistUris = [], initialTrackIndex = 0, onProgress, onPlayerInit, onTrackChange }, ref) => {
+const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initialTrackIndex = 0, currentTrackIndex = 0, setCurrentTrackIndex, onProgress, onPlayerInit, onTrackChange }, ref) => {
   const [accessToken, setAccessToken] = useState(null);
-  const [play, setPlay] = useState(false);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(initialTrackIndex);
+  const [play, setPlay] = useState(true);
   const [deviceId, setDeviceId] = useState(null);
-  const [currentTrackUri, setCurrentTrackUri] = useState(initialTrackIndex);
+  const [currentTrackUri, setCurrentTrackUri] = useState(null);
 
-  const prevTrackIndexRef = useRef(initialTrackIndex);
   const playerInitializedRef = useRef(false);
 
   useImperativeHandle(ref, () => ({
@@ -33,18 +31,20 @@ const SpotifyWebPlayer = forwardRef(({ playlistUris = [], initialTrackIndex = 0,
     fetchToken();
   }, []);
 
-  // Handle track index change
-  useEffect(() => {
-    if (prevTrackIndexRef.current !== initialTrackIndex) {
-      setPlay(false);
-      setCurrentTrackIndex(initialTrackIndex);
-      prevTrackIndexRef.current = initialTrackIndex;
-    }
-  }, [initialTrackIndex]);
-
   useEffect(() => {
     console.log('Play', play);
   }, [play]);
+
+  useEffect(() => {
+    if (playerInitializedRef.current && deviceId) {
+      spotifyApi.getPlaybackState(accessToken).then((state) => {
+        setPlay(state?.is_playing || false);
+        handlePlayerCallback(state);
+      }).catch((error) => {
+        console.error('Error initializing player state:', error);
+      });
+    }
+  }, [playerInitializedRef.current, deviceId, accessToken]);
 
   // Handle the player callback
   const handlePlayerCallback = (state) => {
@@ -52,7 +52,7 @@ const SpotifyWebPlayer = forwardRef(({ playlistUris = [], initialTrackIndex = 0,
       console.warn('Player state is null or undefined.');
       return;
     }
-  
+
     // Update play state
     if (state.isPlaying !== play) {
       setPlay(state.isPlaying);
@@ -69,14 +69,15 @@ const SpotifyWebPlayer = forwardRef(({ playlistUris = [], initialTrackIndex = 0,
       setDeviceId(state.deviceId);
       onPlayerInit?.(state.deviceId);
     }
-  
+
     // Detect track change
-    if (state.track?.currentTrackUri && state.track.currentTrackUri !== currentTrackUri) {
-      setCurrentTrackUri(state.track.currentTrackUri);
-  
-      // Notify parent about track change
-      if (onTrackChange) {
-        onTrackChange(state.track.currentTrackUri);
+    if (state.track?.id && state.track.id !== currentTrackUri) {
+      const newTrackId = state.track.id;
+      setCurrentTrackUri(newTrackId);
+
+      const trackIndex = processedTracks.findIndex((track) => track.id === state.track.id);
+      if (trackIndex !== -1 && trackIndex !== currentTrackIndex) {
+        setCurrentTrackIndex(trackIndex);
       }
     }
   };
@@ -98,7 +99,7 @@ const SpotifyWebPlayer = forwardRef(({ playlistUris = [], initialTrackIndex = 0,
     };
   
     if (play && accessToken) {
-      pollInterval = setInterval(pollPlaybackState, 1000);
+      pollInterval = setInterval(pollPlaybackState, 100);
       pollPlaybackState();
     }
   
@@ -118,7 +119,7 @@ const SpotifyWebPlayer = forwardRef(({ playlistUris = [], initialTrackIndex = 0,
         <SpotifyPlayer
           token={accessToken}
           uris={playlistUris}
-          offset={currentTrackIndex}
+          offset={initialTrackIndex}
           play={play}
           showSaveIcon
           styles={{

@@ -6,9 +6,6 @@ const AudioWaveform = ({
   trackProgress, 
   onSeek
 }) => {
-
-  const [renderedTrack, setRenderedTrack] = useState(null);
-
   const handleWaveformClick = useCallback((event) => {
     if (!trackProgress.duration) return;
 
@@ -23,13 +20,6 @@ const AudioWaveform = ({
     if (onSeek) onSeek(newPosition);
 
   }, [trackProgress.duration, onSeek]);
-
-  useEffect(() => {
-    if (selectedTrack) {
-      console.debug('AudioWaveform: Rendering new track:', selectedTrack);
-      setRenderedTrack(selectedTrack);
-    }
-  }, [selectedTrack]);
 
   if (!selectedTrack || !selectedTrack.segments || !selectedTrack.tatums) {
     return <div className="waveform-container">No audio analysis data available</div>;

@@ -5,13 +5,13 @@ import { Checkbox } from '@mui/material';
 
 const TrackTable = ({
   processedTracks,
+  selectedTrack,
   selectAllChecked,
   selectedTrackIds,
   handleSelectAllClick,
   handleCheckboxClick,
   handleRowClick,
-  handleRowRightClick,
-  selectedTrack,
+  handleRowRightClick
 }) => {
   const columns = useMemo(() => [
     {
