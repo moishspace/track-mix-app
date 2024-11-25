@@ -76,7 +76,7 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
       setCurrentTrackUri(newTrackId);
 
       const trackIndex = processedTracks.findIndex((track) => track.id === state.track.id);
-      if (trackIndex !== -1 && trackIndex !== currentTrackIndex) {
+      if (trackIndex !== -1 && trackIndex !== currentTrackIndex && trackIndex < processedTracks.length) {
         setCurrentTrackIndex(trackIndex);
       }
     }

@@ -121,17 +121,20 @@ const MainDashboard = ({ searchTerm }) => {
         />
 
         {/* Waveform Component */}
-        <div className="waveform-container">
-        {selectedTrack ? (
-          <AudioWaveform
+        <div className="waveform-section">
+          {selectedTrack ? (
+            <AudioWaveform
               key={selectedTrack?.id || 'default'}
               selectedTrack={selectedTrack}
               trackProgress={trackProgress}
               onSeek={handleSeek}
             />
-        ) : (
-          <p>Please select a track to display the waveform.</p>
-        )}
+          ) : (
+            <div className="waveform-container">
+              <div className="waveform-background" />
+              <div className="waveform-empty">Please select a track to display the waveform.</div>
+            </div>
+          )}
         </div>
        
         {/* Track Player */}

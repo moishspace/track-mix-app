@@ -1,63 +1,169 @@
+:root {
+  --waveform-color: #ffffff;
+  --waveform-progress-color: #ff00d0;
+  --waveform-background: #333;
+}
+
 .waveform-container {
-  background-color: #333;
-  width: 100%;
-  height: 120px;
-  margin-top: 2px;
-  margin-bottom: 2px;
-  border-bottom: 2px solid #555;
   position: relative;
-}
-
-.waveform-svg {
-  display: block;
   width: 100%;
-  height: 98%;
+  padding: 2px;
+  margin-bottom: 2px;
+  margin-top: 2px;
+  background-color: var(--waveform-background);
 }
 
-.waveform-bar {
-  fill: #ffffff;
+.waveform-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--waveform-background);
+  z-index: 0;
 }
 
-.waveform-bar-top {
+.waveform-controls {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.waveform-time-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+  margin-bottom: 5px;
+}
+
+.waveform-time {
+  color: #fff;
+  font-size: 12px;
   opacity: 0.7;
 }
 
-.waveform-bar-bottom {
+.waveform-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.waveform-zoom-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.waveform-zoom-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.waveform-zoom-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.waveform-zoom-level {
+  color: white;
+  opacity: 0.7;
+  font-size: 12px;
+  min-width: 45px;
+  text-align: center;
+}
+
+.waveform-scroll-container {
+  width: 100%;
+  overflow-x: auto;  /* Changed from hidden */
+  position: relative;
+  /* Remove the initial hiding */
+}
+
+/* Base scrollbar styling */
+.waveform-scroll-container::-webkit-scrollbar {
+  height: 2px;  /* Always set the height */
+  background: transparent;  /* Make track transparent by default */
+}
+
+.waveform-scroll-container::-webkit-scrollbar-thumb {
+  background: transparent;  /* Make thumb transparent by default */
+  transition: background-color 0.3s;  /* Smooth transition */
+}
+
+/* Show on hover */
+.waveform-scroll-container:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.waveform-scroll-container:hover::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* For Firefox */
+.waveform-scroll-container {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;  /* thumb track */
+}
+
+.waveform-scroll-container:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.3) rgb(51, 51, 51, 0.1);
+}
+
+.waveform-svg {
+  background: transparent;
+  cursor: pointer;
+}
+
+.waveform-grid-line {
+  stroke: #333;
+  stroke-width: 1;
+  opacity: 0.2;
+}
+
+.waveform-center-line {
+  stroke: #333;
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.waveform-line {
+  stroke: var(--waveform-color);
+}
+
+.waveform-line-top {
   opacity: 0.4;
 }
 
-.waveform-progress-bar {
-  fill: #ff00fb;
+.waveform-line-bottom {
+  opacity: 0.3;
 }
 
-.waveform-progress-bar-top {
-  opacity: 1;
+.waveform-line-progress {
+  stroke: var(--waveform-progress-color);
 }
 
-.waveform-progress-bar-bottom {
-  opacity: 0.4;
+.waveform-line-progress-top {
+  opacity: 0.8;
+}
+
+.waveform-line-progress-bottom {
+  opacity: 0.6;
 }
 
 .waveform-progress-line {
-  stroke: #FFC857;
-  stroke-width: 2;
+  stroke: #fff;
+  stroke-width: calc(2px / var(--zoom-level));
+  opacity: 0.4;
 }
 
-/* New positioning for time text */
-.waveform-time-left {
-  position: absolute;
-  bottom: 5px;
-  left: 10px;
-  color: #fff;
-  font-size: 12px;
-  z-index: 1;
-}
-
-.waveform-time-right {
-  position: absolute;
-  bottom: 5px;
-  right: 10px;
-  color: #fff;
-  font-size: 12px;
-  z-index: 1;
+.waveform-scroll-wrapper {
+  background-color: rgba(255, 0, 0, 0.3);  /* Background for scroll area */
 }
