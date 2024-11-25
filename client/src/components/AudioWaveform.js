@@ -72,7 +72,8 @@ const AudioWaveform = ({
   }
 
   const segments = selectedTrack.segments;
-  const waveHeight = 100;
+  const waveHeight = parseInt(getComputedStyle(document.documentElement)
+  .getPropertyValue('--waveform-height')) || 100; 
   const centerLine = waveHeight / 2;
 
   const progressPercent = trackProgress?.duration > 0

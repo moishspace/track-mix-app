@@ -2,14 +2,24 @@
   --waveform-color: #ffffff;
   --waveform-progress-color: #ff00d0;
   --waveform-background: #333;
+  --waveform-height: 80px;
+  --scroll-height:90px;
+}
+
+.waveform-section {
+  width: 100%;
+  height: 120px;
+  position: relative;
+  background-color: var(--waveform-background);
+  padding: 2px;
+  margin: 2px 0; 
 }
 
 .waveform-container {
   position: relative;
   width: 100%;
-  padding: 2px;
-  margin-bottom: 2px;
-  margin-top: 2px;
+  height: 50px;
+  margin: 0;  
   background-color: var(--waveform-background);
 }
 
@@ -82,20 +92,22 @@
 
 .waveform-scroll-container {
   width: 100%;
-  overflow-x: auto;  /* Changed from hidden */
+  overflow-x: auto;
+  overflow-y: hidden;
   position: relative;
-  /* Remove the initial hiding */
+  z-index: 2;  
+  height: var(--scroll-height);  
 }
 
 /* Base scrollbar styling */
 .waveform-scroll-container::-webkit-scrollbar {
-  height: 2px;  /* Always set the height */
-  background: transparent;  /* Make track transparent by default */
+  height: 2px;  
+  background: transparent; 
 }
 
 .waveform-scroll-container::-webkit-scrollbar-thumb {
-  background: transparent;  /* Make thumb transparent by default */
-  transition: background-color 0.3s;  /* Smooth transition */
+  background: transparent;
+  transition: background-color 0.3s; 
 }
 
 /* Show on hover */
@@ -110,7 +122,7 @@
 /* For Firefox */
 .waveform-scroll-container {
   scrollbar-width: thin;
-  scrollbar-color: transparent transparent;  /* thumb track */
+  scrollbar-color: transparent transparent; 
 }
 
 .waveform-scroll-container:hover {
@@ -162,8 +174,4 @@
   stroke: #fff;
   stroke-width: calc(2px / var(--zoom-level));
   opacity: 0.4;
-}
-
-.waveform-scroll-wrapper {
-  background-color: rgba(255, 0, 0, 0.3);  /* Background for scroll area */
 }
