@@ -32,10 +32,6 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
   }, []);
 
   useEffect(() => {
-    console.log('Play', play);
-  }, [play]);
-
-  useEffect(() => {
     if (playerInitializedRef.current && deviceId) {
       spotifyApi.getPlaybackState(accessToken).then((state) => {
         setPlay(state?.is_playing || false);
@@ -57,7 +53,7 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
     if (state.isPlaying !== play) {
       setPlay(state.isPlaying);
     }
-  
+
     // Update progress
     if (state.position && state.duration && onProgress) {
       onProgress(state.position, state.duration);
@@ -99,7 +95,7 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
     };
   
     if (play && accessToken) {
-      pollInterval = setInterval(pollPlaybackState, 100);
+      pollInterval = setInterval(pollPlaybackState, 500);
       pollPlaybackState();
     }
   

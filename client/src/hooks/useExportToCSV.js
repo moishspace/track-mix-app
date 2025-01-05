@@ -1,8 +1,8 @@
 // hooks/useExportToCSV.js
 
 const useExportToCSV = (tracks) => {
-    const exportToCSV = () => {
-      // Check if there are any tracks to export
+    const exportToCSV = (tracks) => {
+      
       if (!tracks || tracks.length === 0) {
         alert("No data available to export.");
         return;
@@ -15,21 +15,21 @@ const useExportToCSV = (tracks) => {
         'Album',
         'ReleaseDate',
         'Duration',
-        'Tempo',
-        'Key',
-        'Danceability',
-        'Energy',
-        'Valence',
-        'Acousticness',
-        'Instrumentalness',
-        'Liveness',
-        'Genre',
+        // 'Tempo',
+        // 'Key',
+        // 'Danceability',
+        // 'Energy',
+        // 'Valence',
+        // 'Acousticness',
+        // 'Instrumentalness',
+        // 'Liveness',
+        // 'Genre',
         'SpotifyLink',
       ];
   
       const csvContent = tracks.map((track) => ({
         Name: track.name || 'Unknown',
-        Artist: track.artists?.[0]?.name || 'Unknown',
+        Artist: track.album?.artists?.[0]?.name || 'Unknown',
         Album: track.album?.name || 'Unknown',
         ReleaseDate: track.album?.release_date || 'Unknown',
         Duration: track.duration_ms
@@ -37,15 +37,15 @@ const useExportToCSV = (tracks) => {
               Math.floor((track.duration_ms % 60000) / 1000)
             ).padStart(2, '0')}`
           : 'N/A',
-        Tempo: track.tempo || '',
-        Key: track.key || '',
-        Danceability: track.danceability || '',
-        Energy: track.energy || '',
-        Valence: track.valence || '',
-        Acousticness: track.acousticness || '',
-        Instrumentalness: track.instrumentalness || '',
-        Liveness: track.liveness || '',
-        Genre: track.genres?.join(', ') || '',
+        // Tempo: track.tempo || '',
+        // Key: track.key || '',
+        // Danceability: track.danceability || '',
+        // Energy: track.energy || '',
+        // Valence: track.valence || '',
+        // Acousticness: track.acousticness || '',
+        // Instrumentalness: track.instrumentalness || '',
+        // Liveness: track.liveness || '',
+        // Genre: track.genres?.join(', ') || '',
         SpotifyLink: `https://open.spotify.com/track/${track.id}`,
       }));
   
@@ -57,8 +57,11 @@ const useExportToCSV = (tracks) => {
         ),
       ].join('\n');
   
-      // Create a Blob from the CSV content
-      const blob = new Blob([csvRows], { type: 'text/csv' });
+      // Add UTF-8 BOM to the CSV content
+      const csvWithBOM = `\uFEFF${csvRows}`;
+
+      // Create a Blob from the CSV content with UTF-8 encoding
+      const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
       const url = window.URL.createObjectURL(blob);
   
       // Create a temporary link element for downloading

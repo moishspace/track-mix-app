@@ -9,9 +9,13 @@ import {
   fetchAndUpdateTrackDetails,
 } from '../services/api';
 
-const usePlaylist = (setFilteredTracks, setTrackDetails, selectedTrackIds, setSelectedTrackIds, setSelectAllChecked) => {
+import useExportToCSV from './useExportToCSV';
+
+
+const usePlaylist = (filteredTracks, setFilteredTracks, setTrackDetails, selectedTrackIds, setSelectedTrackIds, setSelectAllChecked) => {
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const exportToCSV = useExportToCSV();
 
   // Fetch the list of playlists when the hook is initialized
   useEffect(() => {
@@ -124,6 +128,20 @@ const usePlaylist = (setFilteredTracks, setTrackDetails, selectedTrackIds, setSe
     }
   };
 
+  // Export to CSV
+  const handleExportPlaylist = () => {
+    if (!selectedPlaylist) {
+      alert("Please select a playlist to export.");
+      return;
+    }
+  
+    if (!filteredTracks || filteredTracks.length === 0) {
+      alert("No tracks available in the selected playlist.");
+      return;
+    }
+    exportToCSV(filteredTracks);
+  };
+
   return {
     playlists,
     selectedPlaylist,
@@ -132,6 +150,7 @@ const usePlaylist = (setFilteredTracks, setTrackDetails, selectedTrackIds, setSe
     handleCreatePlaylist,
     handleAddToPlaylist,
     handleDeletePlaylist,
+    handleExportPlaylist,
   };
 };
 

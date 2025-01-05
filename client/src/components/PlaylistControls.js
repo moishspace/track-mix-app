@@ -1,5 +1,6 @@
 // PlaylistControls.js
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import CreatePlaylistModal from './CreatePlaylistModal';
 
 const PlaylistControls = ({
@@ -10,6 +11,7 @@ const PlaylistControls = ({
   handleShowPlaylist,
   handleCreatePlaylist,
   handleDeletePlaylist,
+  handleExportPlaylist,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -61,11 +63,13 @@ const PlaylistControls = ({
           onChange={handlePlaylistChange}
         >
           <option value="" disabled>Select a Playlist</option>
-          {playlists.map((playlist) => (
-            <option key={playlist.id} value={playlist.id}>
-              {playlist.name}
-            </option>
-          ))}
+          {playlists
+            ?.filter((playlist) => playlist && playlist.id)
+            .map((playlist) => (
+              <option key={playlist.id} value={playlist.id}>
+                {playlist.name}
+              </option>
+            ))}
         </select>
         <button className="action-button" onClick={handleShowPlaylist}>
           Show Playlist
@@ -78,6 +82,9 @@ const PlaylistControls = ({
           onClick={() => openDeleteConfirm(playlists.find((p) => p.id === selectedPlaylist))}
         >
           Delete Playlist
+        </button>
+        <button className="action-button" onClick={handleExportPlaylist}>
+          Export to CSV
         </button>
 
         {/* Delete Confirmation Modal */}
@@ -107,6 +114,35 @@ const PlaylistControls = ({
       </div>
     </div>
   );
+};
+
+// Add default props to avoid errors if props are not passed
+PlaylistControls.defaultProps = {
+  playlists: [], // Default to an empty array if playlists is undefined
+  selectedPlaylist: null,
+  handlePlaylistChange: () => {},
+  handleAddToPlaylist: () => {},
+  handleShowPlaylist: () => {},
+  handleCreatePlaylist: () => {},
+  handleDeletePlaylist: () => {},
+  handleExportPlaylist:  () => {},
+};
+
+// Prop types to ensure valid data is passed to the component
+PlaylistControls.propTypes = {
+  playlists: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    })
+  ),
+  selectedPlaylist: PropTypes.string,
+  handlePlaylistChange: PropTypes.func,
+  handleAddToPlaylist: PropTypes.func,
+  handleShowPlaylist: PropTypes.func,
+  handleCreatePlaylist: PropTypes.func,
+  handleDeletePlaylist: PropTypes.func,
+  handleExportPlaylist: PropTypes.func,
 };
 
 export default PlaylistControls;

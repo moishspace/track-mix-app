@@ -27,7 +27,8 @@ const MainDashboard = ({ searchTerm }) => {
     handleCreatePlaylist,
     handleAddToPlaylist,
     handleDeletePlaylist,
-  } = usePlaylist(setFilteredTracks, setTrackDetails, selectedTrackIds, setSelectedTrackIds, setSelectAllChecked);
+    handleExportPlaylist,
+  } = usePlaylist(filteredTracks, setFilteredTracks, setTrackDetails, selectedTrackIds, setSelectedTrackIds, setSelectAllChecked);
   
   const {
     handleSelectAllClick,
@@ -61,12 +62,11 @@ const MainDashboard = ({ searchTerm }) => {
   }, [filteredTracks, selectedTrackIds]);
 
   const processedTracks = useMemo(() => {
-    // Filter tracks that have a valid preview URL
     const playableTracks = filteredTracks.filter((track) => track.preview_url !== null);
   
-    return playableTracks.map((track) => {
+    return filteredTracks.map((track) => {
       const additionalDetails = trackDetails[track.id] || {};
-
+     
       return {
         id: track.id,
         name: track.name || '',
@@ -157,6 +157,7 @@ const MainDashboard = ({ searchTerm }) => {
           handleShowPlaylist={handleShowPlaylist}
           handleCreatePlaylist={handleCreatePlaylist}
           handleDeletePlaylist={handleDeletePlaylist}
+          handleExportPlaylist={handleExportPlaylist}
         />
       </div>
     </div>

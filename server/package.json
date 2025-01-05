@@ -6,6 +6,7 @@
         "start": "node app.js"
     },
     "dependencies": {
+        "bottleneck": "^2.19.5",
         "cors": "^2.8.5",
         "express": "^4.21.1"
     },
