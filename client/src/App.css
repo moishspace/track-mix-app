@@ -103,6 +103,22 @@ body, html {
   height: 42px;
 }
 
+.button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #f7f7f7;
+  background-color: #aba30f;
+  border: none;
+  border-radius: 0 20px 20px 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  height: 42px;
+}
+.button:hover {
+  background-color: #8e880d;
+}
+
 .search-button {
   padding: 10px 20px;
   font-size: 1rem;
@@ -124,8 +140,8 @@ body, html {
 .content-container, .flex-container {
   display: flex;
   width: 100%;
-  max-width: 1600px;
-  height: 70vh;
+  max-width: 1400px;
+  height: 75vh;
   gap: 10px;
   overflow: hidden;
   box-sizing: border-box;

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import MainDashboard from '../components/MainDashboard';
 import '../styles/HomeStyle.css';
+import { SiPioneerdj } from "react-icons/si";
 
 const Home = ({ isAuthorized, setIsAuthorized }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,6 +12,7 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Load search history from localStorage on component mount
   useEffect(() => {
@@ -88,9 +90,13 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
     window.location.href = 'http://localhost:3001/api/login';
   };
 
+  const goToMixer = () => {
+    navigate('/mixer');
+  };
+
   return (
     <div className="home-container">
-      <h1 className="title">Music Similarity App</h1>
+      <h1 className="title">Music Mix App</h1>
       {!isAuthorized ? (
         <p className="description">Discover music based on rhythm and style. Login to start exploring!</p>
       ) : (
@@ -115,6 +121,9 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
             />
             <button onClick={handleSearchSubmit} className="search-button">
               <i className="fas fa-search"></i>
+            </button>
+            <button className="mix-button" onClick={goToMixer}>
+              <SiPioneerdj style={{ marginRight: '6px' }} /> Mix
             </button>
 
             {/* Autocomplete Suggestions */}

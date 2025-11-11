@@ -12,7 +12,7 @@ import {
 import useExportToCSV from './useExportToCSV';
 
 
-const usePlaylist = (filteredTracks, setFilteredTracks, setTrackDetails, selectedTrackIds, setSelectedTrackIds, setSelectAllChecked) => {
+const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDetails, selectedTrackIds, setSelectedTrackIds, setSelectAllChecked) => {
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const exportToCSV = useExportToCSV();
@@ -69,7 +69,7 @@ const usePlaylist = (filteredTracks, setFilteredTracks, setTrackDetails, selecte
       basicTracks.forEach((track) => {
         fetchAndUpdateTrackDetails(track.id, setTrackDetails, track);
       });
-  
+
       // Step 4: Update the selected track IDs based on the current playlist
       const trackIds = basicTracks.map((track) => track.id);
       const selectedIdsInPlaylist = trackIds.filter((id) => selectedTrackIds.includes(id));

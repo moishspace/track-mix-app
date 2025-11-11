@@ -1,13 +1,16 @@
 {
-    "name": "track-similarity-backend",
+    "name": "track-mix-backend",
     "version": "1.0.0",
     "main": "app.js",
     "scripts": {
-        "start": "node app.js"
+        "start": "node app.js",
+        "dev": "node --no-warnings app.js"
     },
     "dependencies": {
+        "axios": "^1.7.9",
         "bottleneck": "^2.19.5",
         "cors": "^2.8.5",
+        "dotenv": "^16.4.7",
         "express": "^4.21.1"
     },
     "keywords": [],

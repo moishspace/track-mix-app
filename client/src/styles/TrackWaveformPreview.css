@@ -1,0 +1,161 @@
+.waveform-preview-container {
+  position: relative;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.waveform-preview-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #666;
+  font-size: 11px;
+}
+
+.waveform-preview-svg {
+  filter: contrast(1.5) brightness(1.1);
+}
+.waveform-preview-bars-rgb line {
+  stroke-linecap: round;
+} 
+
+.waveform-preview-info {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 6px;
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+}
+
+.waveform-preview-bpm {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.waveform-preview-key {
+  font-size: 11px;
+  font-weight: 700;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.waveform-preview-controls {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 4px;
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+}
+
+.waveform-preview-zoom-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.2s;
+}
+
+.waveform-preview-zoom-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.waveform-preview-zoom-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.waveform-preview-zoom-level {
+  color: #fff;
+  font-size: 10px;
+  opacity: 0.8;
+  min-width: 24px;
+  text-align: center;
+}
+
+.waveform-preview-scroll {
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Scrollbar styling */
+.waveform-preview-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.waveform-preview-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.waveform-preview-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.waveform-preview-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Firefox scrollbar */
+.waveform-preview-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+}
+
+.waveform-preview-svg {
+  display: block;
+  background: transparent;
+}
+
+/* RGB waveform (Rekordbox 6+ style) */
+.waveform-preview-bars-rgb {
+  /* No blend mode needed - each bar has its own RGB color */
+}
+
+.waveform-preview-center-line {
+  stroke: #333;
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.waveform-preview-phrase-line {
+  stroke: #ff00d0;
+  stroke-width: 1.5;
+  opacity: 0.7;
+}
+
+/* Hover effects for RGB waveform */
+.waveform-preview-container:hover .waveform-preview-bars-rgb line {
+  filter: brightness(1.2);
+}
+
+.waveform-preview-container:hover .waveform-preview-phrase-line {
+  opacity: 0.9;
+}

@@ -3,9 +3,13 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ErrorBoundary from './components/ErrorBoundary';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; // Import toastify styles
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; 
 import Home from './pages/Home';
+import MixerPage from './pages/MixerPage';
+
+// Inside <Routes>
+<Route path="/mixer" element={<MixerPage />} />
 import './App.css';
 import { CssBaseline } from '@mui/material';
 
@@ -30,6 +34,7 @@ const App = () => {
                 path="/"
                 element={<Home isAuthorized={isAuthorized} setIsAuthorized={setIsAuthorized} />}
               />
+               <Route path="/mixer" element={<MixerPage />} />
             </Routes>
           </div>
           <ToastContainer /> {/* Add ToastContainer here */}

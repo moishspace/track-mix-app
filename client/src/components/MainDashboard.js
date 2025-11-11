@@ -28,7 +28,7 @@ const MainDashboard = ({ searchTerm }) => {
     handleAddToPlaylist,
     handleDeletePlaylist,
     handleExportPlaylist,
-  } = usePlaylist(filteredTracks, setFilteredTracks, setTrackDetails, selectedTrackIds, setSelectedTrackIds, setSelectAllChecked);
+  } = usePlaylist(filteredTracks, trackDetails, setFilteredTracks, setTrackDetails, selectedTrackIds, setSelectedTrackIds, setSelectAllChecked);
   
   const {
     handleSelectAllClick,
@@ -66,6 +66,7 @@ const MainDashboard = ({ searchTerm }) => {
   
     return filteredTracks.map((track) => {
       const additionalDetails = trackDetails[track.id] || {};
+    //  console.log(additionalDetails);
      
       return {
         id: track.id,
@@ -79,7 +80,7 @@ const MainDashboard = ({ searchTerm }) => {
         duration: track.duration_ms ? `${Math.floor(track.duration_ms / 60000)}:${String(Math.floor((track.duration_ms % 60000) / 1000)).padStart(2, '0')}` : '',
         preview_url: track.preview_url || null,
         genre: additionalDetails.genres?.join(', ') || '',
-        tempo: additionalDetails.features?.tempo ? Math.round(additionalDetails.features.tempo) : '',
+        tempo: additionalDetails.tempo,//additionalDetails.features?.tempo ? Math.round(additionalDetails.features.tempo) : '',
         key: additionalDetails.features?.key || '',
         danceability: additionalDetails.features?.danceability || '',
         energy: additionalDetails.features?.energy || '',
@@ -97,11 +98,11 @@ const MainDashboard = ({ searchTerm }) => {
     });
   }, [filteredTracks, trackDetails]);
 
-  useEffect(() => {
-    if (processedTracks[currentTrackIndex]) {
-      setSelectedTrack(processedTracks[currentTrackIndex]);
-    }
-  }, [currentTrackIndex, processedTracks]);
+  // useEffect(() => {
+  //   if (processedTracks[currentTrackIndex]) {
+  //     setSelectedTrack(processedTracks[currentTrackIndex]);
+  //   }
+  // }, [currentTrackIndex, processedTracks]);
 
   return (
     <div className="flex-container">
@@ -121,7 +122,7 @@ const MainDashboard = ({ searchTerm }) => {
         />
 
         {/* Waveform Component */}
-        <div className="waveform-section">
+        {/* <div className="waveform-section">
           {selectedTrack ? (
             <AudioWaveform
               key={selectedTrack?.id || 'default'}
@@ -135,7 +136,7 @@ const MainDashboard = ({ searchTerm }) => {
               <div className="waveform-empty">Please select a track to display the waveform.</div>
             </div>
           )}
-        </div>
+        </div> */}
        
         {/* Track Player */}
         <TrackPlayer 
