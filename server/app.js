@@ -872,9 +872,17 @@ app.post("/api/analyze-tracks", async (req, res) => {
     let output = "";
     let errorOutput = "";
 
+    // process.stdout.on("data", (data) => {
+    //   const msg = data.toString();
+    //   console.log(`[PYTHON]: ${msg}`);
+    //   output += msg;
+    // });
+
     process.stdout.on("data", (data) => {
       const msg = data.toString();
-      console.log(`[PYTHON]: ${msg}`);
+      if (msg.includes("ANALYSIS RESULTS")) {
+        console.log("[PYTHON]: ✅ Analysis finished");
+      }
       output += msg;
     });
 

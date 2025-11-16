@@ -9,6 +9,7 @@ import FolderPicker from "../components/FolderPicker";
 import FadeControls from "../components/FadeControls";
 import FileList from "../components/FileList";
 import MixerTrackTable from "../components/MixerTrackTable";
+import MixerTrackPlayer from "../components/MixerTrackPlayer";
 import OpenFinder from "../components/OpenFinder";
 import { startMix, analyzeTracks } from "../services/api";
 
@@ -22,6 +23,7 @@ export default function MixerPage() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [analysisMode, setAnalysisMode] = useState("manual");
   const [mixingMode, setMixingMode] = useState("transition"); // "transition" or "overlap"
+  const [previewTrack, setPreviewTrack] = useState(null); // Track currently being previewed
 
   // Convert milliseconds to MM:SS format
   const msToMMSS = (ms) => {
@@ -255,12 +257,16 @@ export default function MixerPage() {
                   </option>
                 </select>
               </div>
-              {/* <div className="form-group" style={{ fontSize: '0.9em', color: '#666', marginTop: '0.5rem' }}>
-                <strong>Transition Mode:</strong> T2 starts at entrance point, T1 fade-out begins at same moment.<br/>
-                <strong>Overlap Mode:</strong> T2 starts entrance duration before end, with full overlap.
-              </div> */}
             </div>
           </div>
+        </div>
+
+        {/* Track Preview Player */}
+        <div style={{ marginTop: "1rem" }}>
+          <MixerTrackPlayer
+            track={previewTrack}
+            audioFolderPath={folderPath}
+          />
         </div>
 
       <div
@@ -297,6 +303,7 @@ export default function MixerPage() {
           defaultEntrance={defaultEntrance}
           selectedIds={selectedIds}
           setSelectedIds={setSelectedIds}
+          onTrackClick={setPreviewTrack}
         />
       </div>
     </div>

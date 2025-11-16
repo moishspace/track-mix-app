@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, globalShortcut, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, globalShortcut, shell, protocol } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
@@ -21,6 +21,30 @@ function createWindow() {
   // if (!app.isPackaged) {
   //   win.webContents.openDevTools({ mode: "detach" });
   // }
+}
+
+// Register custom protocol for serving local audio files
+function registerLocalAudioProtocol() {
+  protocol.registerFileProtocol('local-audio', (request, callback) => {
+    // Remove the protocol prefix to get the actual file path
+    const filePath = decodeURIComponent(request.url.replace('local-audio://', ''));
+
+    // Security: ensure the path is absolute and exists
+    if (!path.isAbsolute(filePath)) {
+      console.error('Rejected relative path:', filePath);
+      callback({ error: -6 }); // net::ERR_FILE_NOT_FOUND
+      return;
+    }
+
+    if (!fs.existsSync(filePath)) {
+      console.error('File not found:', filePath);
+      callback({ error: -6 });
+      return;
+    }
+
+    // Serve the file
+    callback({ path: filePath });
+  });
 }
 
 // === Handle folder picking and .wav file listing ===
@@ -57,6 +81,9 @@ ipcMain.on("open-folder", (event, folderPath) => {
 
 // === Electron app lifecycle ===
 app.whenReady().then(() => {
+  // Register custom protocol for audio files before creating window
+  registerLocalAudioProtocol();
+
   createWindow();
 
   globalShortcut.register("CommandOrControl+Shift+I", () => {

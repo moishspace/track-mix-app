@@ -19,45 +19,80 @@ export default function MixerTrackTable({
   defaultEntrance = 30000,
   selectedIds = [],
   setSelectedIds = () => {},
+  onTrackClick = null,
 }) {
   const [usedSuggestionIds, setUsedSuggestionIds] = React.useState([]);
   const [originalValues, setOriginalValues] = React.useState({});
 
   // Key color mapping based on Camelot wheel (same as TrackWaveformPreview)
   const getKeyColor = (key) => {
-    if (!key) return '#999';
+    if (!key) return "#999";
 
     const keyColors = {
       // Major keys
-      '8B': '#FF6B6B', 'C': '#FF6B6B',
-      '3B': '#FF8E53', 'Db': '#FF8E53', 'C#': '#FF8E53',
-      '10B': '#FFB84D', 'D': '#FFB84D',
-      '5B': '#FFD93D', 'Eb': '#FFD93D', 'D#': '#FFD93D',
-      '12B': '#6BCF7F', 'E': '#6BCF7F',
-      '7B': '#4ECDC4', 'F': '#4ECDC4',
-      '2B': '#45B7D1', 'Gb': '#45B7D1', 'F#': '#45B7D1',
-      '9B': '#5B9BD5', 'G': '#5B9BD5',
-      '4B': '#7B68EE', 'Ab': '#7B68EE', 'G#': '#7B68EE',
-      '11B': '#B565D8', 'A': '#B565D8',
-      '6B': '#E066A5', 'Bb': '#E066A5', 'A#': '#E066A5',
-      '1B': '#FF6B9D', 'B': '#FF6B9D',
+      "8B": "#FF6B6B",
+      C: "#FF6B6B",
+      "3B": "#FF8E53",
+      Db: "#FF8E53",
+      "C#": "#FF8E53",
+      "10B": "#FFB84D",
+      D: "#FFB84D",
+      "5B": "#FFD93D",
+      Eb: "#FFD93D",
+      "D#": "#FFD93D",
+      "12B": "#6BCF7F",
+      E: "#6BCF7F",
+      "7B": "#4ECDC4",
+      F: "#4ECDC4",
+      "2B": "#45B7D1",
+      Gb: "#45B7D1",
+      "F#": "#45B7D1",
+      "9B": "#5B9BD5",
+      G: "#5B9BD5",
+      "4B": "#7B68EE",
+      Ab: "#7B68EE",
+      "G#": "#7B68EE",
+      "11B": "#B565D8",
+      A: "#B565D8",
+      "6B": "#E066A5",
+      Bb: "#E066A5",
+      "A#": "#E066A5",
+      "1B": "#FF6B9D",
+      B: "#FF6B9D",
 
       // Minor keys
-      '5A': '#C23B22', 'Cm': '#C23B22',
-      '12A': '#D45E1F', 'Dbm': '#D45E1F', 'C#m': '#D45E1F',
-      '7A': '#E67E22', 'Dm': '#E67E22',
-      '2A': '#F39C12', 'Ebm': '#F39C12', 'D#m': '#F39C12',
-      '9A': '#27AE60', 'Em': '#27AE60',
-      '4A': '#16A085', 'Fm': '#16A085',
-      '11A': '#2980B9', 'Gbm': '#2980B9', 'F#m': '#2980B9',
-      '6A': '#3498DB', 'Gm': '#3498DB',
-      '1A': '#5B4FB9', 'Abm': '#5B4FB9', 'G#m': '#5B4FB9',
-      '8A': '#8E44AD', 'Am': '#8E44AD',
-      '3A': '#C0392B', 'Bbm': '#C0392B', 'A#m': '#C0392B',
-      '10A': '#E91E63', 'Bm': '#E91E63',
+      "5A": "#C23B22",
+      Cm: "#C23B22",
+      "12A": "#D45E1F",
+      Dbm: "#D45E1F",
+      "C#m": "#D45E1F",
+      "7A": "#E67E22",
+      Dm: "#E67E22",
+      "2A": "#F39C12",
+      Ebm: "#F39C12",
+      "D#m": "#F39C12",
+      "9A": "#27AE60",
+      Em: "#27AE60",
+      "4A": "#16A085",
+      Fm: "#16A085",
+      "11A": "#2980B9",
+      Gbm: "#2980B9",
+      "F#m": "#2980B9",
+      "6A": "#3498DB",
+      Gm: "#3498DB",
+      "1A": "#5B4FB9",
+      Abm: "#5B4FB9",
+      "G#m": "#5B4FB9",
+      "8A": "#8E44AD",
+      Am: "#8E44AD",
+      "3A": "#C0392B",
+      Bbm: "#C0392B",
+      "A#m": "#C0392B",
+      "10A": "#E91E63",
+      Bm: "#E91E63",
     };
 
-    return keyColors[key] || '#999';
+    return keyColors[key] || "#999";
   };
 
   // Convert milliseconds to MM:SS format
@@ -65,12 +100,14 @@ export default function MixerTrackTable({
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   // Convert MM:SS format to milliseconds
   const mmssToMs = (mmss) => {
-    const parts = mmss.split(':');
+    const parts = mmss.split(":");
     if (parts.length !== 2) return 0;
     const minutes = parseInt(parts[0]) || 0;
     const seconds = parseInt(parts[1]) || 0;
@@ -116,7 +153,11 @@ export default function MixerTrackTable({
 
     if (isChecked) {
       // Save original values before applying suggestions
-      if (track.analyzedFadeIn || track.analyzedFadeOut || track.analyzedEntrance) {
+      if (
+        track.analyzedFadeIn ||
+        track.analyzedFadeOut ||
+        track.analyzedEntrance
+      ) {
         setOriginalValues({
           ...originalValues,
           [index]: {
@@ -165,7 +206,11 @@ export default function MixerTrackTable({
       const newUsedIds = [];
 
       const updated = tracks.map((track, i) => {
-        if (track.analyzedFadeIn || track.analyzedFadeOut || track.analyzedEntrance) {
+        if (
+          track.analyzedFadeIn ||
+          track.analyzedFadeOut ||
+          track.analyzedEntrance
+        ) {
           // Save original values
           newOriginalValues[i] = {
             fadeIn: track.fadeIn || defaultFadeIn,
@@ -250,11 +295,28 @@ export default function MixerTrackTable({
                     <Checkbox
                       indeterminate={
                         usedSuggestionIds.length > 0 &&
-                        usedSuggestionIds.length < tracks.filter(t => t.analyzedFadeIn || t.analyzedFadeOut || t.analyzedEntrance).length
+                        usedSuggestionIds.length <
+                          tracks.filter(
+                            (t) =>
+                              t.analyzedFadeIn ||
+                              t.analyzedFadeOut ||
+                              t.analyzedEntrance
+                          ).length
                       }
                       checked={
-                        tracks.filter(t => t.analyzedFadeIn || t.analyzedFadeOut || t.analyzedEntrance).length > 0 &&
-                        usedSuggestionIds.length === tracks.filter(t => t.analyzedFadeIn || t.analyzedFadeOut || t.analyzedEntrance).length
+                        tracks.filter(
+                          (t) =>
+                            t.analyzedFadeIn ||
+                            t.analyzedFadeOut ||
+                            t.analyzedEntrance
+                        ).length > 0 &&
+                        usedSuggestionIds.length ===
+                          tracks.filter(
+                            (t) =>
+                              t.analyzedFadeIn ||
+                              t.analyzedFadeOut ||
+                              t.analyzedEntrance
+                          ).length
                       }
                       onChange={handleSelectAllSuggestions}
                       sx={{
@@ -284,13 +346,30 @@ export default function MixerTrackTable({
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
                         hover
+                        onClick={() =>
+                          onTrackClick &&
+                          onTrackClick({
+                            ...track,
+                            name: track.name,
+                            analysis: {
+                              waveform_data: track.waveformData,
+                              bpm: track.bpm,
+                              key: track.key,
+                              camelot_key: track.camelotKey,
+                            },
+                          })
+                        }
                         sx={{
                           backgroundColor: selectedIds.includes(i)
                             ? "#2a2a2a"
                             : "#1c1c1c",
+                          cursor: onTrackClick ? "pointer" : "default",
                         }}
                       >
-                        <TableCell padding="checkbox">
+                        <TableCell
+                          padding="checkbox"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Checkbox
                             checked={selectedIds.includes(i)}
                             onChange={() => handleSelectRow(i)}
@@ -304,6 +383,7 @@ export default function MixerTrackTable({
                         <TableCell>{track.name}</TableCell>
                         <TableCell>
                           <TrackWaveformPreview
+                            mode="table"
                             waveformData={track.waveformData}
                             phraseBoundaries={track.phraseBoundaries}
                             trackLength={track.trackLength}
@@ -349,7 +429,7 @@ export default function MixerTrackTable({
                           )}
                         </TableCell>
                         <TableCell>{track.length || "-"}</TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <TextField
                             type="text"
                             size="small"
@@ -365,7 +445,7 @@ export default function MixerTrackTable({
                             }}
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <TextField
                             type="text"
                             size="small"
@@ -381,7 +461,7 @@ export default function MixerTrackTable({
                             }}
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <TextField
                             type="text"
                             size="small"
@@ -397,10 +477,17 @@ export default function MixerTrackTable({
                             }}
                           />
                         </TableCell>
-                        <TableCell padding="checkbox">
+                        <TableCell
+                          padding="checkbox"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Checkbox
                             checked={usedSuggestionIds.includes(i)}
-                            disabled={!track.analyzedFadeIn && !track.analyzedFadeOut && !track.analyzedEntrance}
+                            disabled={
+                              !track.analyzedFadeIn &&
+                              !track.analyzedFadeOut &&
+                              !track.analyzedEntrance
+                            }
                             onChange={(e) => handleUseSuggested(i, e)}
                             sx={{
                               color: "#eee",
@@ -411,7 +498,9 @@ export default function MixerTrackTable({
                         </TableCell>
                         <TableCell sx={{ textAlign: "center" }}>
                           {track.analyzedFadeIn ? (
-                            <span style={{ color: "#4caf50", fontWeight: "bold" }}>
+                            <span
+                              style={{ color: "#4caf50", fontWeight: "bold" }}
+                            >
                               {msToMMSS(track.analyzedFadeIn)}
                             </span>
                           ) : (
@@ -420,7 +509,9 @@ export default function MixerTrackTable({
                         </TableCell>
                         <TableCell sx={{ textAlign: "center" }}>
                           {track.analyzedFadeOut ? (
-                            <span style={{ color: "#4caf50", fontWeight: "bold" }}>
+                            <span
+                              style={{ color: "#4caf50", fontWeight: "bold" }}
+                            >
                               {msToMMSS(track.analyzedFadeOut)}
                             </span>
                           ) : (
@@ -429,7 +520,9 @@ export default function MixerTrackTable({
                         </TableCell>
                         <TableCell sx={{ textAlign: "center" }}>
                           {track.analyzedEntrance ? (
-                            <span style={{ color: "#4caf50", fontWeight: "bold" }}>
+                            <span
+                              style={{ color: "#4caf50", fontWeight: "bold" }}
+                            >
                               {msToMMSS(track.analyzedEntrance)}
                             </span>
                           ) : (
