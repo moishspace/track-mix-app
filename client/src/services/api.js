@@ -271,6 +271,7 @@ export const startMix = async ({
   defaultFadeIn,
   defaultFadeOut,
   defaultEntrance,
+  defaultExit,
   mixingMode,
   tracks,
 }) => {
@@ -282,6 +283,7 @@ export const startMix = async ({
         defaultFadeIn,
         defaultFadeOut,
         defaultEntrance,
+        defaultExit,
         mixingMode,
         tracks,
       })

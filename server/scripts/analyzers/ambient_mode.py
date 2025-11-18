@@ -123,14 +123,14 @@ def analyze_ambient_mode(audio, track_length, silence_at_start, silence_at_end,
     FADE_OUT_DEFAULT_MS = 35000
 
     # Entrance constants
-    ENTRANCE_DETECTED_MULTIPLIER = 1.5  # For tracks with detected phrase boundaries
-    ENTRANCE_ESTIMATED_MULTIPLIER = 1.15  # For smooth tracks with estimated phrases
-    ENTRANCE_MIN_DETECTED_MS = 30000
-    ENTRANCE_MAX_DETECTED_MS = 120000
-    ENTRANCE_MIN_ESTIMATED_MS = 25000
-    ENTRANCE_MAX_ESTIMATED_MS = 90000
-    ENTRANCE_LONG_TRACK_FALLBACK_MS = 45000
-    ENTRANCE_SHORT_TRACK_DIVISOR = 3
+    ENTRANCE_EXIT_DETECTED_MULTIPLIER = 1.5  # For tracks with detected phrase boundaries
+    ENTRANCE_EXIT_ESTIMATED_MULTIPLIER = 1.15  # For smooth tracks with estimated phrases
+    ENTRANCE_EXIT_MIN_DETECTED_MS = 30000
+    ENTRANCE_EXIT_MAX_DETECTED_MS = 120000
+    ENTRANCE_EXIT_MIN_ESTIMATED_MS = 25000
+    ENTRANCE_EXIT_MAX_ESTIMATED_MS = 90000
+    ENTRANCE_EXIT_LONG_TRACK_FALLBACK_MS = 45000
+    ENTRANCE_EXIT_SHORT_TRACK_DIVISOR = 3
 
     # Default phrase length
     DEFAULT_PHRASE_LENGTH_MS = 30000
@@ -184,21 +184,21 @@ def analyze_ambient_mode(audio, track_length, silence_at_start, silence_at_end,
         else:
             suggested_fade_out = FADE_OUT_DEFAULT_MS
 
-    # ========== ENTRANCE ==========
+    # ========== EXIT ==========
 
     if avg_phrase_length > 0:
         if has_detected_phrases:
-            suggested_entrance = int(avg_phrase_length * ENTRANCE_DETECTED_MULTIPLIER)
-            suggested_entrance = max(ENTRANCE_MIN_DETECTED_MS, min(suggested_entrance, ENTRANCE_MAX_DETECTED_MS))
+            suggested_exit = int(avg_phrase_length * ENTRANCE_EXIT_DETECTED_MULTIPLIER)
+            suggested_exit = max(ENTRANCE_EXIT_MIN_DETECTED_MS, min(suggested_exit, ENTRANCE_EXIT_MAX_DETECTED_MS))
         else:
-            suggested_entrance = int(avg_phrase_length * ENTRANCE_ESTIMATED_MULTIPLIER)
-            suggested_entrance = max(ENTRANCE_MIN_ESTIMATED_MS, min(suggested_entrance, ENTRANCE_MAX_ESTIMATED_MS))
+            suggested_exit = int(avg_phrase_length * ENTRANCE_EXIT_ESTIMATED_MULTIPLIER)
+            suggested_exit = max(ENTRANCE_EXIT_MIN_ESTIMATED_MS, min(suggested_exit, ENTRANCE_EXIT_MAX_ESTIMATED_MS))
     else:
         if track_length > LONG_TRACK_THRESHOLD_MS:
-            suggested_entrance = ENTRANCE_LONG_TRACK_FALLBACK_MS
+            suggested_exit = ENTRANCE_EXIT_LONG_TRACK_FALLBACK_MS
         else:
-            suggested_entrance = min(ENTRANCE_MIN_DETECTED_MS, track_length // ENTRANCE_SHORT_TRACK_DIVISOR)
+            suggested_exit = min(ENTRANCE_EXIT_MIN_DETECTED_MS, track_length // ENTRANCE_EXIT_SHORT_TRACK_DIVISOR)
 
-    print(f"    ✓ Suggested: fade_in={suggested_fade_in}ms, fade_out={suggested_fade_out}ms, entrance={suggested_entrance}ms")
+    print(f"    ✓ Suggested: fade_in={suggested_fade_in}ms, fade_out={suggested_fade_out}ms, exit={suggested_exit}ms")
 
-    return suggested_fade_in, suggested_fade_out, suggested_entrance
+    return suggested_fade_in, suggested_fade_out, suggested_exit

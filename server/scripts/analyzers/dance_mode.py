@@ -44,15 +44,15 @@ def analyze_dance_mode(audio, track_length, silence_at_start, silence_at_end,
         audio_path: Path to audio file for phrase detection (string, optional)
 
     Returns:
-        Tuple of (fade_in, fade_out, entrance):
+        Tuple of (fade_in, fade_out, exit):
             - fade_in: Suggested fade-in duration in milliseconds (int)
             - fade_out: Suggested fade-out duration in milliseconds (int)
-            - entrance: Suggested entrance timing in milliseconds (int)
+            - exit: Suggested exit timing in milliseconds (int)
 
     Algorithm:
         1. Detect phrase boundaries using spectral flux analysis
         2. Calculate average phrase length (typically 8-32 bars)
-        3. Align fade/entrance times to bar boundaries
+        3. Align fade/exit times to bar boundaries
 
         Fade In (2-4 bars):
             - With silence: 60% of silence, max 4 bars
@@ -63,7 +63,7 @@ def analyze_dance_mode(audio, track_length, silence_at_start, silence_at_end,
             - With silence: 4 bars minimum
             - Without silence: 8 bars for smooth end
 
-        Entrance (8-32 bars):
+        Exit (8-32 bars):
             - With detected phrases: Full phrase length
             - High energy: 16 bars for longer overlap
             - Low energy: 8 bars for shorter overlap
@@ -80,7 +80,7 @@ def analyze_dance_mode(audio, track_length, silence_at_start, silence_at_end,
     Examples:
         >>> # Track with clear phrase boundaries detected
         >>> analyze_dance_mode(audio, 300000, 0, 500, -12.0, -10.0, "track.mp3")
-        (3840, 15360, 30720)  # 2 bar fade-in, 8 bar fade-out, 16 bar entrance
+        (3840, 15360, 30720)  # 2 bar fade-in, 8 bar fade-out, 16 bar exit
 
         >>> # Track with no clear phrases (smooth)
         >>> analyze_dance_mode(audio, 240000, 1000, 2000, -15.0, -8.0, "track.mp3")
@@ -113,12 +113,12 @@ def analyze_dance_mode(audio, track_length, silence_at_start, silence_at_end,
     FADE_OUT_MAX_BARS = 8
     FADE_OUT_PHRASE_RATIO = 0.5  # Use half the phrase length for fade-out
 
-    # Entrance constants (8-16 bars)
-    ENTRANCE_MIN_BARS = 8
-    ENTRANCE_MAX_BARS = 32
-    ENTRANCE_DETECTED_MULTIPLIER = 1.0  # Use full phrase length for detected phrases
-    ENTRANCE_HIGH_ENERGY_BARS = 16  # High energy tracks get longer overlap
-    ENTRANCE_LOW_ENERGY_BARS = 8   # Lower energy tracks get shorter overlap
+    # Exit constants (8-16 bars)
+    ENTRANCE_EXIT_MIN_BARS = 8
+    ENTRANCE_EXIT_MAX_BARS = 32
+    ENTRANCE_EXIT_DETECTED_MULTIPLIER = 1.0  # Use full phrase length for detected phrases
+    ENTRANCE_EXIT_HIGH_ENERGY_BARS = 16  # High energy tracks get longer overlap
+    ENTRANCE_EXIT_LOW_ENERGY_BARS = 8   # Lower energy tracks get shorter overlap
 
     # ========== PHRASE BOUNDARY DETECTION ==========
 
@@ -163,30 +163,30 @@ def analyze_dance_mode(audio, track_length, silence_at_start, silence_at_end,
         else:
             suggested_fade_out = ONE_BAR_MS * FADE_OUT_MAX_BARS  # 8 bars
 
-    # ========== ENTRANCE ==========
+    # ========== EXIT ==========
 
     if has_detected_phrases:
         # Use detected phrase length for entrance timing
-        suggested_entrance = int(avg_phrase_length * ENTRANCE_DETECTED_MULTIPLIER)
+        suggested_exit = int(avg_phrase_length * ENTRANCE_EXIT_DETECTED_MULTIPLIER)
 
         # Adjust based on energy level
         if last_30s_loudness > HIGH_ENERGY_DB:
             # High energy ending - longer overlap for smoother transition
-            suggested_entrance = max(suggested_entrance, ONE_BAR_MS * ENTRANCE_HIGH_ENERGY_BARS)
+            suggested_exit = max(suggested_exit, ONE_BAR_MS * ENTRANCE_EXIT_HIGH_ENERGY_BARS)
 
         # Clamp to reasonable bar-aligned values
-        suggested_entrance = max(ONE_BAR_MS * ENTRANCE_MIN_BARS,
-                                min(suggested_entrance, ONE_BAR_MS * ENTRANCE_MAX_BARS))
+        suggested_exit = max(ONE_BAR_MS * ENTRANCE_EXIT_MIN_BARS,
+                                min(suggested_exit, ONE_BAR_MS * ENTRANCE_EXIT_MAX_BARS))
     else:
         # Use bar-based heuristic
         if last_30s_loudness > HIGH_ENERGY_DB:
-            suggested_entrance = ONE_BAR_MS * ENTRANCE_HIGH_ENERGY_BARS  # 16 bars
+            suggested_exit = ONE_BAR_MS * ENTRANCE_EXIT_HIGH_ENERGY_BARS  # 16 bars
         else:
-            suggested_entrance = ONE_BAR_MS * ENTRANCE_LOW_ENERGY_BARS   # 8 bars
+            suggested_exit = ONE_BAR_MS * ENTRANCE_EXIT_LOW_ENERGY_BARS   # 8 bars
 
     # Ensure entrance doesn't exceed track length
-    suggested_entrance = min(suggested_entrance, track_length // 2)
+    suggested_exit = min(suggested_exit, track_length // 2)
 
-    print(f"    ✓ Suggested: fade_in={suggested_fade_in}ms, fade_out={suggested_fade_out}ms, entrance={suggested_entrance}ms")
+    print(f"    ✓ Suggested: fade_in={suggested_fade_in}ms, fade_out={suggested_fade_out}ms, exit={suggested_exit}ms")
 
-    return suggested_fade_in, suggested_fade_out, suggested_entrance
+    return suggested_fade_in, suggested_fade_out, suggested_exit

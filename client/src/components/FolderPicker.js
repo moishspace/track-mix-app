@@ -8,6 +8,7 @@ function FolderPicker({
   defaultFadeIn = 30000,
   defaultFadeOut = 30000,
   defaultEntrance = 30000,
+  defaultExit = 30000,
 }) {
   const handleBrowse = async () => {
     if (!window.electronAPI?.pickFolder) {
@@ -67,6 +68,7 @@ function FolderPicker({
           fadeIn: defaultFadeIn,
           fadeOut: defaultFadeOut,
           entrance: defaultEntrance,
+          exit: defaultExit,
         };
       })
     );

@@ -19,6 +19,7 @@ export default function MixerPage() {
   const [defaultFadeIn, setDefaultFadeIn] = useState(30000);
   const [defaultFadeOut, setDefaultFadeOut] = useState(30000);
   const [defaultEntrance, setDefaultEntrance] = useState(30000);
+  const [defaultExit, setDefaultExit] = useState(30000);
   const [tracks, setTracks] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [analysisMode, setAnalysisMode] = useState("manual");
@@ -74,6 +75,8 @@ export default function MixerPage() {
               analyzedFadeIn: analyzed.analysis.suggested_fade_in,
               analyzedFadeOut: analyzed.analysis.suggested_fade_out,
               analyzedEntrance: analyzed.analysis.suggested_entrance,
+              analyzedExit: analyzed.analysis.suggested_exit,
+
               // Add waveform visualization data
               waveformData: analyzed.analysis.waveform_data,
               phraseBoundaries: analyzed.analysis.phrase_boundaries,
@@ -130,6 +133,7 @@ export default function MixerPage() {
         defaultFadeIn,
         defaultFadeOut,
         defaultEntrance,
+        defaultExit,
         mixingMode,
         tracks: tracks
           .filter((_, i) => selectedIds.includes(i))
@@ -138,6 +142,7 @@ export default function MixerPage() {
             fadeIn: track.fadeIn || defaultFadeIn,
             fadeOut: track.fadeOut || defaultFadeOut,
             entrance: track.entrance || defaultEntrance,
+            exit: track.exit || defaultExit,
           })),
       });
 
@@ -204,6 +209,15 @@ export default function MixerPage() {
               type="text"
               value={msToMMSS(defaultEntrance)}
               onChange={(e) => setDefaultEntrance(mmssToMs(e.target.value))}
+              placeholder="MM:SS"
+            />
+          </div>
+          <div className="form-group">
+            <label>Default Exit</label>
+            <input
+              type="text"
+              value={msToMMSS(defaultExit)}
+              onChange={(e) => setDefaultExit(mmssToMs(e.target.value))}
               placeholder="MM:SS"
             />
           </div>
@@ -301,6 +315,7 @@ export default function MixerPage() {
           defaultFadeIn={defaultFadeIn}
           defaultFadeOut={defaultFadeOut}
           defaultEntrance={defaultEntrance}
+          defaultExit={defaultExit}
           selectedIds={selectedIds}
           setSelectedIds={setSelectedIds}
           onTrackClick={setPreviewTrack}

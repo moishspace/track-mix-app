@@ -17,6 +17,7 @@ export default function MixerTrackTable({
   defaultFadeIn = 30000,
   defaultFadeOut = 30000,
   defaultEntrance = 30000,
+  defaultExit = 30000,
   selectedIds = [],
   setSelectedIds = () => {},
   onTrackClick = null,
@@ -156,7 +157,8 @@ export default function MixerTrackTable({
       if (
         track.analyzedFadeIn ||
         track.analyzedFadeOut ||
-        track.analyzedEntrance
+        track.analyzedEntrance ||
+        track.analyzedExit
       ) {
         setOriginalValues({
           ...originalValues,
@@ -164,6 +166,7 @@ export default function MixerTrackTable({
             fadeIn: track.fadeIn || defaultFadeIn,
             fadeOut: track.fadeOut || defaultFadeOut,
             entrance: track.entrance || defaultEntrance,
+            exit: track.exit || defaultExit,
           },
         });
 
@@ -174,6 +177,7 @@ export default function MixerTrackTable({
                 fadeIn: t.analyzedFadeIn || t.fadeIn,
                 fadeOut: t.analyzedFadeOut || t.fadeOut,
                 entrance: t.analyzedEntrance || t.entrance,
+                exit: t.analyzedExit || t.exit,
               }
             : t
         );
@@ -190,6 +194,7 @@ export default function MixerTrackTable({
                 fadeIn: originalValues[index].fadeIn,
                 fadeOut: originalValues[index].fadeOut,
                 entrance: originalValues[index].entrance,
+                exit: originalValues[index].exit,
               }
             : t
         );
@@ -209,13 +214,15 @@ export default function MixerTrackTable({
         if (
           track.analyzedFadeIn ||
           track.analyzedFadeOut ||
-          track.analyzedEntrance
+          track.analyzedEntrance ||
+          track.analyzedExit
         ) {
           // Save original values
           newOriginalValues[i] = {
             fadeIn: track.fadeIn || defaultFadeIn,
             fadeOut: track.fadeOut || defaultFadeOut,
             entrance: track.entrance || defaultEntrance,
+            exit: track.exit || defaultExit,
           };
           newUsedIds.push(i);
 
@@ -224,6 +231,7 @@ export default function MixerTrackTable({
             fadeIn: track.analyzedFadeIn || track.fadeIn,
             fadeOut: track.analyzedFadeOut || track.fadeOut,
             entrance: track.analyzedEntrance || track.entrance,
+            exit: track.analyzedExit || track.exit,
           };
         }
         return track;
@@ -241,6 +249,7 @@ export default function MixerTrackTable({
             fadeIn: originalValues[i].fadeIn,
             fadeOut: originalValues[i].fadeOut,
             entrance: originalValues[i].entrance,
+            exit: originalValues[i].exit,
           };
         }
         return track;
@@ -291,6 +300,7 @@ export default function MixerTrackTable({
                   <TableCell>Fade In</TableCell>
                   <TableCell>Fade Out</TableCell>
                   <TableCell>Entrance</TableCell>
+                  <TableCell>Exit</TableCell>
                   <TableCell padding="checkbox">
                     <Checkbox
                       indeterminate={
@@ -300,7 +310,8 @@ export default function MixerTrackTable({
                             (t) =>
                               t.analyzedFadeIn ||
                               t.analyzedFadeOut ||
-                              t.analyzedEntrance
+                              t.analyzedEntrance ||
+                              t.analyzedExit
                           ).length
                       }
                       checked={
@@ -308,14 +319,16 @@ export default function MixerTrackTable({
                           (t) =>
                             t.analyzedFadeIn ||
                             t.analyzedFadeOut ||
-                            t.analyzedEntrance
+                            t.analyzedEntrance ||
+                            t.analyzedExit
                         ).length > 0 &&
                         usedSuggestionIds.length ===
                           tracks.filter(
                             (t) =>
                               t.analyzedFadeIn ||
                               t.analyzedFadeOut ||
-                              t.analyzedEntrance
+                              t.analyzedEntrance ||
+                              t.analyzedExit
                           ).length
                       }
                       onChange={handleSelectAllSuggestions}
@@ -333,6 +346,9 @@ export default function MixerTrackTable({
                   </TableCell>
                   <TableCell sx={{ width: "100px", textAlign: "center" }}>
                     Sug. Ent
+                  </TableCell>
+                  <TableCell sx={{ width: "100px", textAlign: "center" }}>
+                    Sug. Exit
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -477,6 +493,22 @@ export default function MixerTrackTable({
                             }}
                           />
                         </TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <TextField
+                            type="text"
+                            size="small"
+                            value={msToMMSS(track.exit || defaultExit)}
+                            onChange={(e) =>
+                              handleFadeChange(i, "exit", e.target.value)
+                            }
+                            placeholder="MM:SS"
+                            inputProps={{ style: { color: "#eee" } }}
+                            sx={{
+                              input: { backgroundColor: "#2a2a2a" },
+                              width: "80px",
+                            }}
+                          />
+                        </TableCell>
                         <TableCell
                           padding="checkbox"
                           onClick={(e) => e.stopPropagation()}
@@ -486,7 +518,8 @@ export default function MixerTrackTable({
                             disabled={
                               !track.analyzedFadeIn &&
                               !track.analyzedFadeOut &&
-                              !track.analyzedEntrance
+                              !track.analyzedEntrance &&
+                              !track.analyzedExit
                             }
                             onChange={(e) => handleUseSuggested(i, e)}
                             sx={{
@@ -524,6 +557,17 @@ export default function MixerTrackTable({
                               style={{ color: "#4caf50", fontWeight: "bold" }}
                             >
                               {msToMMSS(track.analyzedEntrance)}
+                            </span>
+                          ) : (
+                            <span style={{ color: "#666" }}>-</span>
+                          )}
+                        </TableCell>
+                        <TableCell sx={{ textAlign: "center" }}>
+                          {track.analyzedExit ? (
+                            <span
+                              style={{ color: "#4caf50", fontWeight: "bold" }}
+                            >
+                              {msToMMSS(track.analyzedExit)}
                             </span>
                           ) : (
                             <span style={{ color: "#666" }}>-</span>

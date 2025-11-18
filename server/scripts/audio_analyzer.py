@@ -85,6 +85,7 @@ def analyze_audio_file(file_path, mode="manual"):
             "suggested_fade_in": milliseconds (int),
             "suggested_fade_out": milliseconds (int),
             "suggested_entrance": milliseconds (int),
+            "suggested_exit": milliseconds (int),
             "track_length": milliseconds (int),
             "silence_at_start": milliseconds (int),
             "silence_at_end": milliseconds (int),
@@ -103,6 +104,7 @@ def analyze_audio_file(file_path, mode="manual"):
             "suggested_fade_in": 3840,
             "suggested_fade_out": 7680,
             "suggested_entrance": 15360,
+            "suggested_exit": 15360,
             "track_length": 240000,
             ...
         }
@@ -151,7 +153,7 @@ def analyze_audio_file(file_path, mode="manual"):
         avg_loudness = audio.dBFS
         print(f"    Avg loudness: {avg_loudness:.2f} dBFS")
 
-        # Analyze last 30 seconds for energy/loudness to suggest entrance timing
+        # Analyze last 30 seconds for energy/loudness to suggest exit timing
         last_30s = audio[-30000:] if len(audio) > 30000 else audio
         last_30s_loudness = last_30s.dBFS
 
@@ -164,7 +166,7 @@ def analyze_audio_file(file_path, mode="manual"):
         avg_phrase_length = 0
 
         if mode == "dance":
-            suggested_fade_in, suggested_fade_out, suggested_entrance = analyze_dance_mode(
+            suggested_fade_in, suggested_fade_out, suggested_exit = analyze_dance_mode(
                 audio, track_length, silence_at_start, silence_at_end,
                 first_30s_loudness, last_30s_loudness, file_path
             )
@@ -173,7 +175,7 @@ def analyze_audio_file(file_path, mode="manual"):
                 phrase_boundaries, avg_phrase_length = detect_electronic_phrase_boundaries(file_path)
 
         elif mode == "ambient":
-            suggested_fade_in, suggested_fade_out, suggested_entrance = analyze_ambient_mode(
+            suggested_fade_in, suggested_fade_out, suggested_exit = analyze_ambient_mode(
                 audio, track_length, silence_at_start, silence_at_end,
                 first_30s_loudness, last_30s_loudness, file_path
             )
@@ -182,24 +184,24 @@ def analyze_audio_file(file_path, mode="manual"):
                 phrase_boundaries, avg_phrase_length = detect_phrase_boundaries(file_path)
 
         elif mode == "pop":
-            suggested_fade_in, suggested_fade_out, suggested_entrance = analyze_pop_mode(
+            suggested_fade_in, suggested_fade_out, suggested_exit = analyze_pop_mode(
                 audio, track_length, silence_at_start, silence_at_end,
                 first_30s_loudness, last_30s_loudness
             )
 
         elif mode == "classical":
-            suggested_fade_in, suggested_fade_out, suggested_entrance = analyze_classical_mode(
+            suggested_fade_in, suggested_fade_out, suggested_exit = analyze_classical_mode(
                 audio, track_length, silence_at_start, silence_at_end,
                 first_30s_loudness, last_30s_loudness
             )
 
         else:  # manual mode (default)
-            suggested_fade_in, suggested_fade_out, suggested_entrance = analyze_manual_mode(
+            suggested_fade_in, suggested_fade_out, suggested_exit = analyze_manual_mode(
                 track_length, silence_at_start, silence_at_end,
                 first_30s, first_30s_loudness, last_30s_loudness
             )
 
-        print(f"    ✓ Suggested: fade_in={suggested_fade_in}ms, fade_out={suggested_fade_out}ms, entrance={suggested_entrance}ms")
+        print(f"    ✓ Suggested: fade_in={suggested_fade_in}ms, fade_out={suggested_fade_out}ms, exit={suggested_exit}ms")
 
         # ========== DETECT BPM AND MUSICAL KEY ==========
         bpm, key = detect_bpm_and_key(file_path)
@@ -214,7 +216,7 @@ def analyze_audio_file(file_path, mode="manual"):
         return {
             "suggested_fade_in": int(suggested_fade_in),
             "suggested_fade_out": int(suggested_fade_out),
-            "suggested_entrance": int(suggested_entrance),
+            "suggested_exit": int(suggested_exit),
             "track_length": int(track_length),
             "silence_at_start": int(silence_at_start),
             "silence_at_end": int(silence_at_end),
@@ -287,7 +289,7 @@ def analyze_tracks(folder_path, tracks, mode="manual"):
                 "analysis": {
                     "suggested_fade_in": 5000,
                     "suggested_fade_out": 5000,
-                    "suggested_entrance": 10000,
+                    "suggested_exit": 10000,
                     "track_length": 0,
                     "silence_at_start": 0,
                     "silence_at_end": 0,

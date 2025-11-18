@@ -110,17 +110,17 @@ def analyze_pop_mode(audio, track_length, silence_at_start, silence_at_end,
     else:
         suggested_fade_out = one_bar_ms * 4  # 4 bars
 
-    # ========== ENTRANCE ==========
+    # ========== EXIT ==========
     # 4 or 8 bars (phrase-aware)
     # Pop songs often have 4 or 8 bar phrases
 
     if last_30s_loudness > -8:
         # Strong ending - longer overlap
-        suggested_entrance = one_bar_ms * 8
+        suggested_exit = one_bar_ms * 8
     else:
         # Softer ending - shorter overlap
-        suggested_entrance = one_bar_ms * 4
+        suggested_exit = one_bar_ms * 4
 
-    suggested_entrance = min(suggested_entrance, track_length // 3)
+    suggested_exit = min(suggested_exit, track_length // 3)
 
-    return suggested_fade_in, suggested_fade_out, suggested_entrance
+    return suggested_fade_in, suggested_fade_out, suggested_exit

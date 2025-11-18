@@ -89,15 +89,15 @@ def analyze_manual_mode(track_length, silence_at_start, silence_at_end,
     else:
         suggested_fade_out = 8500
 
-    # ========== ENTRANCE ==========
+    # ========== EXIT ==========
     # When to start next track
     if silence_at_end > 2000:
         time_before_silence = track_length - silence_at_end
-        suggested_entrance = track_length - time_before_silence + suggested_fade_out
-        suggested_entrance = max(3000, min(suggested_entrance, 20000))
+        suggested_exit = track_length - time_before_silence + suggested_fade_out
+        suggested_exit = max(3000, min(suggested_exit, 20000))
     elif last_30s_loudness > -10:
-        suggested_entrance = int(suggested_fade_out * 1.4)
+        suggested_exit = int(suggested_fade_out * 1.4)
     else:
-        suggested_entrance = max(suggested_fade_out, 8000)
+        suggested_exit = max(suggested_fade_out, 8000)
 
-    return suggested_fade_in, suggested_fade_out, suggested_entrance
+    return suggested_fade_in, suggested_fade_out, suggested_exit

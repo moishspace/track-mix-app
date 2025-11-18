@@ -124,13 +124,13 @@ def analyze_classical_mode(audio, track_length, silence_at_start, silence_at_end
         # Strong ending - longer musical fade
         suggested_fade_out = 20000
 
-    # ========== ENTRANCE ==========
+    # ========== EXIT ==========
     # Minimal overlap, phrase-based (15-25 seconds)
     # Classical pieces should transition at phrase boundaries with minimal overlap
 
     if track_length > 180000:  # Longer than 3 minutes
-        suggested_entrance = 25000
+        suggested_exit = 25000
     else:
-        suggested_entrance = 15000
+        suggested_exit = 15000
 
-    return suggested_fade_in, suggested_fade_out, suggested_entrance
+    return suggested_fade_in, suggested_fade_out, suggested_exit

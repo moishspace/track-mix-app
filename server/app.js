@@ -10,7 +10,9 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors({ origin: "http://localhost:8000" }));
-app.use(express.json());
+// app.use(express.json());
+app.use(express.json({ limit: "100mb" }));
+app.use(express.urlencoded({ limit: "100mb", extended: true }));
 
 const limiter = new Bottleneck({
   minTime: 200, // At least 200ms between requests
@@ -776,6 +778,7 @@ app.post("/api/start-mix", async (req, res) => {
       defaultFadeIn,
       defaultFadeOut,
       defaultEntrance,
+      defaultExit,
       mixingMode,
       tracks,
     } = req.body;
@@ -786,6 +789,7 @@ app.post("/api/start-mix", async (req, res) => {
     console.log("⏱️ defaultFadeIn:", defaultFadeIn);
     console.log("⏱️ defaultFadeOut:", defaultFadeOut);
     console.log("⏱️ defaultEntrance:", defaultEntrance);
+    console.log("⏱️ defaultExit:", defaultExit);
     console.log("🔀 mixingMode:", mixingMode || "transition");
 
     if (!folderPath || !Array.isArray(tracks) || tracks.length === 0) {
@@ -804,6 +808,7 @@ app.post("/api/start-mix", async (req, res) => {
       defaultFadeIn.toString(),
       defaultFadeOut.toString(),
       defaultEntrance.toString(),
+      defaultExit.toString(),
       mixingMode || "transition", // Default to transition mode
     ];
 
@@ -956,7 +961,8 @@ app.post("/api/analyze-tracks", async (req, res) => {
           results.forEach((track, i) => {
             console.log(
               `   ${i + 1}. ${track.name}\n` +
-                `      → entrance: ${track.analysis.suggested_entrance}ms, ` +
+                // `      → entrance: ${track.analysis.suggested_entrance}ms, ` +
+                `      ← exit: ${track.analysis.suggested_exit }ms, ` +
                 `fade_in: ${track.analysis.suggested_fade_in}ms, fade_out: ${track.analysis.suggested_fade_out}ms`
             );
           });
