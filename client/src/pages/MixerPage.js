@@ -294,7 +294,9 @@ export default function MixerPage() {
             audioFolderPath={folderPath}
             onUpdateTrack={(updatedTrack) => {
               // Find and update the track in the tracks array
-              const trackIndex = tracks.findIndex((t) => t.name === updatedTrack.name);
+              const trackIndex = tracks.findIndex(
+                (t) => t.name === updatedTrack.name
+              );
               if (trackIndex !== -1) {
                 const newTracks = [...tracks];
                 newTracks[trackIndex] = updatedTrack;
@@ -340,6 +342,7 @@ export default function MixerPage() {
           selectedIds={selectedIds}
           setSelectedIds={setSelectedIds}
           onTrackClick={setPreviewTrack}
+          previewedTrackName={previewTrack?.name}
         />
       </div>
     </div>

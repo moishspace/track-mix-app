@@ -8,8 +8,10 @@ import {
   TableBody,
   Checkbox,
   TextField,
+  TableContainer,
 } from "@mui/material";
 import TrackWaveformPreview from "./TrackWaveformPreview";
+import TimeInputCell from "./TimeInputCell";
 
 export default function MixerTrackTable({
   tracks = [],
@@ -21,6 +23,7 @@ export default function MixerTrackTable({
   selectedIds = [],
   setSelectedIds = () => {},
   onTrackClick = null,
+  previewedTrackName = null,
 }) {
   const [usedSuggestionIds, setUsedSuggestionIds] = React.useState([]);
   const [originalValues, setOriginalValues] = React.useState({});
@@ -265,336 +268,397 @@ export default function MixerTrackTable({
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="trackTable">
           {(provided) => (
-            <Table
-              {...provided.droppableProps}
-              ref={provided.innerRef}
+            <TableContainer
               sx={{
-                "& .MuiTableCell-root": { color: "#eee", borderColor: "#333" },
+                maxHeight: 400,
+                overflowY: "auto",
+                "&::-webkit-scrollbar": {
+                  width: "8px",
+                },
+                "&::-webkit-scrollbar-track": {
+                  background: "#1a1a1a",
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  background: "#555",
+                  borderRadius: "4px",
+                },
+                "&::-webkit-scrollbar-thumb:hover": {
+                  background: "#888",
+                },
               }}
             >
-              <TableHead>
-                <TableRow>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      indeterminate={
-                        selectedIds.length > 0 &&
-                        selectedIds.length < tracks.length
-                      }
-                      checked={
-                        tracks.length > 0 &&
-                        selectedIds.length === tracks.length
-                      }
-                      onChange={handleSelectAll}
-                      sx={{
-                        color: "#eee",
-                        "&.Mui-checked": { color: "#aba30f" },
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>#</TableCell>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Waveform</TableCell>
-                  <TableCell>BPM</TableCell>
-                  <TableCell>Key</TableCell>
-                  <TableCell>Length</TableCell>
-                  <TableCell>Fade In</TableCell>
-                  <TableCell>Fade Out</TableCell>
-                  <TableCell>Entrance</TableCell>
-                  <TableCell>Exit</TableCell>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      indeterminate={
-                        usedSuggestionIds.length > 0 &&
-                        usedSuggestionIds.length <
-                          tracks.filter(
-                            (t) =>
-                              t.analyzedFadeIn ||
-                              t.analyzedFadeOut ||
-                              t.analyzedEntrance ||
-                              t.analyzedExit
-                          ).length
-                      }
-                      checked={
-                        tracks.filter(
-                          (t) =>
-                            t.analyzedFadeIn ||
-                            t.analyzedFadeOut ||
-                            t.analyzedEntrance ||
-                            t.analyzedExit
-                        ).length > 0 &&
-                        usedSuggestionIds.length ===
-                          tracks.filter(
-                            (t) =>
-                              t.analyzedFadeIn ||
-                              t.analyzedFadeOut ||
-                              t.analyzedEntrance ||
-                              t.analyzedExit
-                          ).length
-                      }
-                      onChange={handleSelectAllSuggestions}
-                      sx={{
-                        color: "#eee",
-                        "&.Mui-checked": { color: "#4caf50" },
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ width: "100px", textAlign: "center" }}>
-                    Sug. In
-                  </TableCell>
-                  <TableCell sx={{ width: "100px", textAlign: "center" }}>
-                    Sug. Out
-                  </TableCell>
-                  <TableCell sx={{ width: "100px", textAlign: "center" }}>
-                    Sug. Ent
-                  </TableCell>
-                  <TableCell sx={{ width: "100px", textAlign: "center" }}>
-                    Sug. Exit
-                  </TableCell>
-                </TableRow>
-              </TableHead>
+              <Table
+                stickyHeader
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                sx={{
+                  "& .MuiTableCell-root": {
+                    color: "#eee",
+                    borderBottom: "1px solid #333", // or 'none' to remove
+                  },
+                }}
+              >
+                <TableHead
+                  sx={{
+                    backgroundColor: "#1a1a1a",
+                    "& .MuiTableCell-root": {
+                      color: "#eee",
+                      fontWeight: "bold",
+                      // backgroundColor: "#1a1a1a",
+                      backgroundColor: "#a98a8a",
 
-              <TableBody>
-                {tracks.map((track, i) => (
-                  <Draggable key={i} draggableId={`track-${i}`} index={i}>
-                    {(provided) => (
-                      <TableRow
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        hover
-                        onClick={() =>
-                          onTrackClick &&
-                          onTrackClick({
-                            ...track,
-                            name: track.name,
-                            analysis: {
-                              waveform_data: track.waveformData,
-                              bpm: track.bpm,
-                              key: track.key,
-                              camelot_key: track.camelotKey,
-                            },
-                          })
+                      borderBottom: "1px solid #333",
+                      zIndex: 3, // optional: ensure each cell is above others
+                    },
+                  }}
+                >
+                  <TableRow>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        indeterminate={
+                          selectedIds.length > 0 &&
+                          selectedIds.length < tracks.length
                         }
+                        checked={
+                          tracks.length > 0 &&
+                          selectedIds.length === tracks.length
+                        }
+                        onChange={handleSelectAll}
                         sx={{
-                          backgroundColor: selectedIds.includes(i)
-                            ? "#2a2a2a"
-                            : "#1c1c1c",
-                          cursor: onTrackClick ? "pointer" : "default",
+                          color: "#eee",
+                          "&.Mui-checked": { color: "#aba30f" },
                         }}
-                      >
-                        <TableCell
-                          padding="checkbox"
-                          onClick={(e) => e.stopPropagation()}
+                      />
+                    </TableCell>
+                    <TableCell>#</TableCell>
+                    <TableCell>Title</TableCell>
+                    <TableCell>Waveform</TableCell>
+                    <TableCell>BPM</TableCell>
+                    <TableCell>Key</TableCell>
+                    <TableCell>Length</TableCell>
+                    <TableCell>Fade In</TableCell>
+                    <TableCell>Fade Out</TableCell>
+                    <TableCell>Entrance</TableCell>
+                    <TableCell>Exit</TableCell>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        indeterminate={
+                          usedSuggestionIds.length > 0 &&
+                          usedSuggestionIds.length <
+                            tracks.filter(
+                              (t) =>
+                                t.analyzedFadeIn ||
+                                t.analyzedFadeOut ||
+                                t.analyzedEntrance ||
+                                t.analyzedExit
+                            ).length
+                        }
+                        checked={
+                          tracks.filter(
+                            (t) =>
+                              t.analyzedFadeIn ||
+                              t.analyzedFadeOut ||
+                              t.analyzedEntrance ||
+                              t.analyzedExit
+                          ).length > 0 &&
+                          usedSuggestionIds.length ===
+                            tracks.filter(
+                              (t) =>
+                                t.analyzedFadeIn ||
+                                t.analyzedFadeOut ||
+                                t.analyzedEntrance ||
+                                t.analyzedExit
+                            ).length
+                        }
+                        onChange={handleSelectAllSuggestions}
+                        sx={{
+                          color: "#eee",
+                          "&.Mui-checked": { color: "#4caf50" },
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ width: "100px", textAlign: "center" }}>
+                      Sug. In
+                    </TableCell>
+                    <TableCell sx={{ width: "100px", textAlign: "center" }}>
+                      Sug. Out
+                    </TableCell>
+                    <TableCell sx={{ width: "100px", textAlign: "center" }}>
+                      Sug. Ent
+                    </TableCell>
+                    <TableCell sx={{ width: "100px", textAlign: "center" }}>
+                      Sug. Exit
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {tracks.map((track, i) => (
+                    <Draggable key={i} draggableId={`track-${i}`} index={i}>
+                      {(provided) => (
+                        <TableRow
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          hover
+                          onClick={() =>
+                            onTrackClick &&
+                            onTrackClick({
+                              ...track,
+                              name: track.name,
+                              analysis: {
+                                waveform_data: track.waveformData,
+                                bpm: track.bpm,
+                                key: track.key,
+                                camelot_key: track.camelotKey,
+                              },
+                            })
+                          }
+                          sx={{
+                            backgroundColor:
+                              previewedTrackName === track.name
+                                ? "#870b0bff"
+                                : "#1c1c1c",
+                            color: "#eee",
+                            borderTop:
+                              previewedTrackName === track.name
+                                ? "2px solid #b9de15ff"
+                                : undefined,
+                            cursor: onTrackClick ? "pointer" : "default",
+                            "& .MuiTableCell-root": {
+                              color: "#eee !important",
+                            },
+                          }}
                         >
-                          <Checkbox
-                            checked={selectedIds.includes(i)}
-                            onChange={() => handleSelectRow(i)}
-                            sx={{
-                              color: "#eee",
-                              "&.Mui-checked": { color: "#0f86abff" },
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>{i + 1}</TableCell>
-                        <TableCell>{track.name}</TableCell>
-                        <TableCell>
-                          <TrackWaveformPreview
-                            mode="table"
-                            waveformData={track.waveformData}
-                            phraseBoundaries={track.phraseBoundaries}
-                            trackLength={track.trackLength}
-                            bpm={track.bpm}
-                            musicalKey={track.key}
-                            camelotKey={track.camelotKey}
-                            width={250}
-                            height={50}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {track.bpm ? (
-                            <span style={{ color: "#fff", fontWeight: "600" }}>
-                              {Math.round(track.bpm)}
-                            </span>
-                          ) : (
-                            <span style={{ color: "#666" }}>-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {track.camelotKey ? (
-                            <span
-                              style={{
-                                color: getKeyColor(track.camelotKey),
-                                fontWeight: "700",
-                                textShadow: "0 0 4px rgba(0, 0, 0, 0.5)",
+                          <TableCell
+                            padding="checkbox"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Checkbox
+                              checked={selectedIds.includes(i)}
+                              onChange={() => handleSelectRow(i)}
+                              sx={{
+                                color: "#eee",
+                                "&.Mui-checked": { color: "#0f86abff" },
                               }}
-                            >
-                              {track.camelotKey}
-                            </span>
-                          ) : track.key ? (
-                            <span
-                              style={{
-                                color: getKeyColor(track.key),
-                                fontWeight: "700",
-                                textShadow: "0 0 4px rgba(0, 0, 0, 0.5)",
-                              }}
-                            >
-                              {track.key}
-                            </span>
-                          ) : (
-                            <span style={{ color: "#666" }}>-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>{track.length || "-"}</TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <TextField
-                            type="text"
-                            size="small"
-                            value={msToMMSS(track.fadeIn || defaultFadeIn)}
-                            onChange={(e) =>
-                              handleFadeChange(i, "fadeIn", e.target.value)
-                            }
-                            placeholder="MM:SS"
-                            inputProps={{ style: { color: "#eee" } }}
-                            sx={{
-                              input: { backgroundColor: "#2a2a2a" },
-                              width: "80px",
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <TextField
-                            type="text"
-                            size="small"
-                            value={msToMMSS(track.fadeOut || defaultFadeOut)}
-                            onChange={(e) =>
-                              handleFadeChange(i, "fadeOut", e.target.value)
-                            }
-                            placeholder="MM:SS"
-                            inputProps={{ style: { color: "#eee" } }}
-                            sx={{
-                              input: { backgroundColor: "#2a2a2a" },
-                              width: "80px",
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <TextField
-                            type="text"
-                            size="small"
-                            value={msToMMSS(track.entrance || defaultEntrance)}
-                            onChange={(e) =>
-                              handleFadeChange(i, "entrance", e.target.value)
-                            }
-                            placeholder="MM:SS"
-                            inputProps={{ style: { color: "#eee" } }}
-                            sx={{
-                              input: { backgroundColor: "#2a2a2a" },
-                              width: "80px",
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <TextField
-                            type="text"
-                            size="small"
-                            value={msToMMSS(
-                              track.trackLength
-                                ? track.trackLength - (track.exit || defaultExit)
-                                : track.exit || defaultExit
+                            />
+                          </TableCell>
+                          <TableCell>{i + 1}</TableCell>
+                          <TableCell>{track.name}</TableCell>
+                          <TableCell>
+                            <TrackWaveformPreview
+                              mode="table"
+                              waveformData={track.waveformData}
+                              phraseBoundaries={track.phraseBoundaries}
+                              trackLength={track.trackLength}
+                              bpm={track.bpm}
+                              musicalKey={track.key}
+                              camelotKey={track.camelotKey}
+                              width={250}
+                              height={50}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {track.bpm ? (
+                              <span
+                                style={{ color: "#fff", fontWeight: "600" }}
+                              >
+                                {Math.round(track.bpm)}
+                              </span>
+                            ) : (
+                              <span style={{ color: "#666" }}>-</span>
                             )}
-                            onChange={(e) => {
-                              // Convert absolute time back to "ms from end"
-                              const absoluteMs = mmssToMs(e.target.value);
-                              const exitFromEnd = track.trackLength
-                                ? track.trackLength - absoluteMs
-                                : absoluteMs;
-                              console.log(`🔍 Exit field onChange for track ${i}:`);
-                              console.log(`  - User typed: "${e.target.value}"`);
-                              console.log(`  - Absolute ms: ${absoluteMs}ms`);
-                              console.log(`  - Track length: ${track.trackLength}ms`);
-                              console.log(`  - Exit from end: ${exitFromEnd}ms`);
-                              console.log(`  - Storing as: ${mmssToMs(msToMMSS(exitFromEnd))}ms`);
-                              handleFadeChange(i, "exit", msToMMSS(exitFromEnd));
-                            }}
-                            placeholder="MM:SS"
-                            inputProps={{ style: { color: "#eee" } }}
-                            sx={{
-                              input: { backgroundColor: "#2a2a2a" },
-                              width: "80px",
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell
-                          padding="checkbox"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Checkbox
-                            checked={usedSuggestionIds.includes(i)}
-                            disabled={
-                              !track.analyzedFadeIn &&
-                              !track.analyzedFadeOut &&
-                              !track.analyzedEntrance &&
-                              !track.analyzedExit
-                            }
-                            onChange={(e) => handleUseSuggested(i, e)}
-                            sx={{
-                              color: "#eee",
-                              "&.Mui-checked": { color: "#4caf50" },
-                              "&.Mui-disabled": { color: "#444" },
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell sx={{ textAlign: "center" }}>
-                          {track.analyzedFadeIn ? (
-                            <span
-                              style={{ color: "#4caf50", fontWeight: "bold" }}
-                            >
-                              {msToMMSS(track.analyzedFadeIn)}
-                            </span>
-                          ) : (
-                            <span style={{ color: "#666" }}>-</span>
-                          )}
-                        </TableCell>
-                        <TableCell sx={{ textAlign: "center" }}>
-                          {track.analyzedFadeOut ? (
-                            <span
-                              style={{ color: "#4caf50", fontWeight: "bold" }}
-                            >
-                              {msToMMSS(track.analyzedFadeOut)}
-                            </span>
-                          ) : (
-                            <span style={{ color: "#666" }}>-</span>
-                          )}
-                        </TableCell>
-                        <TableCell sx={{ textAlign: "center" }}>
-                          {track.analyzedEntrance ? (
-                            <span
-                              style={{ color: "#4caf50", fontWeight: "bold" }}
-                            >
-                              {msToMMSS(track.analyzedEntrance)}
-                            </span>
-                          ) : (
-                            <span style={{ color: "#666" }}>-</span>
-                          )}
-                        </TableCell>
-                        <TableCell sx={{ textAlign: "center" }}>
-                          {track.analyzedExit ? (
-                            <span
-                              style={{ color: "#4caf50", fontWeight: "bold" }}
-                            >
-                              {msToMMSS(track.analyzedExit)}
-                            </span>
-                          ) : (
-                            <span style={{ color: "#666" }}>-</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </TableBody>
-            </Table>
+                          </TableCell>
+                          <TableCell>
+                            {track.camelotKey ? (
+                              <span
+                                style={{
+                                  color: getKeyColor(track.camelotKey),
+                                  fontWeight: "700",
+                                  textShadow: "0 0 4px rgba(0, 0, 0, 0.5)",
+                                }}
+                              >
+                                {track.camelotKey}
+                              </span>
+                            ) : track.key ? (
+                              <span
+                                style={{
+                                  color: getKeyColor(track.key),
+                                  fontWeight: "700",
+                                  textShadow: "0 0 4px rgba(0, 0, 0, 0.5)",
+                                }}
+                              >
+                                {track.key}
+                              </span>
+                            ) : (
+                              <span style={{ color: "#666" }}>-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>{track.length || "-"}</TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <TimeInputCell
+                              track={track}
+                              index={i}
+                              field="fadeIn"
+                              defaultValue={defaultFadeIn}
+                              tracks={tracks}
+                              setTracks={setTracks}
+                            />
+                          </TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <TextField
+                              type="text"
+                              size="small"
+                              value={msToMMSS(track.fadeOut || defaultFadeOut)}
+                              onChange={(e) =>
+                                handleFadeChange(i, "fadeOut", e.target.value)
+                              }
+                              placeholder="MM:SS"
+                              inputProps={{ style: { color: "#eee" } }}
+                              sx={{
+                                input: { backgroundColor: "#2a2a2a" },
+                                width: "80px",
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <TextField
+                              type="text"
+                              size="small"
+                              value={msToMMSS(
+                                track.entrance || defaultEntrance
+                              )}
+                              onChange={(e) =>
+                                handleFadeChange(i, "entrance", e.target.value)
+                              }
+                              placeholder="MM:SS"
+                              inputProps={{ style: { color: "#eee" } }}
+                              sx={{
+                                input: { backgroundColor: "#2a2a2a" },
+                                width: "80px",
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <TextField
+                              type="text"
+                              size="small"
+                              value={msToMMSS(
+                                track.trackLength
+                                  ? track.trackLength -
+                                      (track.exit || defaultExit)
+                                  : track.exit || defaultExit
+                              )}
+                              onChange={(e) => {
+                                // Convert absolute time back to "ms from end"
+                                const absoluteMs = mmssToMs(e.target.value);
+                                const exitFromEnd = track.trackLength
+                                  ? track.trackLength - absoluteMs
+                                  : absoluteMs;
+                                console.log(
+                                  `🔍 Exit field onChange for track ${i}:`
+                                );
+                                console.log(
+                                  `  - User typed: "${e.target.value}"`
+                                );
+                                console.log(`  - Absolute ms: ${absoluteMs}ms`);
+                                console.log(
+                                  `  - Track length: ${track.trackLength}ms`
+                                );
+                                console.log(
+                                  `  - Exit from end: ${exitFromEnd}ms`
+                                );
+                                console.log(
+                                  `  - Storing as: ${mmssToMs(
+                                    msToMMSS(exitFromEnd)
+                                  )}ms`
+                                );
+                                handleFadeChange(
+                                  i,
+                                  "exit",
+                                  msToMMSS(exitFromEnd)
+                                );
+                              }}
+                              placeholder="MM:SS"
+                              inputProps={{ style: { color: "#eee" } }}
+                              sx={{
+                                input: { backgroundColor: "#2a2a2a" },
+                                width: "80px",
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell
+                            padding="checkbox"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Checkbox
+                              checked={usedSuggestionIds.includes(i)}
+                              disabled={
+                                !track.analyzedFadeIn &&
+                                !track.analyzedFadeOut &&
+                                !track.analyzedEntrance &&
+                                !track.analyzedExit
+                              }
+                              onChange={(e) => handleUseSuggested(i, e)}
+                              sx={{
+                                color: "#eee",
+                                "&.Mui-checked": { color: "#4caf50" },
+                                "&.Mui-disabled": { color: "#444" },
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>
+                            {track.analyzedFadeIn ? (
+                              <span
+                                style={{ color: "#4caf50", fontWeight: "bold" }}
+                              >
+                                {msToMMSS(track.analyzedFadeIn)}
+                              </span>
+                            ) : (
+                              <span style={{ color: "#666" }}>-</span>
+                            )}
+                          </TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>
+                            {track.analyzedFadeOut ? (
+                              <span
+                                style={{ color: "#4caf50", fontWeight: "bold" }}
+                              >
+                                {msToMMSS(track.analyzedFadeOut)}
+                              </span>
+                            ) : (
+                              <span style={{ color: "#666" }}>-</span>
+                            )}
+                          </TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>
+                            {track.analyzedEntrance ? (
+                              <span
+                                style={{ color: "#4caf50", fontWeight: "bold" }}
+                              >
+                                {msToMMSS(track.analyzedEntrance)}
+                              </span>
+                            ) : (
+                              <span style={{ color: "#666" }}>-</span>
+                            )}
+                          </TableCell>
+                          <TableCell sx={{ textAlign: "center" }}>
+                            {track.analyzedExit ? (
+                              <span
+                                style={{ color: "#4caf50", fontWeight: "bold" }}
+                              >
+                                {msToMMSS(track.analyzedExit)}
+                              </span>
+                            ) : (
+                              <span style={{ color: "#666" }}>-</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
         </Droppable>
       </DragDropContext>
