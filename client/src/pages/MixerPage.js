@@ -423,6 +423,22 @@ export default function MixerPage() {
                 setTracks(newTracks);
               }
             }}
+            onNext={() => {
+              if (!previewTrack) return;
+              const currentIndex = tracks.findIndex(t => t.name === previewTrack.name);
+              if (currentIndex >= 0 && currentIndex < tracks.length - 1) {
+                setPreviewTrack(tracks[currentIndex + 1]);
+              }
+            }}
+            onPrevious={() => {
+              if (!previewTrack) return;
+              const currentIndex = tracks.findIndex(t => t.name === previewTrack.name);
+              if (currentIndex > 0) {
+                setPreviewTrack(tracks[currentIndex - 1]);
+              }
+            }}
+            hasNext={previewTrack ? tracks.findIndex(t => t.name === previewTrack.name) < tracks.length - 1 : false}
+            hasPrevious={previewTrack ? tracks.findIndex(t => t.name === previewTrack.name) > 0 : false}
           />
         </div>
 

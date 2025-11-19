@@ -270,7 +270,7 @@ export default function MixerTrackTable({
           {(provided) => (
             <TableContainer
               sx={{
-                maxHeight: 400,
+                maxHeight: 800,
                 overflowY: "auto",
                 "&::-webkit-scrollbar": {
                   width: "8px",

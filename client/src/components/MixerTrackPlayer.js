@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import './MixerTrackPlayer.css';
 import TrackWaveformPreview from './TrackWaveformPreview';
 
-const MixerTrackPlayer = ({ track, audioFolderPath, onUpdateTrack }) => {
+const MixerTrackPlayer = ({ track, audioFolderPath, onUpdateTrack, onNext, onPrevious, hasNext, hasPrevious }) => {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -34,14 +34,23 @@ const MixerTrackPlayer = ({ track, audioFolderPath, onUpdateTrack }) => {
 
   // Reset player when track changes
   useEffect(() => {
-    if (audioRef.current && audioPath) {
-      audioRef.current.load();
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audioPath) {
+      // Set the source and load the new track
+      audio.src = audioPath;
+      audio.load();
       setIsPlaying(false);
       setCurrentTime(0);
       setIsLoading(true);
-    } else if (!audioPath) {
+    } else {
       // No track selected, reset loading state
+      audio.src = '';
       setIsLoading(false);
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setDuration(0);
     }
   }, [audioPath]);
 
@@ -126,7 +135,6 @@ const MixerTrackPlayer = ({ track, audioFolderPath, onUpdateTrack }) => {
       {/* Hidden audio element */}
       <audio
         ref={audioRef}
-        src={audioPath}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
@@ -140,10 +148,10 @@ const MixerTrackPlayer = ({ track, audioFolderPath, onUpdateTrack }) => {
       {/* Track info */}
       <div className="player-track-info">
         <div className="player-track-name">{track.name}</div>
-        {track.analysis?.bpm && track.analysis?.key && (
+        {track.bpm && track.key && (
           <div className="player-track-meta">
-            {Math.round(track.analysis.bpm)} BPM • {track.analysis.key}
-            {track.analysis.camelot_key && ` (${track.analysis.camelot_key})`}
+            {Math.round(track.bpm)} BPM • {track.key}
+            {track.camelotKey && ` (${track.camelotKey})`}
           </div>
         )}
       </div>
@@ -152,12 +160,12 @@ const MixerTrackPlayer = ({ track, audioFolderPath, onUpdateTrack }) => {
       <div className="player-waveform-container">
         <TrackWaveformPreview
           mode="player"
-          waveformData={track.analysis?.waveform_data}
-          phraseBoundaries={track.analysis?.phrase_boundaries}
+          waveformData={track.waveformData}
+          phraseBoundaries={track.phraseBoundaries}
           trackLength={track.trackLength}
-          bpm={track.analysis?.bpm}
+          bpm={track.bpm}
           musicalKey={track.key}
-          camelotKey={track.analysis?.camelot_key || track.camelotKey}
+          camelotKey={track.camelotKey}
           width="100%"
           height={120}
           interactive={true}
@@ -183,6 +191,19 @@ const MixerTrackPlayer = ({ track, audioFolderPath, onUpdateTrack }) => {
 
       {/* Controls */}
       <div className="player-controls">
+        {/* Previous button */}
+        <button
+          className="player-skip-button"
+          onClick={onPrevious}
+          disabled={!hasPrevious}
+          title="Previous track"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+          </svg>
+        </button>
+
+        {/* Play/Pause button */}
         <button
           className="player-play-button"
           onClick={handlePlayPause}
@@ -198,6 +219,18 @@ const MixerTrackPlayer = ({ track, audioFolderPath, onUpdateTrack }) => {
               <path d="M8 5v14l11-7z" />
             </svg>
           )}
+        </button>
+
+        {/* Next button */}
+        <button
+          className="player-skip-button"
+          onClick={onNext}
+          disabled={!hasNext}
+          title="Next track"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+          </svg>
         </button>
 
         <div className="player-time-display">

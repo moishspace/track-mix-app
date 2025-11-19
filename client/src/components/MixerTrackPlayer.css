@@ -108,6 +108,41 @@
   height: 24px;
 }
 
+/* Skip buttons (Previous/Next) */
+.player-skip-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.player-skip-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.08);
+}
+
+.player-skip-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.player-skip-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.player-skip-button svg {
+  width: 18px;
+  height: 18px;
+}
+
 .player-time-display {
   display: flex;
   align-items: center;
