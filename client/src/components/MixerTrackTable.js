@@ -495,7 +495,7 @@ export default function MixerTrackTable({
                             )}
                           </TableCell>
                           <TableCell>{track.length || "-"}</TableCell>
-                          <TableCell onClick={(e) => e.stopPropagation()}>
+                          {/* <TableCell onClick={(e) => e.stopPropagation()}>
                             <TimeInputCell
                               track={track}
                               index={i}
@@ -503,6 +503,22 @@ export default function MixerTrackTable({
                               defaultValue={defaultFadeIn}
                               tracks={tracks}
                               setTracks={setTracks}
+                            />
+                          </TableCell> */}
+                          <TableCell onClick={(e) => e.stopPropagation()}>
+                            <TextField
+                              type="text"
+                              size="small"
+                              value={msToMMSS(track.fadeIn || defaultFadeIn)}
+                              onChange={(e) =>
+                                handleFadeChange(i, "fadeIn", e.target.value)
+                              }
+                              placeholder="MM:SS"
+                              inputProps={{ style: { color: "#eee" } }}
+                              sx={{
+                                input: { backgroundColor: "#2a2a2a" },
+                                width: "80px",
+                              }}
                             />
                           </TableCell>
                           <TableCell onClick={(e) => e.stopPropagation()}>

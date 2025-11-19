@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "../styles/DataGridStyles.css";
 import "../styles/Mixer.css";
 import "../index.css";
@@ -25,6 +25,34 @@ export default function MixerPage() {
   const [analysisMode, setAnalysisMode] = useState("manual");
   const [mixingMode, setMixingMode] = useState("transition"); // "transition" or "overlap"
   const [previewTrack, setPreviewTrack] = useState(null); // Track currently being previewed
+  const [settingsFileExists, setSettingsFileExists] = useState(false); // Track if settings file exists
+
+  // Get settings file path based on folder name
+  const getSettingsFilePath = useCallback(() => {
+    if (!folderPath) return null;
+    // Extract folder name using string operations (avoid Node.js path module)
+    const folderName = folderPath.split(/[\\/]/).filter(Boolean).pop();
+    const separator = folderPath.includes('\\') ? '\\' : '/';
+    return `${folderPath}${separator}${folderName}_mix_settings.json`;
+  }, [folderPath]);
+
+  // Check if settings file exists when folder changes
+  useEffect(() => {
+    const checkSettings = () => {
+      if (!folderPath) {
+        setSettingsFileExists(false);
+        return;
+      }
+      const settingsPath = getSettingsFilePath();
+      if (settingsPath && window.electronAPI?.checkFileExists) {
+        const exists = window.electronAPI.checkFileExists(settingsPath);
+        setSettingsFileExists(exists);
+      } else {
+        setSettingsFileExists(false);
+      }
+    };
+    checkSettings();
+  }, [folderPath, getSettingsFilePath]);
 
   // Convert milliseconds to MM:SS format
   const msToMMSS = (ms) => {
@@ -105,6 +133,98 @@ export default function MixerPage() {
         isLoading: false,
         autoClose: 6000,
       });
+    }
+  };
+
+  const handleSaveSettings = () => {
+    if (tracks.length === 0) {
+      toast.warning("⚠️ No tracks to save settings for.");
+      return;
+    }
+
+    const settingsPath = getSettingsFilePath();
+    if (!settingsPath) {
+      toast.error("❌ Invalid folder path");
+      return;
+    }
+
+    const settingsData = {
+      tracks: tracks.map(track => ({
+        name: track.name,
+        fadeIn: track.fadeIn || defaultFadeIn,
+        fadeOut: track.fadeOut || defaultFadeOut,
+        entrance: track.entrance || defaultEntrance,
+        exit: track.exit || defaultExit,
+        // Include preview data only if it exists (analysis was run)
+        ...(track.waveformData && {
+          waveformData: track.waveformData,
+          phraseBoundaries: track.phraseBoundaries,
+          trackLength: track.trackLength,
+          analyzedFadeIn: track.analyzedFadeIn,
+          analyzedFadeOut: track.analyzedFadeOut,
+          analyzedEntrance: track.analyzedEntrance,
+          analyzedExit: track.analyzedExit,
+          bpm: track.bpm,
+          key: track.key,
+          camelotKey: track.camelotKey,
+        }),
+      })),
+    };
+
+    const result = window.electronAPI.saveSettingsFile(settingsPath, settingsData);
+
+    if (result.success) {
+      toast.success("✅ Settings saved successfully!");
+      setSettingsFileExists(true);
+    } else {
+      toast.error(`❌ Failed to save settings: ${result.error}`);
+    }
+  };
+
+  const handleLoadSettings = () => {
+    const settingsPath = getSettingsFilePath();
+    if (!settingsPath) {
+      toast.error("❌ Invalid folder path");
+      return;
+    }
+
+    const result = window.electronAPI.loadSettingsFile(settingsPath);
+
+    if (result.success && result.data) {
+      const loadedSettings = result.data;
+
+      // Update tracks with saved settings
+      const updatedTracks = tracks.map(track => {
+        const savedTrack = loadedSettings.tracks.find(t => t.name === track.name);
+        if (savedTrack) {
+          return {
+            ...track,
+            fadeIn: savedTrack.fadeIn,
+            fadeOut: savedTrack.fadeOut,
+            entrance: savedTrack.entrance,
+            exit: savedTrack.exit,
+            // Restore preview data if it was saved
+            ...(savedTrack.waveformData && {
+              waveformData: savedTrack.waveformData,
+              phraseBoundaries: savedTrack.phraseBoundaries,
+              trackLength: savedTrack.trackLength,
+              analyzedFadeIn: savedTrack.analyzedFadeIn,
+              analyzedFadeOut: savedTrack.analyzedFadeOut,
+              analyzedEntrance: savedTrack.analyzedEntrance,
+              analyzedExit: savedTrack.analyzedExit,
+              bpm: savedTrack.bpm,
+              key: savedTrack.key,
+              camelotKey: savedTrack.camelotKey,
+            }),
+          };
+        }
+        return track;
+      });
+
+      setTracks(updatedTracks);
+      toast.success("✅ Settings loaded successfully!");
+    } else {
+      toast.error(`❌ Failed to load settings: ${result.error || "File not found"}`);
     }
   };
 
@@ -321,6 +441,32 @@ export default function MixerPage() {
             onClick={() => window.electronAPI?.openFolder?.(outFolderPath)}
           >
             📂
+          </button>
+
+          <button
+            className="action-button"
+            onClick={handleSaveSettings}
+            disabled={tracks.length === 0}
+            style={{
+              opacity: tracks.length === 0 ? 0.5 : 1,
+              cursor: tracks.length === 0 ? "not-allowed" : "pointer",
+            }}
+            title="Save track settings"
+          >
+            💾 Save
+          </button>
+
+          <button
+            className="action-button"
+            onClick={handleLoadSettings}
+            disabled={!settingsFileExists}
+            style={{
+              opacity: !settingsFileExists ? 0.5 : 1,
+              cursor: !settingsFileExists ? "not-allowed" : "pointer",
+            }}
+            title={settingsFileExists ? "Load saved settings" : "No saved settings found"}
+          >
+            📂 Load
           </button>
 
           <button

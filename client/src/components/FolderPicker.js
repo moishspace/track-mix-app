@@ -50,8 +50,11 @@ function FolderPicker({
       });
     };
 
+    // Filter out .json files from the track list
+    const audioFiles = result.files.filter(file => !file.fileName.toLowerCase().endsWith('.json'));
+
     const tracks = await Promise.all(
-      result.files.map(async (file, index) => {
+      audioFiles.map(async (file, index) => {
         const duration = await getDuration(file.fullPath);
 
         return {
