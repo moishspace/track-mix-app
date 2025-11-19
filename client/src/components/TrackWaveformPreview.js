@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Menu, MenuItem } from "@mui/material";
 import "../styles/TrackWaveformPreview.css";
 
 const TrackWaveformPreview = ({
@@ -15,6 +16,8 @@ const TrackWaveformPreview = ({
   currentTime = 0,
   duration = 0,
   onSeek = null,
+  onSetEntrance = null,
+  onSetExit = null,
 }) => {
   // Key color mapping based on Camelot wheel
   const getKeyColor = (key) => {
@@ -89,6 +92,8 @@ const TrackWaveformPreview = ({
   const [zoom, setZoom] = useState(1);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [clickedTimeMs, setClickedTimeMs] = useState(0);
   const scrollContainerRef = useRef(null);
 
   // Add global mouse up listener for when mouse is released outside the SVG
@@ -181,6 +186,50 @@ const TrackWaveformPreview = ({
   // Handle mouse up to stop dragging
   const handleMouseUp = () => {
     setIsDragging(false);
+  };
+
+  // Handle right-click on waveform
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!onSetEntrance && !onSetExit) return;
+    if (trackLength === 0) return;
+
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickPercent = clickX / rect.width;
+    const timeMs = Math.round(clickPercent * trackLength);
+
+    setClickedTimeMs(timeMs);
+    setContextMenu({
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+    });
+  };
+
+  // Close context menu
+  const handleCloseContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  // Handle "Set Entrance" action
+  const handleSetEntrance = () => {
+    if (onSetEntrance && clickedTimeMs >= 0) {
+      onSetEntrance(clickedTimeMs);
+    }
+    handleCloseContextMenu();
+  };
+
+  // Handle "Set Exit" action
+  const handleSetExit = () => {
+    if (onSetExit && clickedTimeMs >= 0 && trackLength > 0) {
+      // Convert absolute timestamp to "ms from end"
+      const exitFromEnd = trackLength - clickedTimeMs;
+      onSetExit(exitFromEnd);
+    }
+    handleCloseContextMenu();
   };
 
   // Calculate SVG dimensions - using line-based rendering
@@ -285,6 +334,7 @@ const TrackWaveformPreview = ({
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onClick={handleWaveformClick}
+          onContextMenu={handleContextMenu}
           style={{
             cursor: interactive
               ? isDragging
@@ -396,6 +446,29 @@ const TrackWaveformPreview = ({
           )}
         </svg>
       </div>
+
+      {/* Context Menu */}
+      <Menu
+        open={contextMenu !== null}
+        onClose={handleCloseContextMenu}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          contextMenu !== null
+            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+            : undefined
+        }
+      >
+        {onSetEntrance && (
+          <MenuItem onClick={handleSetEntrance}>
+            Set Entrance ({Math.round(clickedTimeMs / 1000)}s)
+          </MenuItem>
+        )}
+        {onSetExit && (
+          <MenuItem onClick={handleSetExit}>
+            Set Exit ({Math.round(clickedTimeMs / 1000)}s)
+          </MenuItem>
+        )}
+      </Menu>
     </div>
   );
 };

@@ -18,7 +18,7 @@ export default function MixerPage() {
   const [outFolderPath, setOutFolderPath] = useState("");
   const [defaultFadeIn, setDefaultFadeIn] = useState(30000);
   const [defaultFadeOut, setDefaultFadeOut] = useState(30000);
-  const [defaultEntrance, setDefaultEntrance] = useState(30000);
+  const [defaultEntrance, setDefaultEntrance] = useState(0);
   const [defaultExit, setDefaultExit] = useState(30000);
   const [tracks, setTracks] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -127,6 +127,26 @@ export default function MixerPage() {
     const toastId = toast.loading("🎧 Starting mix process...");
 
     try {
+      const preparedTracks = tracks
+        .filter((_, i) => selectedIds.includes(i))
+        .map((track) => ({
+          ...track,
+          fadeIn: track.fadeIn || defaultFadeIn,
+          fadeOut: track.fadeOut || defaultFadeOut,
+          entrance: track.entrance || defaultEntrance,
+          exit: track.exit || defaultExit,
+        }));
+
+      console.log("🔍 SENDING TO PYTHON:");
+      preparedTracks.forEach((track, i) => {
+        console.log(`Track ${i}: ${track.name}`);
+        console.log(`  - fadeIn: ${track.fadeIn}ms`);
+        console.log(`  - fadeOut: ${track.fadeOut}ms`);
+        console.log(`  - entrance: ${track.entrance}ms`);
+        console.log(`  - exit: ${track.exit}ms`);
+        console.log(`  - trackLength: ${track.trackLength}ms`);
+      });
+
       const result = await startMix({
         folderPath,
         outFolderPath,
@@ -135,15 +155,7 @@ export default function MixerPage() {
         defaultEntrance,
         defaultExit,
         mixingMode,
-        tracks: tracks
-          .filter((_, i) => selectedIds.includes(i))
-          .map((track) => ({
-            ...track,
-            fadeIn: track.fadeIn || defaultFadeIn,
-            fadeOut: track.fadeOut || defaultFadeOut,
-            entrance: track.entrance || defaultEntrance,
-            exit: track.exit || defaultExit,
-          })),
+        tracks: preparedTracks,
       });
 
       // 3️⃣ Success
@@ -280,33 +292,42 @@ export default function MixerPage() {
           <MixerTrackPlayer
             track={previewTrack}
             audioFolderPath={folderPath}
+            onUpdateTrack={(updatedTrack) => {
+              // Find and update the track in the tracks array
+              const trackIndex = tracks.findIndex((t) => t.name === updatedTrack.name);
+              if (trackIndex !== -1) {
+                const newTracks = [...tracks];
+                newTracks[trackIndex] = updatedTrack;
+                setTracks(newTracks);
+              }
+            }}
           />
         </div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          marginTop: "1rem",
-          gap: "8px",
-        }}
-      >
-        <button
-          className="open-finder-button"
-          title="Open Output Folder"
-          onClick={() => window.electronAPI?.openFolder?.(outFolderPath)}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            marginTop: "1rem",
+            gap: "8px",
+          }}
         >
-          📂
-        </button>
+          <button
+            className="open-finder-button"
+            title="Open Output Folder"
+            onClick={() => window.electronAPI?.openFolder?.(outFolderPath)}
+          >
+            📂
+          </button>
 
-        <button
-          className="action-button start-mix-button"
-          onClick={handleStartMix}
-        >
-          Start Mixing
-        </button>
-      </div>
+          <button
+            className="action-button start-mix-button"
+            onClick={handleStartMix}
+          >
+            Start Mixing
+          </button>
+        </div>
       </div>
       <div className="table-box">
         <MixerTrackTable

@@ -7,7 +7,7 @@ function FolderPicker({
   setTracks = null,
   defaultFadeIn = 30000,
   defaultFadeOut = 30000,
-  defaultEntrance = 30000,
+  defaultEntrance = 0,
   defaultExit = 30000,
 }) {
   const handleBrowse = async () => {
@@ -65,6 +65,7 @@ function FolderPicker({
                 .toString()
                 .padStart(2, "0")}`
             : "-",
+          trackLength: duration ? duration * 1000 : null, // Add trackLength in milliseconds
           fadeIn: defaultFadeIn,
           fadeOut: defaultFadeOut,
           entrance: defaultEntrance,

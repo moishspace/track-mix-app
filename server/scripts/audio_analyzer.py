@@ -201,7 +201,10 @@ def analyze_audio_file(file_path, mode="manual"):
                 first_30s, first_30s_loudness, last_30s_loudness
             )
 
-        print(f"    ✓ Suggested: fade_in={suggested_fade_in}ms, fade_out={suggested_fade_out}ms, exit={suggested_exit}ms")
+        # Default entrance to 0 (start from beginning of track)
+        suggested_entrance = 0
+
+        print(f"    ✓ Suggested: fade_in={suggested_fade_in}ms, fade_out={suggested_fade_out}ms, entrance={suggested_entrance}ms, exit={suggested_exit}ms")
 
         # ========== DETECT BPM AND MUSICAL KEY ==========
         bpm, key = detect_bpm_and_key(file_path)
@@ -216,6 +219,7 @@ def analyze_audio_file(file_path, mode="manual"):
         return {
             "suggested_fade_in": int(suggested_fade_in),
             "suggested_fade_out": int(suggested_fade_out),
+            "suggested_entrance": int(suggested_entrance),
             "suggested_exit": int(suggested_exit),
             "track_length": int(track_length),
             "silence_at_start": int(silence_at_start),
@@ -289,6 +293,7 @@ def analyze_tracks(folder_path, tracks, mode="manual"):
                 "analysis": {
                     "suggested_fade_in": 5000,
                     "suggested_fade_out": 5000,
+                    "suggested_entrance": 0,
                     "suggested_exit": 10000,
                     "track_length": 0,
                     "silence_at_start": 0,

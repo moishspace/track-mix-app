@@ -16,7 +16,7 @@ export default function MixerTrackTable({
   setTracks,
   defaultFadeIn = 30000,
   defaultFadeOut = 30000,
-  defaultEntrance = 30000,
+  defaultEntrance = 0,
   defaultExit = 30000,
   selectedIds = [],
   setSelectedIds = () => {},
@@ -497,10 +497,25 @@ export default function MixerTrackTable({
                           <TextField
                             type="text"
                             size="small"
-                            value={msToMMSS(track.exit || defaultExit)}
-                            onChange={(e) =>
-                              handleFadeChange(i, "exit", e.target.value)
-                            }
+                            value={msToMMSS(
+                              track.trackLength
+                                ? track.trackLength - (track.exit || defaultExit)
+                                : track.exit || defaultExit
+                            )}
+                            onChange={(e) => {
+                              // Convert absolute time back to "ms from end"
+                              const absoluteMs = mmssToMs(e.target.value);
+                              const exitFromEnd = track.trackLength
+                                ? track.trackLength - absoluteMs
+                                : absoluteMs;
+                              console.log(`🔍 Exit field onChange for track ${i}:`);
+                              console.log(`  - User typed: "${e.target.value}"`);
+                              console.log(`  - Absolute ms: ${absoluteMs}ms`);
+                              console.log(`  - Track length: ${track.trackLength}ms`);
+                              console.log(`  - Exit from end: ${exitFromEnd}ms`);
+                              console.log(`  - Storing as: ${mmssToMs(msToMMSS(exitFromEnd))}ms`);
+                              handleFadeChange(i, "exit", msToMMSS(exitFromEnd));
+                            }}
                             placeholder="MM:SS"
                             inputProps={{ style: { color: "#eee" } }}
                             sx={{

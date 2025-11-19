@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import './MixerTrackPlayer.css';
 import TrackWaveformPreview from './TrackWaveformPreview';
 
-const MixerTrackPlayer = ({ track, audioFolderPath }) => {
+const MixerTrackPlayer = ({ track, audioFolderPath, onUpdateTrack }) => {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -151,16 +151,33 @@ const MixerTrackPlayer = ({ track, audioFolderPath }) => {
       {/* Waveform with playhead */}
       <div className="player-waveform-container">
         <TrackWaveformPreview
-          mode="table"
+          mode="player"
           waveformData={track.analysis?.waveform_data}
+          phraseBoundaries={track.analysis?.phrase_boundaries}
+          trackLength={track.trackLength}
           bpm={track.analysis?.bpm}
-          camelotKey={track.analysis?.camelot_key}
+          musicalKey={track.key}
+          camelotKey={track.analysis?.camelot_key || track.camelotKey}
           width="100%"
           height={120}
           interactive={true}
           currentTime={currentTime}
           duration={duration}
           onSeek={handleWaveformSeek}
+          onSetEntrance={
+            onUpdateTrack
+              ? (timeMs) => {
+                  onUpdateTrack({ ...track, entrance: timeMs });
+                }
+              : null
+          }
+          onSetExit={
+            onUpdateTrack
+              ? (timeFromEnd) => {
+                  onUpdateTrack({ ...track, exit: timeFromEnd });
+                }
+              : null
+          }
         />
       </div>
 
