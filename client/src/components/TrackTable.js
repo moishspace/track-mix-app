@@ -54,7 +54,7 @@ const PlatformCartButton = ({ platform, trackId, trackUrl, color }) => {
 
     if (added) {
       // Already added, open the URL
-      window.open(trackUrl, '_blank');
+      window.open(trackUrl, "_blank");
       return;
     }
 
@@ -64,8 +64,8 @@ const PlatformCartButton = ({ platform, trackId, trackUrl, color }) => {
       if (result.success) {
         setAdded(true);
         // For Bandcamp, open the URL directly
-        if (result.action === 'open_link' && result.url) {
-          window.open(result.url, '_blank');
+        if (result.action === "open_link" && result.url) {
+          window.open(result.url, "_blank");
         }
       }
     } catch (error) {
@@ -82,8 +82,8 @@ const PlatformCartButton = ({ platform, trackId, trackUrl, color }) => {
         onClick={handleClick}
         disabled={loading}
         sx={{
-          color: added ? '#4caf50' : color,
-          '&:hover': { backgroundColor: `${color}20` }
+          color: added ? "#4caf50" : color,
+          "&:hover": { backgroundColor: `${color}20` },
         }}
       >
         {loading ? (
@@ -182,6 +182,8 @@ const TrackTable = ({
         minWidth: 120,
         flex: 1,
         sortable: true,
+        headerAlign: "center",
+        align: "center",
       },
       {
         field: "genre",
@@ -196,6 +198,8 @@ const TrackTable = ({
         minWidth: 100,
         flex: 1,
         sortable: true,
+        headerAlign: "center",
+        align: "center",
       },
       {
         field: "tempo",
@@ -203,6 +207,8 @@ const TrackTable = ({
         minWidth: 80,
         flex: 1,
         sortable: true,
+        headerAlign: "center",
+        align: "center",
       },
       {
         field: "camelot",
@@ -210,6 +216,8 @@ const TrackTable = ({
         minWidth: 80,
         flex: 1,
         sortable: true,
+        headerAlign: "center",
+        align: "center",
         renderCell: (params) => {
           const camelot = params.value;
           const colors = CAMELOT_COLORS[camelot];
@@ -243,6 +251,9 @@ const TrackTable = ({
         minWidth: 100,
         flex: 1,
         sortable: true,
+        headerAlign: "center",
+        align: "center",
+
         renderCell: (params) => {
           const level = params.value;
           const colors = ENERGY_COLORS[level];
@@ -263,18 +274,19 @@ const TrackTable = ({
           );
         },
       },
-            {
-        field: "energy",
-        headerName: "Energy #",
-        minWidth: 80,
-        flex: 1,
-        sortable: true,
-        renderCell: (params) => {
-          const energy = params.value;
-          if (energy === null || energy === undefined || energy === '') return '';
-          return typeof energy === 'number' ? energy.toFixed(2) : energy;
-        },
-      },
+      // {
+      //   field: "energy",
+      //   headerName: "Energy #",
+      //   minWidth: 80,
+      //   flex: 1,
+      //   sortable: true,
+      //   renderCell: (params) => {
+      //     const energy = params.value;
+      //     if (energy === null || energy === undefined || energy === "")
+      //       return "";
+      //     return typeof energy === "number" ? energy.toFixed(2) : energy;
+      //   },
+      // },
       // Platform columns - Soundeo, Bandcamp, Beatport
       {
         field: "soundeo",
