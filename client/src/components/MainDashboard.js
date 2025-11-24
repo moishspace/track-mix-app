@@ -1,5 +1,5 @@
 // MainDashboard.js
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import TrackTable from './TrackTable';
 import PlaylistControls from './PlaylistControls';
 import TrackPlayer from './TrackPlayer';
@@ -10,6 +10,7 @@ import useSimilarTracks from '../hooks/useSimilarTracks';
 import useTrackTable from '../hooks/useTrackTable';
 import useTrackPlayer from '../hooks/useTrackPlayer';
 import usePlaylist from '../hooks/usePlaylist';
+import { searchPlatforms } from '../services/api';
 
 const MainDashboard = ({ searchTerm }) => {
   const [criteria, setCriteria] = useState({});
@@ -17,7 +18,41 @@ const MainDashboard = ({ searchTerm }) => {
   const [selectedTrack, setSelectedTrack] = useState(null);
   const [selectedTrackIds, setSelectedTrackIds] = useState([]);
   const [selectAllChecked, setSelectAllChecked] = useState(false);
+  const [platformData, setPlatformData] = useState({});
   const { filteredTracks, trackDetails, setFilteredTracks, setTrackDetails } = useTrackSearch(searchTerm);
+
+  // Search platforms for a track
+  const searchTrackPlatforms = useCallback(async (trackId, artistName, trackName) => {
+    try {
+      const results = await searchPlatforms(artistName, trackName);
+      setPlatformData(prev => ({
+        ...prev,
+        [trackId]: results
+      }));
+      return results;
+    } catch (error) {
+      console.error('Error searching platforms:', error);
+      return null;
+    }
+  }, []);
+
+  // Search platforms for all visible tracks (called when tracks load)
+  useEffect(() => {
+    const searchAllPlatforms = async () => {
+      for (const track of filteredTracks.slice(0, 20)) { // Limit to first 20 to avoid rate limits
+        if (!platformData[track.id]) {
+          const artistName = track.artistsName || (Array.isArray(track.artists) ? track.artists.map(a => a.name).join(', ') : '');
+          await searchTrackPlatforms(track.id, artistName, track.name);
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+    };
+
+    if (filteredTracks.length > 0) {
+      searchAllPlatforms();
+    }
+  }, [filteredTracks, searchTrackPlatforms]);
 
   const {
     playlists,
@@ -63,9 +98,10 @@ const MainDashboard = ({ searchTerm }) => {
 
   const processedTracks = useMemo(() => {
     const playableTracks = filteredTracks.filter((track) => track.preview_url !== null);
-  
+
     return filteredTracks.map((track) => {
       const additionalDetails = trackDetails[track.id] || {};
+      const platforms = platformData[track.id] || {};
 
       // Compute energyLevel from energy value (matching Python energy_to_level)
       const getEnergyLevel = (energy) => {
@@ -109,9 +145,10 @@ const MainDashboard = ({ searchTerm }) => {
         segments: additionalDetails.analysis?.segments || [],
         tatums: additionalDetails.analysis?.tatums || [],
         uri: track.uri,
+        platforms: platforms,
       };
     });
-  }, [filteredTracks, trackDetails]);
+  }, [filteredTracks, trackDetails, platformData]);
 
   // useEffect(() => {
   //   if (processedTracks[currentTrackIndex]) {

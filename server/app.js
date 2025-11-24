@@ -1022,3 +1022,40 @@ app.post("/api/analyze-tracks", async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// ============== MUSIC STORE PLATFORM APIs ==============
+const platformService = require('./services/platformService');
+
+// Search for a track across all platforms
+app.get("/api/platforms/search", async (req, res) => {
+  try {
+    const { artist, title } = req.query;
+
+    if (!artist || !title) {
+      return res.status(400).json({ error: "Artist and title are required" });
+    }
+
+    const results = await platformService.searchAllPlatforms(artist, title);
+    res.json(results);
+  } catch (error) {
+    console.error("Platform search error:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add a track to cart on a specific platform
+app.post("/api/platforms/add-to-cart", async (req, res) => {
+  try {
+    const { platform, trackId, trackUrl } = req.body;
+
+    if (!platform) {
+      return res.status(400).json({ error: "Platform is required" });
+    }
+
+    const result = await platformService.addToCart(platform, trackId, trackUrl);
+    res.json(result);
+  } catch (error) {
+    console.error("Add to cart error:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+});

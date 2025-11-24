@@ -333,3 +333,23 @@ export const analyzeTracks = async ({ folderPath, tracks, analysisMode = "manual
       .then((response) => response.data)
   );
 };
+
+// ============== MUSIC STORE PLATFORM APIs ==============
+
+export const searchPlatforms = async (artist, title) => {
+  return axios
+    .get(`${API_URL}/platforms/search`, {
+      params: { artist, title }
+    })
+    .then((response) => response.data);
+};
+
+export const addToCart = async (platform, trackId, trackUrl) => {
+  return axios
+    .post(`${API_URL}/platforms/add-to-cart`, {
+      platform,
+      trackId,
+      trackUrl
+    })
+    .then((response) => response.data);
+};

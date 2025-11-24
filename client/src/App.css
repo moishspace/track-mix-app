@@ -139,7 +139,7 @@ body, html {
 /* Main Flex Container for Panel and Table */
 .content-container, .flex-container {
   display: flex;
-  width:80vw;
+  width:85vw;
   max-width: 95vw;
   height: 75vh;
   gap: 10px;
