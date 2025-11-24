@@ -5,6 +5,8 @@ import MainDashboard from '../components/MainDashboard';
 import '../styles/HomeStyle.css';
 import { SiPioneerdj } from "react-icons/si";
 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001/api";
+
 const Home = ({ isAuthorized, setIsAuthorized }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [submittedTerm, setSubmittedTerm] = useState('');
@@ -87,7 +89,7 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
   };
 
   const handleLogin = () => {
-    window.location.href = 'http://localhost:3001/api/login';
+    window.location.href = `${API_URL}/login`;
   };
 
   const goToMixer = () => {

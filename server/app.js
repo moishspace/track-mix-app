@@ -8,8 +8,9 @@ require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:8000";
 
-app.use(cors({ origin: "http://localhost:8000" }));
+app.use(cors({ origin: CLIENT_URL }));
 // app.use(express.json());
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
@@ -32,7 +33,10 @@ let rateLimitResetTime = null;
 async function ensureValidAccessToken(req, res, next) {
   if (!accessToken || tokenIsExpired()) {
     console.log("Access token expired or missing, refreshing...");
-    await refreshAccessToken();
+    const refreshed = await refreshAccessToken();
+    if (!refreshed || !accessToken) {
+      return res.status(401).json({ error: "Session expired. Please log in again." });
+    }
   }
   next();
 }
@@ -43,10 +47,12 @@ const tokenIsExpired = () => {
 };
 
 // Refresh access token using refresh token
+// Returns true if successful, false if user needs to re-authenticate
 async function refreshAccessToken() {
   if (!refreshToken) {
     console.error("No refresh token available. User needs to re-authenticate.");
-    return;
+    accessToken = null;
+    return false;
   }
 
   if (isRateLimited && Date.now() < rateLimitResetTime) {
@@ -73,6 +79,7 @@ async function refreshAccessToken() {
     accessToken = response.data.access_token;
     accessTokenExpiresAt = Date.now() + response.data.expires_in * 1000;
     console.log("Access token refreshed successfully.");
+    return true;
   } catch (error) {
     if (error.response?.status === 429) {
       const retryAfter =
@@ -81,11 +88,20 @@ async function refreshAccessToken() {
       isRateLimited = true;
       console.error(`Rate limited. Retry after ${retryAfter / 1000} seconds.`);
       await new Promise((resolve) => setTimeout(resolve, retryAfter));
+      // Retry after rate limit
+      return refreshAccessToken();
+    } else if (error.response?.status === 400 || error.response?.status === 401) {
+      // Refresh token is invalid or expired
+      console.error("Refresh token is invalid or expired. User needs to re-authenticate.");
+      accessToken = null;
+      refreshToken = null;
+      return false;
     } else {
       console.error(
         "Error refreshing access token:",
         error.response?.data || error.message
       );
+      return false;
     }
   }
 }
@@ -292,20 +308,27 @@ app.get("/api/callback", async (req, res) => {
 
     accessToken = response.data.access_token;
     refreshToken = response.data.refresh_token || refreshToken; // Save only if provided
-    res.redirect("http://localhost:8000/?success=true");
+    res.redirect(`${CLIENT_URL}/?success=true`);
   } catch (error) {
     console.error(
       "Error exchanging code:",
       error.response?.data || error.message
     );
-    res.redirect("http://localhost:8000/?error=token_exchange_failed");
+    res.redirect(`${CLIENT_URL}/?error=token_exchange_failed`);
   }
 });
 
 app.get("/api/get-access-token", async (req, res) => {
   try {
     if (!accessToken || tokenIsExpired()) {
-      await refreshAccessToken();
+      const refreshed = await refreshAccessToken();
+      if (!refreshed) {
+        // No valid token and couldn't refresh - user needs to re-authenticate
+        return res.status(401).json({ error: "Session expired. Please log in again." });
+      }
+    }
+    if (!accessToken) {
+      return res.status(401).json({ error: "No valid access token. Please log in." });
     }
     res.json({ accessToken });
   } catch (error) {
@@ -647,62 +670,60 @@ app.get("/api/track-analysis", ensureValidAccessToken, async (req, res) => {
 // Add Deezer BPM fetch function
 const { exec } = require("child_process");
 
-async function getDeezerTrackBPM(query) {
+async function getDeezerTrackAnalysis(query) {
   try {
-    console.log(`[NODE] Starting Deezer track BPM fetch for query: ${query}`);
     const searchResponse = await axios.get("https://api.deezer.com/search", {
       params: { q: query },
     });
     const searchResults = searchResponse.data.data;
 
     if (!searchResults || searchResults.length === 0) {
-      console.log(`No results found on Deezer for query: "${query}"`);
-      return null;
+      return { bpm: null, key: null, camelot: null, energy: null };
     }
 
     const track = searchResults[0];
     const previewUrl = track.preview;
 
+    // Get BPM directly from Deezer (more accurate than audio analysis)
+    const deezerBpm = track.bpm && track.bpm > 0 ? track.bpm : null;
+
     if (!previewUrl) {
-      console.log(`No preview available for query: "${query}"`);
-      return null;
+      return { bpm: deezerBpm, key: null, camelot: null, energy: null };
     }
 
-    console.log(`[NODE] Preview URL: ${previewUrl}`);
+    // Analyze audio for key, camelot, and energy (and fallback BPM)
+    const analysis = await analyzePreview(previewUrl);
 
-    const bpm = await getBPMFromPreview(previewUrl);
-    console.log(`[NODE] Deezer BPM for "${query}": ${bpm}`);
-    return bpm;
+    // Use Deezer BPM if available, otherwise use analyzed BPM
+    return {
+      bpm: deezerBpm || analysis.bpm,
+      key: analysis.key,
+      camelot: analysis.camelot,
+      energy: analysis.energy
+    };
   } catch (error) {
-    console.error(
-      `[NODE] Error fetching BPM from Deezer for query "${query}":`,
-      error.message
-    );
-    return null;
+    console.error(`Error fetching Deezer analysis: ${error.message}`);
+    return { bpm: null, key: null, camelot: null, energy: null };
   }
 }
 
-function getBPMFromPreview(previewUrl) {
+function analyzePreview(previewUrl) {
   return new Promise((resolve, reject) => {
     exec(
       `python3 scripts/calculate_bpm.py "${previewUrl}"`,
       (error, stdout, stderr) => {
         if (error) {
-          console.error(`[NODE] Error: ${stderr}`);
+          console.error(`Audio analysis error: ${stderr}`);
           reject(error);
           return;
         }
 
-        console.log(`[PYTHON STDOUT]: ${stdout}`);
-
-        // Extract numeric BPM value from Python output
-        const bpm = parseFloat(stdout.trim().split("\n").pop()); // Extract last line
-        if (isNaN(bpm)) {
-          console.error(`[NODE] Invalid BPM result: ${stdout.trim()}`);
-          reject(new Error("Invalid BPM result"));
-        } else {
-          console.log(`[NODE] Resolving BPM: ${bpm}`);
-          resolve(bpm);
+        try {
+          const result = JSON.parse(stdout.trim());
+          resolve(result);
+        } catch (parseError) {
+          console.error(`Failed to parse audio analysis output: ${stdout}`);
+          reject(new Error("Invalid JSON result from audio analysis"));
         }
       }
     );
@@ -741,19 +762,22 @@ app.get(
           trackData.album.artists
         );
 
-      // Step 3: Fetch BPM from Deezer
+      // Step 3: Fetch BPM and Key from Deezer
       const deezerQuery = `${trackData.name}, ${trackData.album.name}`;
       // const deezerQuery = `${trackData.name}, ${trackData.album.name}, ${trackData.album?.artists?.[0]?.name || ''}`;
 
-      const deezerBPM = await getDeezerTrackBPM(deezerQuery);
-      console.log(`[NODE] Deezer BPM Retrieved: ${deezerBPM}`);
+      const deezerAnalysis = await getDeezerTrackAnalysis(deezerQuery);
 
       const combinedDetails = {
         ...trackData,
         features,
         analysis: analysis || {},
         genres,
-        tempo: deezerBPM || "",
+        tempo: deezerAnalysis.bpm ?? "",
+        key: deezerAnalysis.key ?? "",
+        camelot: deezerAnalysis.camelot ?? "",
+        energy: deezerAnalysis.energy ?? "",
+        energyLevel: deezerAnalysis.energyLevel ?? "",
       };
 
       // Return combined details

@@ -66,8 +66,21 @@ const MainDashboard = ({ searchTerm }) => {
   
     return filteredTracks.map((track) => {
       const additionalDetails = trackDetails[track.id] || {};
-    //  console.log(additionalDetails);
-     
+
+      // Compute energyLevel from energy value (matching Python energy_to_level)
+      const getEnergyLevel = (energy) => {
+        if (energy === null || energy === undefined || energy === '') return '';
+        const e = parseFloat(energy);
+        if (isNaN(e)) return '';
+        if (e < 0.25) return 'Chill / Ambient';
+        if (e < 0.45) return 'Warm-up Flow';
+        if (e < 0.6) return 'Groove';
+        if (e < 0.75) return 'Uplift';
+        if (e < 0.9) return 'Drive / Peak';
+        return 'Emotional High';
+      };
+      const energyValue = additionalDetails.energy ?? additionalDetails.features?.energy ?? '';
+
       return {
         id: track.id,
         name: track.name || '',
@@ -81,9 +94,11 @@ const MainDashboard = ({ searchTerm }) => {
         preview_url: track.preview_url || null,
         genre: additionalDetails.genres?.join(', ') || '',
         tempo: additionalDetails.tempo,//additionalDetails.features?.tempo ? Math.round(additionalDetails.features.tempo) : '',
-        key: additionalDetails.features?.key || '',
+        key: additionalDetails.key || '',
+        camelot: additionalDetails.camelot || '',
         danceability: additionalDetails.features?.danceability || '',
-        energy: additionalDetails.features?.energy || '',
+        energy: energyValue,
+        energyLevel: additionalDetails.energyLevel || getEnergyLevel(energyValue),
         valence: additionalDetails.features?.valence || '',
         acousticness: additionalDetails.features?.acousticness || '',
         instrumentalness: additionalDetails.features?.instrumentalness || '',

@@ -1,11 +1,23 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:3001/api";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001/api";
+
+// Redirect to login page and clear stored token
+const redirectToLogin = () => {
+  console.warn("Session expired. Redirecting to login...");
+  localStorage.removeItem("access_token");
+  window.location.href = `${API_URL}/login`;
+};
 
 export const getAccessToken = async (retries = 3) => {
   try {
     const response = await axios.get(`${API_URL}/get-access-token`);
     const accessToken = response.data.accessToken;
+    if (!accessToken) {
+      // No valid token available, need to re-login
+      redirectToLogin();
+      return null;
+    }
     localStorage.setItem("access_token", accessToken); // Store it for later use
     return accessToken;
   } catch (error) {
@@ -13,7 +25,13 @@ export const getAccessToken = async (retries = 3) => {
       console.warn(
         "Access forbidden, possibly due to missing or invalid scopes or expired token"
       );
-      throw error;
+      redirectToLogin();
+      return null;
+    } else if (error.response?.status === 401) {
+      // Server has no valid refresh token, need to re-login
+      console.warn("Refresh token expired. Redirecting to login...");
+      redirectToLogin();
+      return null;
     } else if (error.response?.status === 429 && retries > 0) {
       const retryAfter =
         parseInt(error.response.headers["retry-after"] || "1", 10) * 1000; // Retry after `retry-after` or 1 second
@@ -21,7 +39,9 @@ export const getAccessToken = async (retries = 3) => {
       return getAccessToken(retries - 1);
     }
     console.error("Error fetching access token:", error);
-    throw error;
+    // For other errors, also redirect to login
+    redirectToLogin();
+    return null;
   }
 };
 
@@ -32,9 +52,20 @@ const withRetry = async (apiCall) => {
   } catch (error) {
     if (error.response && error.response.status === 401) {
       console.warn("Access token expired. Refreshing...");
-      const newAccessToken = await getAccessToken(); // Refresh the token
-      localStorage.setItem("access_token", newAccessToken); // Update local storage
-      return await apiCall(); // Retry the original API call
+      try {
+        const newAccessToken = await getAccessToken(); // Refresh the token
+        if (!newAccessToken) {
+          // getAccessToken already redirected to login
+          return null;
+        }
+        localStorage.setItem("access_token", newAccessToken); // Update local storage
+        return await apiCall(); // Retry the original API call
+      } catch (refreshError) {
+        // Token refresh failed, redirect to login
+        console.error("Failed to refresh token:", refreshError);
+        redirectToLogin();
+        return null;
+      }
     }
     throw error; // If the error is not 401, rethrow it
   }
