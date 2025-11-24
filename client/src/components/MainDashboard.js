@@ -39,7 +39,7 @@ const MainDashboard = ({ searchTerm }) => {
   // Search platforms for all visible tracks (called when tracks load)
   useEffect(() => {
     const searchAllPlatforms = async () => {
-      for (const track of filteredTracks.slice(0, 20)) { // Limit to first 20 to avoid rate limits
+      for (const track of filteredTracks) { // Search all tracks
         if (!platformData[track.id]) {
           const artistName = track.artistsName || (Array.isArray(track.artists) ? track.artists.map(a => a.name).join(', ') : '');
           await searchTrackPlatforms(track.id, artistName, track.name);
@@ -52,7 +52,8 @@ const MainDashboard = ({ searchTerm }) => {
     if (filteredTracks.length > 0) {
       searchAllPlatforms();
     }
-  }, [filteredTracks, searchTrackPlatforms]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredTracks]);
 
   const {
     playlists,

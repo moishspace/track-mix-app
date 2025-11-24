@@ -1,8 +1,8 @@
 // TrackPlayer.js
-import React, { useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useRef, forwardRef, useImperativeHandle, memo } from 'react';
 import SpotifyWebPlayer from './SpotifyWebPlayer';
 
-const TrackPlayer = forwardRef(({ processedTracks, selectedTrack, currentTrackIndex = 0, setCurrentTrackIndex, onProgress, onTrackChange }, ref) => {
+const TrackPlayer = memo(forwardRef(({ processedTracks, selectedTrack, currentTrackIndex = 0, setCurrentTrackIndex, onProgress, onTrackChange }, ref) => {
   const spotifyPlayerRef = useRef();
 
   // Use `useImperativeHandle` to expose `handleSeek`
@@ -24,6 +24,13 @@ const TrackPlayer = forwardRef(({ processedTracks, selectedTrack, currentTrackIn
       onProgress = {onProgress}
       onTrackChange={onTrackChange}
     />
+  );
+}), (prevProps, nextProps) => {
+  // Custom comparison: only re-render if these specific props change
+  return (
+    prevProps.selectedTrack?.id === nextProps.selectedTrack?.id &&
+    prevProps.currentTrackIndex === nextProps.currentTrackIndex &&
+    prevProps.processedTracks.length === nextProps.processedTracks.length
   );
 });
 

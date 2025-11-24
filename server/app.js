@@ -35,7 +35,9 @@ async function ensureValidAccessToken(req, res, next) {
     console.log("Access token expired or missing, refreshing...");
     const refreshed = await refreshAccessToken();
     if (!refreshed || !accessToken) {
-      return res.status(401).json({ error: "Session expired. Please log in again." });
+      return res
+        .status(401)
+        .json({ error: "Session expired. Please log in again." });
     }
   }
   next();
@@ -90,9 +92,14 @@ async function refreshAccessToken() {
       await new Promise((resolve) => setTimeout(resolve, retryAfter));
       // Retry after rate limit
       return refreshAccessToken();
-    } else if (error.response?.status === 400 || error.response?.status === 401) {
+    } else if (
+      error.response?.status === 400 ||
+      error.response?.status === 401
+    ) {
       // Refresh token is invalid or expired
-      console.error("Refresh token is invalid or expired. User needs to re-authenticate.");
+      console.error(
+        "Refresh token is invalid or expired. User needs to re-authenticate."
+      );
       accessToken = null;
       refreshToken = null;
       return false;
@@ -324,11 +331,15 @@ app.get("/api/get-access-token", async (req, res) => {
       const refreshed = await refreshAccessToken();
       if (!refreshed) {
         // No valid token and couldn't refresh - user needs to re-authenticate
-        return res.status(401).json({ error: "Session expired. Please log in again." });
+        return res
+          .status(401)
+          .json({ error: "Session expired. Please log in again." });
       }
     }
     if (!accessToken) {
-      return res.status(401).json({ error: "No valid access token. Please log in." });
+      return res
+        .status(401)
+        .json({ error: "No valid access token. Please log in." });
     }
     res.json({ accessToken });
   } catch (error) {
@@ -500,8 +511,22 @@ app.get("/api/spotify-playlists", ensureValidAccessToken, async (req, res) => {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        params: { limit: 50 },
       }
     );
+
+    // Add "Liked Songs" as a special pseudo-playlist at the beginning
+    const likedSongs = {
+      id: "liked-songs",
+      name: "Liked Songs",
+      description: "Your liked songs collection",
+      images: [{ url: "https://misc.scdn.co/liked-songs/liked-songs-640.png" }],
+      tracks: { total: 0 },
+      isLikedSongs: true,
+    };
+
+    response.data.items.unshift(likedSongs);
+
     res.json(response.data);
   } catch (error) {
     if (error.response) {
@@ -613,17 +638,25 @@ app.delete(
 );
 
 app.get("/api/playlist-tracks", ensureValidAccessToken, async (req, res) => {
-  const { playlistId } = req.query;
+  const { playlistId, offset = 0, limit = 50 } = req.query;
   if (!playlistId) {
     return res.status(400).json({ error: "Playlist ID is required" });
   }
 
   try {
-    const response = await axios.get(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
+    // Check if this is the special "Liked Songs" playlist
+    const isLikedSongs = playlistId === "liked-songs";
+    const endpoint = isLikedSongs
+      ? "https://api.spotify.com/v1/me/tracks"
+      : `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+
+    const response = await axios.get(endpoint, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      params: { limit: parseInt(limit), offset: parseInt(offset) },
+    });
+
+    console.log(
+      `Fetched ${response.data.items.length} tracks (offset: ${offset}, limit: ${limit})`
     );
     res.json(response.data);
   } catch (error) {
@@ -699,7 +732,7 @@ async function getDeezerTrackAnalysis(query) {
       bpm: deezerBpm || analysis.bpm,
       key: analysis.key,
       camelot: analysis.camelot,
-      energy: analysis.energy
+      energy: analysis.energy,
     };
   } catch (error) {
     console.error(`Error fetching Deezer analysis: ${error.message}`);
@@ -986,7 +1019,7 @@ app.post("/api/analyze-tracks", async (req, res) => {
             console.log(
               `   ${i + 1}. ${track.name}\n` +
                 // `      → entrance: ${track.analysis.suggested_entrance}ms, ` +
-                `      ← exit: ${track.analysis.suggested_exit }ms, ` +
+                `      ← exit: ${track.analysis.suggested_exit}ms, ` +
                 `fade_in: ${track.analysis.suggested_fade_in}ms, fade_out: ${track.analysis.suggested_fade_out}ms`
             );
           });
@@ -1024,7 +1057,7 @@ app.post("/api/analyze-tracks", async (req, res) => {
 });
 
 // ============== MUSIC STORE PLATFORM APIs ==============
-const platformService = require('./services/platformService');
+const platformService = require("./services/platformService");
 
 // Search for a track across all platforms
 app.get("/api/platforms/search", async (req, res) => {
@@ -1047,6 +1080,8 @@ app.get("/api/platforms/search", async (req, res) => {
 app.post("/api/platforms/add-to-cart", async (req, res) => {
   try {
     const { platform, trackId, trackUrl } = req.body;
+
+    console.log(`Opening ${platform}: trackUrl=${trackUrl}`);
 
     if (!platform) {
       return res.status(400).json({ error: "Platform is required" });

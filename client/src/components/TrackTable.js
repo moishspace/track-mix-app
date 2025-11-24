@@ -52,6 +52,8 @@ const PlatformCartButton = ({ platform, trackId, trackUrl, color }) => {
   const handleClick = async (e) => {
     e.stopPropagation();
 
+    console.log(`Clicking ${platform} button:`, { trackId, trackUrl });
+
     if (added) {
       // Already added, open the URL
       window.open(trackUrl, "_blank");

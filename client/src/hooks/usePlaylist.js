@@ -42,36 +42,59 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
       alert("Please select a playlist to show.");
       return;
     }
-  
-    try {
-      const playlistData = await fetchPlaylistTracks(selectedPlaylist);
-  
-      // Step 1: Process the basic track data
-      const basicTracks = playlistData.map((item, index) => {
-        const track = item.track || {};
-        const artistsArray = track.artists || [];
-        const artistsName = artistsArray.map((artist) => artist.name).join(', ');
-  
-        return {
-          id: track.id || `unknown-id-${index}`,
-          name: track.name || 'Unknown Track',
-          artistsName: artistsName || 'Unknown Artist',
-          album: track.album || {},
-          duration_ms: track.duration_ms || null,
-          preview_url: track.preview_url || null,
-        };
-      });
-  
-      // Step 2: Update UI immediately with basic track data
-      setFilteredTracks(basicTracks);
-  
-      // Step 3: Fetch additional details asynchronously and update state
-      basicTracks.forEach((track) => {
-        fetchAndUpdateTrackDetails(track.id, setTrackDetails, track);
-      });
 
-      // Step 4: Update the selected track IDs based on the current playlist
-      const trackIds = basicTracks.map((track) => track.id);
+    try {
+      let allTracks = [];
+      let offset = 0;
+      const limit = 50;
+      let hasMore = true;
+
+      // Fetch all pages of tracks
+      while (hasMore) {
+        const response = await fetchPlaylistTracks(selectedPlaylist, offset, limit);
+        const playlistData = response.items || [];
+
+        if (playlistData.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        // Process the tracks from this page
+        const basicTracks = playlistData.map((item, index) => {
+          const track = item.track || {};
+          const artistsArray = track.artists || [];
+          const artistsName = artistsArray.map((artist) => artist.name).join(', ');
+
+          return {
+            id: track.id || `unknown-id-${offset + index}`,
+            name: track.name || 'Unknown Track',
+            artistsName: artistsName || 'Unknown Artist',
+            album: track.album || {},
+            duration_ms: track.duration_ms || null,
+            preview_url: track.preview_url || null,
+          };
+        });
+
+        allTracks = allTracks.concat(basicTracks);
+
+        // Update UI immediately with current tracks
+        setFilteredTracks([...allTracks]);
+
+        // Fetch additional details asynchronously
+        basicTracks.forEach((track) => {
+          fetchAndUpdateTrackDetails(track.id, setTrackDetails, track);
+        });
+
+        // Check if there are more pages
+        if (response.next && playlistData.length === limit) {
+          offset += limit;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // Update the selected track IDs based on the current playlist
+      const trackIds = allTracks.map((track) => track.id);
       const selectedIdsInPlaylist = trackIds.filter((id) => selectedTrackIds.includes(id));
       setSelectedTrackIds(selectedIdsInPlaylist);
       setSelectAllChecked(selectedIdsInPlaylist.length === trackIds.length);

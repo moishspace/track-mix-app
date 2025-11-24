@@ -153,17 +153,17 @@ export const fetchPlaylists = async () => {
   );
 };
 
-export const fetchPlaylistTracks = async (playlistId) => {
+export const fetchPlaylistTracks = async (playlistId, offset = 0, limit = 50) => {
   return withRetry(
     () =>
       axios
         .get(`${API_URL}/playlist-tracks`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Use the latest token from local storage
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
-          params: { playlistId },
+          params: { playlistId, offset, limit },
         })
-        .then((response) => response.data.items) // Assuming `items` contains the track data
+        .then((response) => response.data) // Return full response with items and next
   );
 };
 
