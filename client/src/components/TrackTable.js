@@ -112,6 +112,7 @@ const TrackTable = ({
     () => [
       {
         field: "select",
+        width: 120,
         renderHeader: () => {
           return (
             <Checkbox
@@ -159,6 +160,7 @@ const TrackTable = ({
         minWidth: 150,
         flex: 1,
         sortable: true,
+        cellClassName: "track-name-cell",
       },
       {
         field: "artistsName",

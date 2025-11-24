@@ -444,7 +444,7 @@ export default function MixerTrackTable({
                             />
                           </TableCell>
                           <TableCell>{i + 1}</TableCell>
-                          <TableCell>{track.name}</TableCell>
+                          <TableCell className="track-name-cell">{track.name}</TableCell>
                           <TableCell>
                             <TrackWaveformPreview
                               mode="table"

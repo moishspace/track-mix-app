@@ -139,13 +139,13 @@ body, html {
 /* Main Flex Container for Panel and Table */
 .content-container, .flex-container {
   display: flex;
-  width:85vw;
-  max-width: 95vw;
-  height: 75vh;
-  gap: 10px;
+  width: 98vw;
+  max-width: 98vw;
+  height: 80vh;
+  gap: 0px;
   overflow: hidden;
   box-sizing: border-box;
-  padding-top: 40px;
+  padding: 40px 20px 40px 20px;
 }
 
 /* Button Styling */
@@ -217,3 +217,31 @@ body, html {
   background-color: #ffebeb;
 }
 
+/* Modern vibrant metallic button - unified style */
+.action-button {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2a2a2a;
+  background: linear-gradient(135deg, #ffb300 0%, #ff8f00 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.25s ease;
+  min-width: 120px;
+  box-shadow: 0 4px 14px rgba(255, 179, 0, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+  box-shadow: 0 0 16px rgba(255, 179, 0, 0.6);
+}
+
+.action-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 179, 0, 0.4);
+}

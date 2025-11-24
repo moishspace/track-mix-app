@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/DataGridStyles.css";
 import "../styles/Mixer.css";
 import "../index.css";
@@ -14,6 +15,7 @@ import OpenFinder from "../components/OpenFinder";
 import { startMix, analyzeTracks } from "../services/api";
 
 export default function MixerPage() {
+  const navigate = useNavigate();
   const [folderPath, setFolderPath] = useState("./wav");
   const [outFolderPath, setOutFolderPath] = useState("");
   const [defaultFadeIn, setDefaultFadeIn] = useState(30000);
@@ -32,7 +34,7 @@ export default function MixerPage() {
     if (!folderPath) return null;
     // Extract folder name using string operations (avoid Node.js path module)
     const folderName = folderPath.split(/[\\/]/).filter(Boolean).pop();
-    const separator = folderPath.includes('\\') ? '\\' : '/';
+    const separator = folderPath.includes("\\") ? "\\" : "/";
     return `${folderPath}${separator}${folderName}_mix_settings.json`;
   }, [folderPath]);
 
@@ -149,7 +151,7 @@ export default function MixerPage() {
     }
 
     const settingsData = {
-      tracks: tracks.map(track => ({
+      tracks: tracks.map((track) => ({
         name: track.name,
         fadeIn: track.fadeIn || defaultFadeIn,
         fadeOut: track.fadeOut || defaultFadeOut,
@@ -171,7 +173,10 @@ export default function MixerPage() {
       })),
     };
 
-    const result = window.electronAPI.saveSettingsFile(settingsPath, settingsData);
+    const result = window.electronAPI.saveSettingsFile(
+      settingsPath,
+      settingsData
+    );
 
     if (result.success) {
       toast.success("✅ Settings saved successfully!");
@@ -194,8 +199,10 @@ export default function MixerPage() {
       const loadedSettings = result.data;
 
       // Update tracks with saved settings
-      const updatedTracks = tracks.map(track => {
-        const savedTrack = loadedSettings.tracks.find(t => t.name === track.name);
+      const updatedTracks = tracks.map((track) => {
+        const savedTrack = loadedSettings.tracks.find(
+          (t) => t.name === track.name
+        );
         if (savedTrack) {
           return {
             ...track,
@@ -224,7 +231,9 @@ export default function MixerPage() {
       setTracks(updatedTracks);
       toast.success("✅ Settings loaded successfully!");
     } else {
-      toast.error(`❌ Failed to load settings: ${result.error || "File not found"}`);
+      toast.error(
+        `❌ Failed to load settings: ${result.error || "File not found"}`
+      );
     }
   };
 
@@ -297,10 +306,26 @@ export default function MixerPage() {
     }
   };
 
+  const goBackToHome = () => {
+    navigate("/");
+  };
+
   return (
     <div className="mixer-page">
       <div className="form-box">
-        <h1 className="form-title">🎛️ Track Mixer</h1>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "1rem",
+          }}
+        >
+          <h1 className="form-title">🎛️ Track Mixer</h1>
+          <button className="action-button" onClick={goBackToHome}>
+            ← go back
+          </button>
+        </div>
 
         <div className="form-fields">
           <div className="form-group">
@@ -425,20 +450,33 @@ export default function MixerPage() {
             }}
             onNext={() => {
               if (!previewTrack) return;
-              const currentIndex = tracks.findIndex(t => t.name === previewTrack.name);
+              const currentIndex = tracks.findIndex(
+                (t) => t.name === previewTrack.name
+              );
               if (currentIndex >= 0 && currentIndex < tracks.length - 1) {
                 setPreviewTrack(tracks[currentIndex + 1]);
               }
             }}
             onPrevious={() => {
               if (!previewTrack) return;
-              const currentIndex = tracks.findIndex(t => t.name === previewTrack.name);
+              const currentIndex = tracks.findIndex(
+                (t) => t.name === previewTrack.name
+              );
               if (currentIndex > 0) {
                 setPreviewTrack(tracks[currentIndex - 1]);
               }
             }}
-            hasNext={previewTrack ? tracks.findIndex(t => t.name === previewTrack.name) < tracks.length - 1 : false}
-            hasPrevious={previewTrack ? tracks.findIndex(t => t.name === previewTrack.name) > 0 : false}
+            hasNext={
+              previewTrack
+                ? tracks.findIndex((t) => t.name === previewTrack.name) <
+                  tracks.length - 1
+                : false
+            }
+            hasPrevious={
+              previewTrack
+                ? tracks.findIndex((t) => t.name === previewTrack.name) > 0
+                : false
+            }
           />
         </div>
 
@@ -480,15 +518,16 @@ export default function MixerPage() {
               opacity: !settingsFileExists ? 0.5 : 1,
               cursor: !settingsFileExists ? "not-allowed" : "pointer",
             }}
-            title={settingsFileExists ? "Load saved settings" : "No saved settings found"}
+            title={
+              settingsFileExists
+                ? "Load saved settings"
+                : "No saved settings found"
+            }
           >
             📂 Load
           </button>
 
-          <button
-            className="action-button start-mix-button"
-            onClick={handleStartMix}
-          >
+          <button className="action-button" onClick={handleStartMix}>
             Start Mixing
           </button>
         </div>

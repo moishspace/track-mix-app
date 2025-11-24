@@ -1,18 +1,27 @@
 .mix-button {
-  background-color: #4a90e2; /* Or #3b3b98 */
-  color: white;
-  font-size: 14px;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #ffb300 0%, #ff8f00 100%);
+  color: #2a2a2a;
   margin-left: 8px;
   display: flex;
   align-items: center;
-  cursor: pointer;
   transition: background-color 0.3s ease;
   height: 40px;
+  box-shadow: 0 4px 14px rgba(255, 179, 0, 0.3);
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .mix-button:hover {
-  background-color: #3f7fc1;
+  box-shadow: 0 0 16px rgba(255, 179, 0, 0.6);
+}
+
+.mix-button:active {
+  box-shadow: 0 2px 8px rgba(255, 179, 0, 0.4);
 }

@@ -1,240 +1,276 @@
-/* Base styling for the entire DataGrid */
+/* Base styling for the entire DataGrid - Modern Dark Theme */
 .custom-data-grid {
-    background-color: #f3f4f6 !important; /* Light gray background */
-    font-family: 'Roboto', sans-serif !important; /* Professional font family */
-    font-size: 14px !important; /* Base font size for readability */
-    color: #333333 !important; /* Dark gray text color */
+  background-color: #1a1a1a !important; /* Dark charcoal background */
+  font-family: "Inter", "Roboto", sans-serif !important; /* Modern font family */
+  font-size: 14px !important; /* Base font size for readability */
+  color: #e0e0e0 !important; /* Light gray text color */
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+.custom-data-grid .MuiDataGrid-virtualScrollerRenderZone > div {
+  border-bottom: 1px solid #1a1a1a !important; /* same as background */
 }
 
-/* Header styling */
+/* And make sure default variables are dark too */
+.custom-data-grid {
+  --DataGrid-rowBorderColor: #1a1a1a !important;
+  --DataGrid-cellBorderColor: #1a1a1a !important;
+}
+
+/* Remove outer border of the DataGrid */
+.custom-data-grid .MuiDataGrid-main,
+.custom-data-grid .MuiDataGrid-columnHeaders,
+.custom-data-grid .MuiDataGrid-virtualScroller,
+.custom-data-grid .MuiDataGrid-footerContainer {
+  border: none !important;
+}
+
+.custom-data-grid {
+  border: none !important; /* Remove overall frame border */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Header styling - Metallic gradient */
 .custom-data-grid .MuiDataGrid-columnHeader {
-    background-color: #737986 !important; /* Light gray background for header */
-    font-family: 'Roboto', sans-serif !important; /* Consistent font for header */
-    letter-spacing: 0.5px; /* Slight letter spacing */
-    color: #fdfeff !important; /* Text color for header titles */
-    font-weight: bolder !important; /* Bold font for headers */
-    font-size: 15px !important; /* Larger font for headers */
-    border-bottom: 2px solid #e0e0e0 !important; /* Subtle bottom border for separation */
-    text-align: center !important; /* Center-align text for uniformity */
+  background: linear-gradient(
+    135deg,
+    #2d3436 0%,
+    #1e272e 100%
+  ) !important; /* Dark metallic gradient */
+  font-family: "Inter", "Roboto", sans-serif !important; /* Consistent font for header */
+  letter-spacing: 0.5px; /* Slight letter spacing */
+  color: #f5f5f5 !important; /* Bright text color for header titles */
+  font-weight: 800 !important; /* Bold font for headers */
+  font-size: 14px !important; /* Larger font for headers */
+  border-bottom: 2px solid #3d4852 !important; /* Subtle metallic border */
+  text-align: center !important; /* Center-align text for uniformity */
+  text-transform: uppercase;
+  border-right: 1px solid #252525 !important; /* Very dark border between headers */
+}
+
+/* Checkbox column header - extra padding */
+.custom-data-grid .MuiDataGrid-columnHeader--checkboxSelection {
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  min-width: 60px !important;
 }
 
 /* Row styling */
 .custom-data-grid .MuiDataGrid-row {
-    background-color: #f9fafb !important; /* Light background for rows */
-    border-bottom: 1px solid #e2e8f0 !important; /* Subtle row separator */
+  background-color: #242424 !important; /* Dark background for rows */
+  border-bottom: 1px solid #2a2a2a !important; /* Very subtle dark row separator */
+  transition: all 0.2s ease;
 }
 
 /* Alternating row colors */
 .custom-data-grid .even-row {
-    background-color: #e2e8f0 !important; /* Light gray for even rows */
+  background-color: #1f1f1f !important; /* Darker for even rows */
 }
 
 .custom-data-grid .odd-row {
-    background-color: #f9fafb !important; /* Slightly lighter for odd rows */
+  background-color: #242424 !important; /* Slightly lighter for odd rows */
 }
 
-/* Selected row color */
+/* Selected row color - Subtle accent */
 .custom-data-grid .selected-row {
-    background-color: #e0f7fa !important; /* Light blue for the selected row */
-    color: #00796b; /* Darker text color for contrast */
+  background-color: #2a3f2f !important; /* Dark green background */
+  color: #e0e0e0 !important; /* Light gray text */
+  font-weight: 500 !important;
+  border-left: 3px solid #1db954 !important; /* Green accent border */
+  box-shadow: inset 0 0 20px rgba(29, 185, 84, 0.15) !important;
 }
 /* Cell styling */
 .custom-data-grid .MuiDataGrid-cell {
-    display: flex; /* Use flex layout */
-    align-items: center; /* Center-aligns text horizontally within flex container */
-    justify-content: center; /* Center-aligns text horizontally */
-    white-space: normal !important; /* Allows text to wrap */
-    overflow-wrap: break-word !important; /* Wraps text without breaking words */
-    word-break: break-word !important; /* Prevents words from splitting */
-    line-height: 1.2 !important; /* Adjusts line height for readability */
-    padding: 10px !important; /* Adds padding for cell content */
-    color: #333333 !important; /* Text color */
-    background-color: inherit !important; /* Aligns cell color with row */
-    border-right: 1px solid #e0e0e0 !important; /* Border between columns */
-    text-align: center; /* Center-aligns text within the cell */
+  display: flex; /* Use flex layout */
+  align-items: center; /* Center-aligns text horizontally within flex container */
+  justify-content: center; /* Center-aligns text horizontally */
+  white-space: normal !important; /* Allows text to wrap */
+  overflow-wrap: break-word !important; /* Wraps text without breaking words */
+  word-break: break-word !important; /* Prevents words from splitting */
+  line-height: 1.2 !important; /* Adjusts line height for readability */
+  padding: 10px !important; /* Adds padding for cell content */
+  color: #d0d0d0 !important; /* Light gray text color */
+  background-color: inherit !important; /* Aligns cell color with row */
+  border-right: 1px solid #2a2a2a !important; /* Very subtle dark border between columns */
+  text-align: center; /* Center-aligns text within the cell */
 }
 
 /* Styling for cells in the Track Name column */
 .custom-data-grid .track-name-cell {
-    color: #197791 !important; /* Distinct color for track name */
-    font-weight: bold; /* Emphasize track name */
+  color: white !important; /* Vibrant green for track name */
+  font-weight: bold !important; /* Bold font for track name */
+  font-size: 16px !important; /* Larger font size for track name */
 }
 
 /* Adjust font weight and alignment for the entire grid */
-.custom-data-grid .MuiDataGrid-columnHeader, 
+.custom-data-grid .MuiDataGrid-columnHeader,
 .custom-data-grid .MuiDataGrid-cell {
-    font-weight: 500 !important; /* Medium font weight for consistency */
-    text-align: left !important; /* Aligns text to the left */
+  font-weight: 500 !important; /* Medium font weight for consistency */
+  text-align: left !important; /* Aligns text to the left */
 }
 
 .custom-data-grid .MuiDataGrid-cell:focus {
-    outline: none !important;
-    border: none !important;
-    box-shadow: none !important;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-/* Optional: Style the row on hover for an interactive look */
-/*.custom-data-grid .MuiDataGrid-row:hover {
-    background-color: #e3f2fd !important; /* Light blue background on hover */
-/*}
+/* Row hover effect */
+.custom-data-grid .MuiDataGrid-row:hover {
+  background-color: #2d2d2d !important; /* Slightly lighter on hover */
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
 
 /* Main container for filter panel and table side by side */
 .main-container {
-    display: flex;
-    align-items: flex-start;
-    padding: 20px;
-  }
-  
-  .selected-row {
-    background-color: #e0f7fa !important; /* Light blue for selected row */
-    color: #00796b; /* Darker text color for contrast */
-  }
-
-  /* Table Container */
-  .table-container {
-    display: flex;
-    flex-direction: column; /* Stack items vertically */
-    align-items: stretch; /* Ensure full width */
-    width: 100%; /* Ensure container takes full width */
-    max-height: 100%; /* Adjust height as needed */
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  padding: 20px;
 }
-  
+
+.selected-row {
+  background-color: #e0f7fa !important; /* Light blue for selected row */
+  color: #00796b; /* Darker text color for contrast */
+}
+
+/* Table Container - Modern dark theme */
+.table-container {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  align-items: stretch; /* Ensure full width */
+  width: 100%; /* Ensure container takes full width */
+  max-height: 100%; /* Adjust height as needed */
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  padding: 10px;
+  overflow: hidden;
+}
+
 /* Custom Data Grid Styling */
 .custom-data-grid {
-    width: 100%;
-    height: 100%;
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
-    color: #333333;
-    overflow: auto; /* Allow scrolling within the grid if needed */
- }
-
- /* Container for the buttons and dropdowns */
- .button-container {
-    display: flex;
-    align-items: center; /* Align items vertically centered */
-    gap: 10px;
-    padding: 10px 0;
+  width: 100%;
+  height: 100%;
+  font-family: "Roboto", sans-serif;
+  font-size: 14px;
+  color: #333333;
+  overflow: auto; /* Allow scrolling within the grid if needed */
 }
 
-
-/* Primary action button */
-.action-button {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    font-weight: bold;
-    /* color: #696969; 
-    background-color: #f0f0f0;  */
-    color: #f0f0f0; 
-    background-color: #777; 
-    border: 1px solid #d3d3d3; 
-    border-radius: 15px; 
-    cursor: pointer;
-    text-align: center;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    min-width: 120px; 
-    box-sizing: border-box;
+/* Container for the buttons and dropdowns */
+.button-container {
+  display: flex;
+  align-items: center; /* Align items vertically centered */
+  gap: 10px;
+  padding: 10px 0;
 }
 
-.action-button:hover {
-    color: #e0e0e0; 
-    background-color: #111111; 
-}
-
-/* Secondary action button */
-.action-button.secondary {
-    color: #cccccc;
-    background-color: #333;
-}
-
-.action-button.secondary:hover {
-    background-color: #333;
-}
-
-/* Styling for the dropdown to match button */
 .playlist-dropdown {
-    padding: 10px 20px;
-    background-color: #ffffff;
-    color: #333;
-    font-size: 14px;
-    border: 1px solid #d3d3d3;
-    border-radius: 4px;
-    height: 40px; /* Consistent height with buttons */
-    min-width: 160px; /* Set minimum width for dropdown */
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  color: #e0e0e0;
+  font-size: 14px;
+  border: 1px solid #4a5568;
+  border-radius: 8px;
+  height: 40px; /* Consistent height with buttons */
+  min-width: 160px; /* Set minimum width for dropdown */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
 }
 
 /* Align both buttons and dropdown to the same height */
-.button-group-container, .button-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.button-group-container,
+.button-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* Border styling for button group container */
 .button-group-container {
-    padding: 8px;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-}
-  
-.playlist-dropdown:hover, .playlist-dropdown:focus {
-    border-color: #737986; /* Slight color change on hover and focus */
-    background-color: #f5f5f5; /* Light background on hover for subtle feedback */
+  padding: 8px;
+  border: 1px solid #3d4852;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
+.playlist-dropdown:hover,
+.playlist-dropdown:focus {
+  border-color: #1db954;
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+  outline: none;
+}
 
 /* Custom styling for header checkbox */
 .header-checkbox {
-    color: #e1e1d4 !important; /* Default unchecked color */
+  color: #6b7280 !important; /* Default unchecked color */
 }
 
 .header-checkbox.Mui-checked {
-    color: #ffffff !important; /* Checked color */
+  color: #1db954 !important; /* Spotify green when checked */
 }
 
 /* Custom styling for row checkboxes */
 .row-checkbox {
-    color: #737986 !important; /* Default unchecked color */
-}
-
-.row-checkbox.Mui-checked {
-    color: #5a5f6a !important; /* Checked color */
+  color: #4a5568 !important; /* Default unchecked color */
 }
 
 /* Remove hover effect for header checkbox */
 .header-checkbox:hover {
-    background-color: transparent !important;
-    box-shadow: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 /* Remove hover effect for row checkboxes */
 .row-checkbox:hover {
-    background-color: transparent !important;
-    box-shadow: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 /* Remove focus outline and shadow for header checkbox */
-.header-checkbox:focus, 
+.header-checkbox:focus,
 .header-checkbox:active,
 .header-checkbox .MuiTouchRipple-root {
-    outline: none !important;
-    box-shadow: none !important;
-    background-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
 }
 
 /* Remove focus outline and shadow for row checkboxes */
-.row-checkbox:focus, 
+.row-checkbox:focus,
 .row-checkbox:active,
 .row-checkbox .MuiTouchRipple-root {
-    outline: none !important;
-    box-shadow: none !important;
-    background-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
 }
 
+.custom-data-grid::-webkit-scrollbar-track {
+  background-color: #1a1a1a !important;
+}
+
+.MuiDataGrid-footerContainer {
+  background-color: #1a1a1a !important; /* match your dark theme */
+  color: #e0e0e0 !important; /* light gray text */
+  border-top: 1px solid #2a2a2a !important; /* subtle top border */
+}
+
+/* Footer pagination controls */
+.custom-data-grid .MuiTablePagination-root,
+.custom-data-grid .MuiTablePagination-toolbar,
+.custom-data-grid .MuiTablePagination-caption,
+.custom-data-grid .MuiTablePagination-selectLabel,
+.custom-data-grid .MuiTablePagination-input,
+.custom-data-grid .MuiSelect-select,
+.custom-data-grid .MuiSvgIcon-root {
+  color: #e0e0e0 !important; /* make all text/icons visible */
+}
+
+/* Allow inline sx colors to show on icon buttons */
+.custom-data-grid .MuiIconButton-root svg {
+  color: inherit !important; /* use color from sx prop */
+  fill: currentColor !important;
+}

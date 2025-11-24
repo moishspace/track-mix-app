@@ -72,13 +72,16 @@ class BeatportService {
 
           if (dehydratedState?.queries) {
             for (const query of dehydratedState.queries) {
-              const tracks = query?.state?.data?.tracks;
+              const tracksObj = query?.state?.data?.tracks;
+              // Tracks can be in tracks.data array
+              const tracks = tracksObj?.data || (Array.isArray(tracksObj) ? tracksObj : null);
               if (tracks && tracks.length > 0) {
                 const track = tracks[0];
                 // Beatport URL pattern: /track/track-name/track-id
-                const slug = track.slug || track.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                const trackId = track.id || track.track_id;
-                if (trackId) {
+                const trackName = track.track_name || track.name;
+                const slug = track.slug || trackName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+                const trackId = track.track_id || track.id;
+                if (trackId && slug) {
                   return {
                     found: true,
                     url: `${this.baseUrl}/track/${slug}/${trackId}`,
@@ -86,6 +89,39 @@ class BeatportService {
                   };
                 }
               }
+            }
+          }
+
+          // Try alternate paths in the JSON
+          const pageProps = jsonData?.props?.pageProps;
+          const altTracks = pageProps?.tracks?.data || pageProps?.tracks;
+          if (altTracks?.length > 0) {
+            const track = altTracks[0];
+            const trackName = track.track_name || track.name;
+            const slug = track.slug || trackName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+            const trackId = track.track_id || track.id;
+            if (trackId && slug) {
+              return {
+                found: true,
+                url: `${this.baseUrl}/track/${slug}/${trackId}`,
+                platform: 'beatport'
+              };
+            }
+          }
+
+          // Check for search results in different structure
+          const searchTracks = pageProps?.searchResults?.tracks?.data || pageProps?.searchResults?.tracks;
+          if (searchTracks?.length > 0) {
+            const track = searchTracks[0];
+            const trackName = track.track_name || track.name;
+            const slug = track.slug || trackName?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+            const trackId = track.track_id || track.id;
+            if (trackId && slug) {
+              return {
+                found: true,
+                url: `${this.baseUrl}/track/${slug}/${trackId}`,
+                platform: 'beatport'
+              };
             }
           }
         } catch (parseError) {
@@ -97,12 +133,21 @@ class BeatportService {
       const trackPatterns = [
         /href="(\/track\/[^"]+)"/,
         /"url":"(\/track\/[^"]+)"/,
+        /"slug":"([^"]+)"[^}]*"id":(\d+)/,
         /\/track\/([a-z0-9-]+\/\d+)/
       ];
 
       for (const pattern of trackPatterns) {
         const match = html.match(pattern);
         if (match) {
+          // Handle the slug+id pattern
+          if (match[2]) {
+            return {
+              found: true,
+              url: `${this.baseUrl}/track/${match[1]}/${match[2]}`,
+              platform: 'beatport'
+            };
+          }
           const trackPath = match[1].startsWith('/') ? match[1] : `/track/${match[1]}`;
           return {
             found: true,
@@ -114,6 +159,7 @@ class BeatportService {
 
       return { found: false, platform: 'beatport' };
     } catch (error) {
+      console.error('Beatport search error:', error.message);
       return { found: false, platform: 'beatport' };
     }
   }

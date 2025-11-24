@@ -158,7 +158,7 @@ const MainDashboard = ({ searchTerm }) => {
 
   return (
     <div className="flex-container">
-      <CriteriaFilterPanel criteria={criteria} setCriteria={setCriteria} onSearchSimilar={searchSimilar} initialTrackDetails={selectedTrack} />
+      {/* <CriteriaFilterPanel criteria={criteria} setCriteria={setCriteria} onSearchSimilar={searchSimilar} initialTrackDetails={selectedTrack} /> */}
 
       <div className="table-container">
         {/* Track Table */}

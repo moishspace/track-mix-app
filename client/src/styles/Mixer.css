@@ -96,7 +96,7 @@
   align-items: flex-start;
 }
 
-.action-button {
+/* .action-button {
   background: #3b82f6;
   color: white;
   padding: 0.7rem 1.4rem;
@@ -111,7 +111,7 @@
 
 .action-button:hover {
   background: #2563eb;
-}
+} */
 
 .table-box {
   background: #1f2937;

@@ -112,7 +112,10 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
   const pausePlayback = async () => {
     if (!accessToken) return;
     try {
-      await fetch('https://api.spotify.com/v1/me/player/pause', {
+      const url = selectedDevice
+        ? `https://api.spotify.com/v1/me/player/pause?device_id=${selectedDevice}`
+        : 'https://api.spotify.com/v1/me/player/pause';
+      await fetch(url, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${accessToken}` }
       });
@@ -124,9 +127,12 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
 
   // Resume playback (Electron/Connect mode)
   const resumePlayback = async () => {
-    if (!accessToken) return;
+    if (!accessToken || !selectedDevice) return;
     try {
-      await fetch('https://api.spotify.com/v1/me/player/play', {
+      const url = selectedDevice
+        ? `https://api.spotify.com/v1/me/player/play?device_id=${selectedDevice}`
+        : 'https://api.spotify.com/v1/me/player/play';
+      await fetch(url, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${accessToken}` }
       });
@@ -235,10 +241,22 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
 
   // Handle track selection change (Electron mode)
   useEffect(() => {
-    if (runningInElectron && accessToken && selectedDevice && playlistUris[initialTrackIndex]) {
+    if (runningInElectron && accessToken && playlistUris[initialTrackIndex]) {
+      if (selectedDevice) {
+        playOnDevice(playlistUris[initialTrackIndex], selectedDevice);
+      } else {
+        // No device selected, try to fetch devices
+        fetchDevices();
+      }
+    }
+  }, [initialTrackIndex, runningInElectron, accessToken]);
+
+  // When device becomes available after track selection, play the track
+  useEffect(() => {
+    if (runningInElectron && accessToken && selectedDevice && playlistUris[initialTrackIndex] && !play) {
       playOnDevice(playlistUris[initialTrackIndex], selectedDevice);
     }
-  }, [initialTrackIndex, runningInElectron, selectedDevice]);
+  }, [selectedDevice]);
 
   // Handle the player callback (Web Playback SDK mode)
   const handlePlayerCallback = (state) => {
@@ -537,7 +555,7 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
                 </div>
                 {devices.length === 0 ? (
                   <div style={{ padding: '12px 16px', color: '#b3b3b3', fontSize: '12px' }}>
-                    No devices found. Open Spotify on another device.
+                    No devices found. Open Spotify desktop or mobile app.
                   </div>
                 ) : (
                   devices.map(device => (
