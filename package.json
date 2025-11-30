@@ -1,17 +1,74 @@
 {
-  "name": "track-mix-app-shell",
+  "name": "track-mix-app",
   "version": "1.0.0",
+  "description": "Track Mix Application",
+  "author": "Your Name",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "./build-app.sh",
+    "build:electron": "electron-builder --mac",
+    "build:mac": "./build-app.sh",
+    "build:dmg": "electron-builder --mac --dmg",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.trackmix.app",
+    "productName": "TrackMix",
+    "mac": {
+      "category": "public.app-category.music",
+      "icon": "assets/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "dmg": {
+      "title": "TrackMix Installer",
+      "icon": "assets/icon.icns"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "!server",
+      "!client"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "extraResources": [
+      {
+        "from": "server",
+        "to": "server"
+      },
+      {
+        "from": "client/build",
+        "to": "client/build"
+      }
+    ]
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
     "electron": "^29.3.0",
+    "electron-builder": "^26.0.12",
     "wait-on": "^9.0.1"
   },
   "dependencies": {
     "path-browserify": "^1.0.1",
-    "react-toastify": "^11.0.5"
+    "react-toastify": "^11.0.5",
+    "wait-port": "^1.1.0"
   }
 }

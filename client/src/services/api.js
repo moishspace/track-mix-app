@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001/api";
+// Use relative path for API calls - works with proxy in dev and same-origin in production
+const API_URL = process.env.REACT_APP_API_URL || "/api";
 
 // Redirect to login page and clear stored token
 const redirectToLogin = () => {

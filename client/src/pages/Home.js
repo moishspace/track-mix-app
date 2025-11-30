@@ -5,7 +5,8 @@ import MainDashboard from '../components/MainDashboard';
 import '../styles/HomeStyle.css';
 import { SiPioneerdj } from "react-icons/si";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:3001/api";
+// Use relative path for API calls - works with proxy in dev and same-origin in production
+const API_URL = process.env.REACT_APP_API_URL || "/api";
 
 const Home = ({ isAuthorized, setIsAuthorized }) => {
   const [searchTerm, setSearchTerm] = useState('');

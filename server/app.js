@@ -10,7 +10,23 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:8000";
 
-app.use(cors({ origin: CLIENT_URL }));
+// Configure CORS to allow both development (port 8000) and production (port 3001)
+const allowedOrigins = [
+  "http://localhost:8000",  // Development mode (React dev server)
+  "http://localhost:3001"   // Production mode (packaged app)
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, Postman, or same-origin)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 // app.use(express.json());
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
@@ -289,6 +305,12 @@ const getAdditionalTrackDetailsWithRetry = async (
 app.get("/api/login", (req, res) => {
   const scope =
     "user-read-private user-read-email playlist-modify-public playlist-modify-private user-read-playback-state user-modify-playback-state streaming user-library-read";
+
+  console.log("=== Spotify OAuth Debug ===");
+  console.log("CLIENT_ID:", CLIENT_ID);
+  console.log("REDIRECT_URI:", REDIRECT_URI);
+  console.log("==========================");
+
   const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${CLIENT_ID}&scope=${encodeURIComponent(
     scope
   )}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
@@ -315,13 +337,25 @@ app.get("/api/callback", async (req, res) => {
 
     accessToken = response.data.access_token;
     refreshToken = response.data.refresh_token || refreshToken; // Save only if provided
-    res.redirect(`${CLIENT_URL}/?success=true`);
+
+    // In production (packaged app), redirect to the same origin (port 3001)
+    // In development, redirect to React dev server (port 8000)
+    const redirectUrl = process.env.NODE_ENV === 'production'
+      ? `http://localhost:${PORT}/?success=true`
+      : `${CLIENT_URL}/?success=true`;
+
+    res.redirect(redirectUrl);
   } catch (error) {
     console.error(
       "Error exchanging code:",
       error.response?.data || error.message
     );
-    res.redirect(`${CLIENT_URL}/?error=token_exchange_failed`);
+
+    const redirectUrl = process.env.NODE_ENV === 'production'
+      ? `http://localhost:${PORT}/?error=token_exchange_failed`
+      : `${CLIENT_URL}/?error=token_exchange_failed`;
+
+    res.redirect(redirectUrl);
   }
 });
 
@@ -667,10 +701,6 @@ app.get("/api/playlist-tracks", ensureValidAccessToken, async (req, res) => {
         error.response?.data || { error: "Failed to fetch playlist tracks" }
       );
   }
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
 app.get("/api/track-analysis", ensureValidAccessToken, async (req, res) => {
@@ -1093,4 +1123,25 @@ app.post("/api/platforms/add-to-cart", async (req, res) => {
     console.error("Add to cart error:", error.message);
     res.status(500).json({ error: error.message });
   }
+});
+
+// Serve React static files in production (for packaged app)
+if (process.env.NODE_ENV === 'production') {
+  const buildPath = path.join(__dirname, '../client/build');
+
+  // Serve static files (CSS, JS, images, etc.)
+  app.use(express.static(buildPath));
+
+  // Handle React routing - return index.html for all non-API routes
+  // This must come AFTER all API routes
+  app.get('*', (req, res) => {
+    // Only serve index.html for non-API routes
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(buildPath, 'index.html'));
+    }
+  });
+}
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
