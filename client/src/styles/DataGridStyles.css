@@ -1,20 +1,20 @@
 /* Base styling for the entire DataGrid - Modern Dark Theme */
 .custom-data-grid {
-  background-color: #1a1a1a !important; /* Dark charcoal background */
+  background-color: #000000 !important; /* Pure black background */
   font-family: "Inter", "Roboto", sans-serif !important; /* Modern font family */
   font-size: 14px !important; /* Base font size for readability */
   color: #e0e0e0 !important; /* Light gray text color */
-  border-radius: 8px !important;
+  border-radius: 0 !important;
   overflow: hidden !important;
 }
 .custom-data-grid .MuiDataGrid-virtualScrollerRenderZone > div {
-  border-bottom: 1px solid #1a1a1a !important; /* same as background */
+  border-bottom: 1px solid #000000 !important; /* same as background */
 }
 
 /* And make sure default variables are dark too */
 .custom-data-grid {
-  --DataGrid-rowBorderColor: #1a1a1a !important;
-  --DataGrid-cellBorderColor: #1a1a1a !important;
+  --DataGrid-rowBorderColor: #000000 !important;
+  --DataGrid-cellBorderColor: #000000 !important;
 }
 
 /* Remove outer border of the DataGrid */
@@ -32,20 +32,16 @@
 
 /* Header styling - Metallic gradient */
 .custom-data-grid .MuiDataGrid-columnHeader {
-  background: linear-gradient(
-    135deg,
-    #2d3436 0%,
-    #1e272e 100%
-  ) !important; /* Dark metallic gradient */
+  background: #1a1a1a !important; /* Dark grey header */
   font-family: "Inter", "Roboto", sans-serif !important; /* Consistent font for header */
   letter-spacing: 0.5px; /* Slight letter spacing */
   color: #f5f5f5 !important; /* Bright text color for header titles */
   font-weight: 800 !important; /* Bold font for headers */
   font-size: 14px !important; /* Larger font for headers */
-  border-bottom: 2px solid #3d4852 !important; /* Subtle metallic border */
+  border-bottom: 1px solid #282828 !important; /* Subtle border */
   text-align: center !important; /* Center-align text for uniformity */
   text-transform: uppercase;
-  border-right: 1px solid #252525 !important; /* Very dark border between headers */
+  border-right: 1px solid #282828 !important; /* Very dark border between headers */
 }
 
 /* Checkbox column header - extra padding */
@@ -57,18 +53,18 @@
 
 /* Row styling */
 .custom-data-grid .MuiDataGrid-row {
-  background-color: #242424 !important; /* Dark background for rows */
-  border-bottom: 1px solid #2a2a2a !important; /* Very subtle dark row separator */
+  background-color: #000000 !important; /* Pure black background for rows */
+  border-bottom: 1px solid #1a1a1a !important; /* Very subtle dark row separator */
   transition: all 0.2s ease;
 }
 
 /* Alternating row colors */
 .custom-data-grid .even-row {
-  background-color: #1f1f1f !important; /* Darker for even rows */
+  background-color: #000000 !important; /* Black for even rows */
 }
 
 .custom-data-grid .odd-row {
-  background-color: #242424 !important; /* Slightly lighter for odd rows */
+  background-color: #0a0a0a !important; /* Slightly lighter black for odd rows */
 }
 
 /* Selected row color - Subtle accent */
@@ -117,10 +113,10 @@
 
 /* Row hover effect */
 .custom-data-grid .MuiDataGrid-row:hover {
-  background-color: #2d2d2d !important; /* Slightly lighter on hover */
+  background-color: #1a1a1a !important; /* Slightly lighter on hover */
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 /* Main container for filter panel and table side by side */
@@ -142,10 +138,10 @@
   align-items: stretch; /* Ensure full width */
   width: 100%; /* Ensure container takes full width */
   max-height: 100%; /* Adjust height as needed */
-  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  padding: 10px;
+  background: #000000;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
   overflow: hidden;
 }
 
@@ -249,13 +245,13 @@
 }
 
 .custom-data-grid::-webkit-scrollbar-track {
-  background-color: #1a1a1a !important;
+  background-color: #000000 !important;
 }
 
 .MuiDataGrid-footerContainer {
-  background-color: #1a1a1a !important; /* match your dark theme */
+  background-color: #000000 !important; /* match your dark theme */
   color: #e0e0e0 !important; /* light gray text */
-  border-top: 1px solid #2a2a2a !important; /* subtle top border */
+  border-top: 1px solid #282828 !important; /* subtle top border */
 }
 
 /* Footer pagination controls */

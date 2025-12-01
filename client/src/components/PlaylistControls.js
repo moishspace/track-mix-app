@@ -71,39 +71,9 @@ const PlaylistControls = ({
               </option>
             ))}
         </select>
-        <button className="action-button" onClick={handleShowPlaylist}>
-          Show Playlist
-        </button>
-        <button className="action-button" onClick={openCreatePlaylistModal}>
-          Create Playlist
-        </button>
-        <button
-          className="action-button"
-          onClick={() => openDeleteConfirm(playlists.find((p) => p.id === selectedPlaylist))}
-        >
-          Delete Playlist
-        </button>
         <button className="action-button" onClick={handleExportPlaylist}>
           Export to CSV
         </button>
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <h3>Confirm Delete</h3>
-              <p>Are you sure you want to delete the playlist "{playlistToDelete?.name}"?</p>
-              <div className="modal-buttons">
-                <button onClick={handleConfirmDelete} className="action-button">
-                  Yes, Delete
-                </button>
-                <button onClick={closeDeleteConfirm} className="action-button secondary">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Create Playlist Modal */}
         <CreatePlaylistModal

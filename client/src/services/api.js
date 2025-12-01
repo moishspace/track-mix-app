@@ -337,10 +337,11 @@ export const analyzeTracks = async ({ folderPath, tracks, analysisMode = "manual
 
 // ============== MUSIC STORE PLATFORM APIs ==============
 
-export const searchPlatforms = async (artist, title) => {
+export const searchPlatforms = async (artist, title, signal = null) => {
   return axios
     .get(`${API_URL}/platforms/search`, {
-      params: { artist, title }
+      params: { artist, title },
+      signal: signal  // Pass AbortSignal for cancellation
     })
     .then((response) => response.data);
 };

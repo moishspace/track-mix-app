@@ -32,8 +32,8 @@ const CreatePlaylistModal = ({ isOpen, onClose, onCreate }) => {
           </div>
         </div>
         <div className="modal-buttons">
-          <button onClick={handleCreate} className="action-button">Create</button>
-          <button onClick={onClose} className="action-button secondary">Cancel</button>
+          <button onClick={handleCreate} className="confirm-btn create">Create</button>
+          <button onClick={onClose} className="cancel-btn secondary">Cancel</button>
         </div>
       </div>
     </div>

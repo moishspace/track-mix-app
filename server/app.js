@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs").promises;
 const { spawn } = require("child_process");
 const Bottleneck = require("bottleneck");
 require("dotenv").config();
@@ -539,15 +540,32 @@ app.get("/api/similar-tracks", ensureValidAccessToken, async (req, res) => {
 
 app.get("/api/spotify-playlists", ensureValidAccessToken, async (req, res) => {
   try {
-    const response = await axios.get(
-      "https://api.spotify.com/v1/me/playlists",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        params: { limit: 50 },
+    let allPlaylists = [];
+    let offset = 0;
+    const limit = 50;
+    let hasMore = true;
+
+    // Fetch all playlists with pagination
+    while (hasMore) {
+      const response = await axios.get(
+        "https://api.spotify.com/v1/me/playlists",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: { limit, offset },
+        }
+      );
+
+      allPlaylists = allPlaylists.concat(response.data.items);
+
+      // Check if there are more pages
+      if (response.data.next && response.data.items.length === limit) {
+        offset += limit;
+      } else {
+        hasMore = false;
       }
-    );
+    }
 
     // Add "Liked Songs" as a special pseudo-playlist at the beginning
     const likedSongs = {
@@ -559,9 +577,9 @@ app.get("/api/spotify-playlists", ensureValidAccessToken, async (req, res) => {
       isLikedSongs: true,
     };
 
-    response.data.items.unshift(likedSongs);
+    allPlaylists.unshift(likedSongs);
 
-    res.json(response.data);
+    res.json({ items: allPlaylists });
   } catch (error) {
     if (error.response) {
       console.error(
@@ -806,6 +824,15 @@ app.get(
     }
 
     try {
+      // Check cache first
+      const cached = await readTrackCache(trackId);
+      if (cached) {
+        // console.log(`✓ Track cache hit for: ${trackId}`);
+        return res.json(cached);
+      }
+
+      // console.log(`⚠ Track cache miss for: ${trackId}, fetching from APIs...`);
+
       // Step 1: Use provided basic details if available, otherwise fetch from Spotify API
       let trackData = basicDetails;
       if (!trackData) {
@@ -841,7 +868,12 @@ app.get(
         camelot: deezerAnalysis.camelot ?? "",
         energy: deezerAnalysis.energy ?? "",
         energyLevel: deezerAnalysis.energyLevel ?? "",
+        cachedAt: new Date().toISOString()
       };
+
+      // Save to cache for future use
+      await writeTrackCache(trackId, combinedDetails);
+      // console.log(`✓ Saved track to cache: ${trackId}`);
 
       // Return combined details
       res.json(combinedDetails);
@@ -1089,7 +1121,95 @@ app.post("/api/analyze-tracks", async (req, res) => {
 // ============== MUSIC STORE PLATFORM APIs ==============
 const platformService = require("./services/platformService");
 
-// Search for a track across all platforms
+// Cache directory setup
+const CACHE_DIR = path.join(__dirname, "analysis-cache");
+const TRACK_CACHE_DIR = path.join(__dirname, "track-details-cache");
+
+// Helper function to create cache directory if it doesn't exist
+async function ensureCacheDir() {
+  try {
+    await fs.access(CACHE_DIR);
+  } catch {
+    await fs.mkdir(CACHE_DIR, { recursive: true });
+  }
+}
+
+// Helper function to create track cache directory if it doesn't exist
+async function ensureTrackCacheDir() {
+  try {
+    await fs.access(TRACK_CACHE_DIR);
+  } catch {
+    await fs.mkdir(TRACK_CACHE_DIR, { recursive: true });
+  }
+}
+
+// Helper function to generate cache key from artist and title
+function getCacheKey(artist, title) {
+  // Normalize and create a safe filename
+  const normalized = `${artist}-${title}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 200); // Limit length
+  return `${normalized}.json`;
+}
+
+// Helper function to read from cache
+async function readCache(cacheKey) {
+  try {
+    const cachePath = path.join(CACHE_DIR, cacheKey);
+    const data = await fs.readFile(cachePath, 'utf8');
+    const cached = JSON.parse(data);
+
+    // Check if cache is still valid (optional: add expiration logic here)
+    return cached;
+  } catch (error) {
+    return null; // Cache miss
+  }
+}
+
+// Helper function to write to cache
+async function writeCache(cacheKey, data) {
+  try {
+    await ensureCacheDir();
+    const cachePath = path.join(CACHE_DIR, cacheKey);
+    await fs.writeFile(cachePath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (error) {
+    console.error("Cache write error:", error.message);
+  }
+}
+
+// Helper function to generate track cache key from trackId
+function getTrackCacheKey(trackId) {
+  return `${trackId}.json`;
+}
+
+// Helper function to read track details from cache
+async function readTrackCache(trackId) {
+  try {
+    const cacheKey = getTrackCacheKey(trackId);
+    const cachePath = path.join(TRACK_CACHE_DIR, cacheKey);
+    const data = await fs.readFile(cachePath, 'utf8');
+    const cached = JSON.parse(data);
+    return cached;
+  } catch (error) {
+    return null; // Cache miss
+  }
+}
+
+// Helper function to write track details to cache
+async function writeTrackCache(trackId, data) {
+  try {
+    await ensureTrackCacheDir();
+    const cacheKey = getTrackCacheKey(trackId);
+    const cachePath = path.join(TRACK_CACHE_DIR, cacheKey);
+    await fs.writeFile(cachePath, JSON.stringify(data, null, 2), 'utf8');
+  } catch (error) {
+    console.error("Track cache write error:", error.message);
+  }
+}
+
+// Search for a track across all platforms (with caching)
 app.get("/api/platforms/search", async (req, res) => {
   try {
     const { artist, title } = req.query;
@@ -1098,7 +1218,28 @@ app.get("/api/platforms/search", async (req, res) => {
       return res.status(400).json({ error: "Artist and title are required" });
     }
 
+    // Check cache first
+    const cacheKey = getCacheKey(artist, title);
+    const cached = await readCache(cacheKey);
+
+    if (cached) {
+      // console.log(`✓ Cache hit for: ${artist} - ${title}`);
+      return res.json(cached.results);
+    }
+
+    // Cache miss - fetch from platforms
+    // console.log(`⚠ Cache miss for: ${artist} - ${title}, searching platforms...`);
     const results = await platformService.searchAllPlatforms(artist, title);
+
+    // Store in cache for future use
+    const cacheData = {
+      artist,
+      title,
+      results,
+      cachedAt: new Date().toISOString()
+    };
+    await writeCache(cacheKey, cacheData);
+
     res.json(results);
   } catch (error) {
     console.error("Platform search error:", error.message);

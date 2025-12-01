@@ -1,16 +1,19 @@
 // MainDashboard.js
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import TrackTable from './TrackTable';
 import PlaylistControls from './PlaylistControls';
+import PlaylistSidebar from './PlaylistSidebar';
 import TrackPlayer from './TrackPlayer';
 import CriteriaFilterPanel from './CriteriaFilterPanel';
 import AudioWaveform from './AudioWaveform';
+import CreatePlaylistModal from './CreatePlaylistModal';
 import useTrackSearch from '../hooks/useTrackSearch';
 import useSimilarTracks from '../hooks/useSimilarTracks';
 import useTrackTable from '../hooks/useTrackTable';
 import useTrackPlayer from '../hooks/useTrackPlayer';
 import usePlaylist from '../hooks/usePlaylist';
 import { searchPlatforms } from '../services/api';
+import '../styles/DashboardLayout.css';
 
 const MainDashboard = ({ searchTerm }) => {
   const [criteria, setCriteria] = useState({});
@@ -19,39 +22,71 @@ const MainDashboard = ({ searchTerm }) => {
   const [selectedTrackIds, setSelectedTrackIds] = useState([]);
   const [selectAllChecked, setSelectAllChecked] = useState(false);
   const [platformData, setPlatformData] = useState({});
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { filteredTracks, trackDetails, setFilteredTracks, setTrackDetails } = useTrackSearch(searchTerm);
-
-  // Search platforms for a track
-  const searchTrackPlatforms = useCallback(async (trackId, artistName, trackName) => {
-    try {
-      const results = await searchPlatforms(artistName, trackName);
-      setPlatformData(prev => ({
-        ...prev,
-        [trackId]: results
-      }));
-      return results;
-    } catch (error) {
-      console.error('Error searching platforms:', error);
-      return null;
-    }
-  }, []);
 
   // Search platforms for all visible tracks (called when tracks load)
   useEffect(() => {
-    const searchAllPlatforms = async () => {
-      for (const track of filteredTracks) { // Search all tracks
-        if (!platformData[track.id]) {
-          const artistName = track.artistsName || (Array.isArray(track.artists) ? track.artists.map(a => a.name).join(', ') : '');
-          await searchTrackPlatforms(track.id, artistName, track.name);
-          // Small delay to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 500));
+    const abortController = new AbortController();
+
+    // Clear previous platform data when loading new tracks
+    setPlatformData({});
+
+    // Process tracks in small batches to avoid overwhelming the UI
+    const batchSize = 5; // Process 5 tracks at a time
+    const delay = 100; // Small delay between batches
+
+    const searchInBatches = async () => {
+      for (let i = 0; i < filteredTracks.length; i += batchSize) {
+        // Check if aborted before starting each batch
+        if (abortController.signal.aborted) {
+          return;
+        }
+
+        // Get the current batch
+        const batch = filteredTracks.slice(i, i + batchSize);
+
+        // Start all searches in this batch in parallel
+        const batchPromises = batch.map(async (track) => {
+          if (abortController.signal.aborted) {
+            return;
+          }
+
+          try {
+            const artistName = track.artistsName || (Array.isArray(track.artists) ? track.artists.map(a => a.name).join(', ') : '');
+            const results = await searchPlatforms(artistName, track.name, abortController.signal);
+
+            // Only update if not cancelled
+            if (!abortController.signal.aborted) {
+              setPlatformData(prev => ({
+                ...prev,
+                [track.id]: results
+              }));
+            }
+          } catch (error) {
+            if (error.name === 'CanceledError' || error.name === 'AbortError') {
+              return;
+            }
+            console.error('Error searching platforms:', error);
+          }
+        });
+
+        // Wait for this batch to complete (but don't block UI)
+        await Promise.all(batchPromises);
+
+        // Small delay before next batch (but don't block if cancelled)
+        if (!abortController.signal.aborted && i + batchSize < filteredTracks.length) {
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
     };
 
-    if (filteredTracks.length > 0) {
-      searchAllPlatforms();
-    }
+    searchInBatches();
+
+    // Cleanup function to abort ongoing searches immediately
+    return () => {
+      abortController.abort();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredTracks]);
 
@@ -157,63 +192,80 @@ const MainDashboard = ({ searchTerm }) => {
   //   }
   // }, [currentTrackIndex, processedTracks]);
 
+  // Modal handlers
+  const openCreateModal = () => setIsCreateModalOpen(true);
+  const closeCreateModal = () => setIsCreateModalOpen(false);
+
+  const handleCreatePlaylistWithModal = (playlistData) => {
+    handleCreatePlaylist(playlistData);
+    closeCreateModal();
+  };
+
   return (
-    <div className="flex-container">
-      {/* <CriteriaFilterPanel criteria={criteria} setCriteria={setCriteria} onSearchSimilar={searchSimilar} initialTrackDetails={selectedTrack} /> */}
+    <div className="dashboard-layout">
+      {/* Left Sidebar - Playlists */}
+      <PlaylistSidebar
+        playlists={playlists}
+        selectedPlaylist={selectedPlaylist}
+        onPlaylistChange={handlePlaylistChange}
+        onCreatePlaylist={openCreateModal}
+        onDeletePlaylist={handleDeletePlaylist}
+        onShowPlaylist={handleShowPlaylist}
+      />
 
-      <div className="table-container">
+      {/* Main Content Area */}
+      <div className="main-content">
         {/* Track Table */}
-        <TrackTable
-          processedTracks={processedTracks}
-          selectedTrack={selectedTrack}
-          selectAllChecked={selectAllChecked}
-          selectedTrackIds={selectedTrackIds}
-          handleSelectAllClick={handleSelectAllClick}
-          handleCheckboxClick={handleCheckboxClick}
-          handleRowClick={handleRowClick}
-          handleRowRightClick={handleRowRightClick}
-        />
-
-        {/* Waveform Component */}
-        {/* <div className="waveform-section">
-          {selectedTrack ? (
-            <AudioWaveform
-              key={selectedTrack?.id || 'default'}
-              selectedTrack={selectedTrack}
-              trackProgress={trackProgress}
-              onSeek={handleSeek}
-            />
-          ) : (
-            <div className="waveform-container">
-              <div className="waveform-background" />
-              <div className="waveform-empty">Please select a track to display the waveform.</div>
-            </div>
-          )}
-        </div> */}
-       
-        {/* Track Player */}
-        <TrackPlayer 
-            ref={playerRef}
+        <div className="table-wrapper">
+          <TrackTable
             processedTracks={processedTracks}
             selectedTrack={selectedTrack}
-            currentTrackIndex={currentTrackIndex}
-            setCurrentTrackIndex={setSelectedTrackIndex}
-            onProgress={handleProgressUpdate}
-            onTrackChange={handleTrackChange}
-        />
+            selectAllChecked={selectAllChecked}
+            selectedTrackIds={selectedTrackIds}
+            handleSelectAllClick={handleSelectAllClick}
+            handleCheckboxClick={handleCheckboxClick}
+            handleRowClick={handleRowClick}
+            handleRowRightClick={handleRowRightClick}
+          />
+        </div>
 
-        {/* Playlist Controls */}
-        <PlaylistControls
-          playlists={playlists}
-          selectedPlaylist={selectedPlaylist}
-          handlePlaylistChange={handlePlaylistChange}
-          handleAddToPlaylist={handleAddToPlaylist}
-          handleShowPlaylist={handleShowPlaylist}
-          handleCreatePlaylist={handleCreatePlaylist}
-          handleDeletePlaylist={handleDeletePlaylist}
-          handleExportPlaylist={handleExportPlaylist}
-        />
+        {/* Controls Section - Centered under table */}
+        <div className="controls-section">
+          {/* Track Player */}
+          <div className="player-wrapper">
+            <TrackPlayer
+              ref={playerRef}
+              processedTracks={processedTracks}
+              selectedTrack={selectedTrack}
+              currentTrackIndex={currentTrackIndex}
+              setCurrentTrackIndex={setSelectedTrackIndex}
+              onProgress={handleProgressUpdate}
+              onTrackChange={handleTrackChange}
+            />
+          </div>
+
+          {/* Playlist Controls */}
+          <div className="controls-wrapper">
+            <PlaylistControls
+              playlists={playlists}
+              selectedPlaylist={selectedPlaylist}
+              handlePlaylistChange={handlePlaylistChange}
+              handleAddToPlaylist={handleAddToPlaylist}
+              handleShowPlaylist={handleShowPlaylist}
+              handleCreatePlaylist={openCreateModal}
+              handleDeletePlaylist={handleDeletePlaylist}
+              handleExportPlaylist={handleExportPlaylist}
+            />
+          </div>
+        </div>
       </div>
+
+      {/* Create Playlist Modal */}
+      <CreatePlaylistModal
+        isOpen={isCreateModalOpen}
+        onClose={closeCreateModal}
+        onCreate={handleCreatePlaylistWithModal}
+      />
     </div>
   );
 };

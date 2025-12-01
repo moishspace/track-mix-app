@@ -1,0 +1,150 @@
+/* Dashboard Layout - Spotify-like design */
+
+/* Main dashboard container with sidebar */
+.dashboard-layout {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 64px); /* Subtract top navbar height */
+  margin-top: 16px; /* Account for fixed top navbar */
+  background: #000000;
+  overflow: hidden;
+}
+
+/* Main content area (right side, next to sidebar) */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Table wrapper - takes most of the space */
+.table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  background: #000000;
+  min-height: 0; /* Important for flex scrolling */
+}
+
+/* Scrollbar styling for table */
+.table-wrapper::-webkit-scrollbar {
+  width: 12px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #000000;
+  border-radius: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #000000;
+}
+
+/* Controls section at the bottom */
+.controls-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  background: #000000;
+  border-top: 0px solid #000000;
+  flex-shrink: 0;
+  min-height: 80px;
+}
+
+/* Player on the left side of controls */
+.player-wrapper {
+  flex: 1;
+  min-width: 0; /* Prevents flex item from overflowing */
+  max-width: 600px; /* Limit player width */
+}
+
+/* Control buttons on the right side */
+.controls-wrapper {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .player-wrapper {
+    max-width: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .controls-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .player-wrapper {
+    max-width: 100%;
+  }
+
+  .controls-wrapper {
+    justify-content: center;
+  }
+
+  .playlist-sidebar {
+    width: 200px;
+  }
+}
+
+
+.dashboard-layout::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.02); /* faint glow */
+  backdrop-filter: blur(6px);
+  z-index: -1;
+}
+.dashboard-layout {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 64px);
+  background: transparent;
+  gap: 16px;
+  padding: 16px 0px 32px 0px; /* top padding creates space under navbar */
+  box-sizing: border-box;
+}
+
+/* Smooth rounded panels */
+.playlist-sidebar,
+.main-content {
+  background: #121212;
+  border-radius: 16px;
+  border: 1px solid #282828;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* Inner table area */
+.table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  background: transparent;
+}
+
+/* Player + controls below table */
+.controls-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #1a1a1a;
+  border-top: 1px solid #282828;
+}

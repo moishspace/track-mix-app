@@ -1,0 +1,361 @@
+.playlist-sidebar {
+  width: 280px;
+  background: #000000;
+  border-right: 1px solid #282828;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid #282828;
+}
+
+.sidebar-header h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.create-playlist-btn {
+  background: #1db954;
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.create-playlist-btn:hover {
+  background: #1ed760;
+  transform: scale(1.05);
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #282828;
+  font-size: 13px;
+  color: #b3b3b3;
+  background: #121212; /* subtle match to sidebar panel */
+}
+
+.sort-btn {
+  background: #181818;              /* soft dark background for better contrast */
+  border: 1px solid #2a2a2a;        /* slightly darker border */
+  color: #b3b3b3;
+  padding: 4px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.sort-btn:hover {
+  border-color: #1db954;            /* Spotify green hover accent */
+  color: #ffffff;
+}
+
+.sort-btn.active {
+  background: #1db954;              /* active button green */
+  border-color: #1db954;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.sort-icon {
+  color: #b3b3b3;
+  cursor: pointer;
+  margin-right: 6px;
+  transition: color 0.2s ease;
+}
+
+.sort-icon:hover {
+  color: #1db954; /* Spotify green hover */
+}
+
+.playlist-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.empty-playlists {
+  padding: 40px 20px;
+  text-align: center;
+  color: #b3b3b3;
+}
+
+.empty-playlists p {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.empty-playlists .hint {
+  font-size: 12px;
+  color: #535353;
+}
+
+.playlist-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.playlist-item:hover {
+  background: #282828;
+}
+
+.playlist-item.active {
+  background: #282828;
+}
+
+.playlist-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.playlist-icon {
+  color: #b3b3b3;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.playlist-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.playlist-name {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playlist-count {
+  color: #b3b3b3;
+  font-size: 12px;
+}
+
+.playlist-actions {
+  display: none;
+  gap: 4px;
+}
+
+.playlist-item:hover .playlist-actions {
+  display: flex;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  color: #b3b3b3;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.action-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.delete-btn:hover {
+  color: #e22134;
+}
+
+/* Delete Confirmation Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #282828;
+  border-radius: 8px;
+  padding: 32px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content h3 {
+  margin: 0 0 16px 0;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.modal-content p {
+  margin: 0 0 12px 0;
+  color: #b3b3b3;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.modal-content .warning-text {
+  color: #e22134;
+  font-size: 12px;
+  margin-bottom: 24px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.confirm-btn,
+.cancel-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-btn {
+  background: #e22134;
+  color: #ffffff;
+}
+
+.confirm-btn:hover {
+  background: #c41a2a;
+  transform: scale(1.02);
+}
+
+.cancel-btn {
+  background: #535353;
+  color: #ffffff;
+}
+
+.cancel-btn:hover {
+  background: #6a6a6a;
+  transform: scale(1.02);
+}
+
+/* === GLOBAL MODERN MODAL THEME === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: #1c1c1c;
+  border-radius: 10px;
+  width: 320px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  color: #e0e0e0;
+  font-family: "Inter", "Roboto", sans-serif;
+  overflow: hidden;
+  animation: popIn 0.25s ease;
+  text-align: center;
+}
+
+.modal-content h3 {
+  background: linear-gradient(90deg, #232323, #1f1f1f);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 18px;
+  border-bottom: 1px solid #333;
+  margin: 0;
+}
+
+.modal-content p {
+  font-size: 13px;
+  color: #bbb;
+  margin: 12px 0;
+}
+
+.modal-content .warning-text {
+  color: #e22134;
+  font-size: 12px;
+  margin-top: -4px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-top: 1px solid #222;
+}
+
+.modal-buttons button {
+  border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Confirm (Delete / Create) */
+.modal-buttons .confirm-btn {
+  background: #1db954;
+  color: #fff;
+}
+.modal-buttons .confirm-btn:hover {
+  background: #1ed760;
+}
+
+/* Cancel */
+.modal-buttons .cancel-btn {
+  background: #2a2a2a;
+  color: #bbb;
+}
+.modal-buttons .cancel-btn:hover {
+  background: #333;
+  color: #fff;
+}
+
+/* Animation */
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}

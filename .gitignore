@@ -33,3 +33,7 @@ dist/
 *.pyc
 *.pyc
 *.pyc
+
+# Analysis cache
+server/analysis-cache/
+/server/track-details-cache

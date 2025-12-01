@@ -99,60 +99,61 @@ const Home = ({ isAuthorized, setIsAuthorized }) => {
 
   return (
     <div className="home-container">
-      <h1 className="title">Music Mix App</h1>
       {!isAuthorized ? (
-        <p className="description">Discover music based on rhythm and style. Login to start exploring!</p>
-      ) : (
-        <p className="description">Search for a track by entering a track name, artist, or album below.</p>
-      )}
-
-      {!isAuthorized ? (
-        <button className="login-button" onClick={handleLogin}>
-          Login with Spotify
-        </button>
-      ) : (
-        <div className="search-container">
-          <div className="search-bar" style={{ position: 'relative' }}>
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Enter track, artist, or album..."
-              value={searchTerm}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              className="text-input"
-            />
-            <button onClick={handleSearchSubmit} className="search-button">
-              <i className="fas fa-search"></i>
-            </button>
-            <button className="mix-button" onClick={goToMixer}>
-              <SiPioneerdj style={{ marginRight: '6px' }} /> Mix
-            </button>
-
-            {/* Autocomplete Suggestions */}
-            {showSuggestions && searchHistory.length > 0 && (
-              <div className="suggestions-dropdown">
-                {searchHistory.map((term, index) => (
-                  <div key={index} className="suggestion-item">
-                    <span onClick={() => handleSuggestionClick(term)} className="suggestion-text">
-                      {term}
-                    </span>
-                    <i
-                      className="fas fa-trash remove-icon"
-                      onClick={() => handleRemoveItem(term)}
-                    ></i>
-                  </div>
-                ))}
-                <div className="clear-history" onClick={handleClearHistory}>
-                  Clear List
-                </div>
-              </div>
-            )}
-          </div>
+        <div className="login-screen">
+          <h1 className="title">Music Mix App</h1>
+          <p className="description">Discover music based on rhythm and style. Login to start exploring!</p>
+          <button className="login-button" onClick={handleLogin}>
+            Login with Spotify
+          </button>
         </div>
-      )}
+      ) : (
+        <>
+          {/* Top Navbar with Search */}
+          <div className="top-navbar">
+            <div className="search-bar" style={{ position: 'relative' }}>
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Enter track, artist, or album..."
+                value={searchTerm}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                className="text-input"
+              />
+              <button onClick={handleSearchSubmit} className="search-button">
+                <i className="fas fa-search"></i>
+              </button>
+              <button className="mix-button" onClick={goToMixer}>
+                <SiPioneerdj style={{ marginRight: '6px' }} /> Mix
+              </button>
 
-      {isAuthorized && <MainDashboard searchTerm={submittedTerm} />}
+              {/* Autocomplete Suggestions */}
+              {showSuggestions && searchHistory.length > 0 && (
+                <div className="suggestions-dropdown">
+                  {searchHistory.map((term, index) => (
+                    <div key={index} className="suggestion-item">
+                      <span onClick={() => handleSuggestionClick(term)} className="suggestion-text">
+                        {term}
+                      </span>
+                      <i
+                        className="fas fa-trash remove-icon"
+                        onClick={() => handleRemoveItem(term)}
+                      ></i>
+                    </div>
+                  ))}
+                  <div className="clear-history" onClick={handleClearHistory}>
+                    Clear List
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Main Dashboard */}
+          <MainDashboard searchTerm={submittedTerm} />
+        </>
+      )}
     </div>
   );
 };
