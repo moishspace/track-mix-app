@@ -1,7 +1,7 @@
 // PlaylistControls.js
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import CreatePlaylistModal from './CreatePlaylistModal';
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import CreatePlaylistModal from "./CreatePlaylistModal";
 
 const PlaylistControls = ({
   playlists,
@@ -62,7 +62,9 @@ const PlaylistControls = ({
           value={selectedPlaylist || ""}
           onChange={handlePlaylistChange}
         >
-          <option value="" disabled>Select a Playlist</option>
+          <option value="" disabled>
+            Select a Playlist
+          </option>
           {playlists
             ?.filter((playlist) => playlist && playlist.id)
             .map((playlist) => (
@@ -71,9 +73,6 @@ const PlaylistControls = ({
               </option>
             ))}
         </select>
-        <button className="action-button" onClick={handleExportPlaylist}>
-          Export to CSV
-        </button>
 
         {/* Create Playlist Modal */}
         <CreatePlaylistModal
@@ -82,6 +81,9 @@ const PlaylistControls = ({
           onCreate={handleCreatePlaylistWrapper}
         />
       </div>
+      <button className="action-button" onClick={handleExportPlaylist}>
+        Export to CSV
+      </button>
     </div>
   );
 };
@@ -95,7 +97,7 @@ PlaylistControls.defaultProps = {
   handleShowPlaylist: () => {},
   handleCreatePlaylist: () => {},
   handleDeletePlaylist: () => {},
-  handleExportPlaylist:  () => {},
+  handleExportPlaylist: () => {},
 };
 
 // Prop types to ensure valid data is passed to the component

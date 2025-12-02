@@ -62,18 +62,32 @@
 
 /* Player on the left side of controls */
 .player-wrapper {
-  flex: 1;
-  min-width: 0; /* Prevents flex item from overflowing */
-  max-width: 600px; /* Limit player width */
+  flex: 1 1 auto;
+  min-width: 400px;
 }
 
 /* Control buttons on the right side */
 .controls-wrapper {
-  flex-shrink: 0;
+  flex: 0 0 auto;
+  min-width: min-content;
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 4px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* Hide controls when layout gets tight */
+@media (max-width: 1200px) {
+  .controls-wrapper {
+    display: none;
+  }
+
+  .player-wrapper {
+    min-width: 0;
+    flex: 1;
+  }
 }
 
 /* Responsive adjustments */
