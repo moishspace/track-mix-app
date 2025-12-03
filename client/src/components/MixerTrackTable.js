@@ -264,26 +264,27 @@ export default function MixerTrackTable({
   };
 
   return (
-    <div style={{ backgroundColor: "#121212", color: "#eee" }}>
+    <div style={{ backgroundColor: "transparent", color: "#eee", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="trackTable">
           {(provided) => (
             <TableContainer
               sx={{
-                maxHeight: 800,
+                flex: 1,
                 overflowY: "auto",
+                overflowX: "hidden",
                 "&::-webkit-scrollbar": {
-                  width: "8px",
+                  width: "12px",
                 },
                 "&::-webkit-scrollbar-track": {
-                  background: "#1a1a1a",
+                  background: "#000000",
                 },
                 "&::-webkit-scrollbar-thumb": {
-                  background: "#555",
-                  borderRadius: "4px",
+                  background: "#000000",
+                  borderRadius: "6px",
                 },
                 "&::-webkit-scrollbar-thumb:hover": {
-                  background: "#888",
+                  background: "#000000",
                 },
               }}
             >
@@ -302,13 +303,17 @@ export default function MixerTrackTable({
                   sx={{
                     backgroundColor: "#1a1a1a",
                     "& .MuiTableCell-root": {
-                      color: "#eee",
-                      fontWeight: "bold",
-                      // backgroundColor: "#1a1a1a",
-                      backgroundColor: "#a98a8a",
-
-                      borderBottom: "1px solid #333",
-                      zIndex: 3, // optional: ensure each cell is above others
+                      color: "#f5f5f5",
+                      fontWeight: "800",
+                      backgroundColor: "#1a1a1a",
+                      borderBottom: "1px solid #282828",
+                      borderRight: "1px solid #282828",
+                      textAlign: "center",
+                      textTransform: "uppercase",
+                      fontSize: "14px",
+                      letterSpacing: "0.5px",
+                      fontFamily: "Inter, Roboto, sans-serif",
+                      zIndex: 3,
                     },
                   }}
                 >
@@ -417,16 +422,31 @@ export default function MixerTrackTable({
                           sx={{
                             backgroundColor:
                               previewedTrackName === track.name
-                                ? "#870b0bff"
+                                ? "#2a3f2f"
                                 : "#1c1c1c",
-                            color: "#eee",
-                            borderTop:
+                            color: "#e0e0e0",
+                            boxShadow:
                               previewedTrackName === track.name
-                                ? "2px solid #b9de15ff"
-                                : undefined,
+                                ? "inset 0 0 20px rgba(29, 185, 84, 0.15)"
+                                : "none",
                             cursor: onTrackClick ? "pointer" : "default",
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                              backgroundColor:
+                                previewedTrackName === track.name
+                                  ? "#2a3f2f"
+                                  : "#252525",
+                            },
                             "& .MuiTableCell-root": {
                               color: "#eee !important",
+                              fontWeight:
+                                previewedTrackName === track.name ? 500 : 400,
+                            },
+                            "& .MuiTableCell-root:first-of-type": {
+                              borderLeft:
+                                previewedTrackName === track.name
+                                  ? "3px solid #1db954 !important"
+                                  : "none",
                             },
                           }}
                         >
