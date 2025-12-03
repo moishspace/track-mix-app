@@ -11,7 +11,7 @@ import {
   TableContainer,
 } from "@mui/material";
 import TrackWaveformPreview from "./TrackWaveformPreview";
-import TimeInputCell from "./TimeInputCell";
+import "../styles/MixerTrackTable.css";
 
 export default function MixerTrackTable({
   tracks = [],
@@ -269,54 +269,19 @@ export default function MixerTrackTable({
         <Droppable droppableId="trackTable">
           {(provided) => (
             <TableContainer
+              className="mixer-track-table-container"
               sx={{
                 flex: 1,
                 overflowY: "auto",
                 overflowX: "hidden",
-                "&::-webkit-scrollbar": {
-                  width: "12px",
-                },
-                "&::-webkit-scrollbar-track": {
-                  background: "#000000",
-                },
-                "&::-webkit-scrollbar-thumb": {
-                  background: "#000000",
-                  borderRadius: "6px",
-                },
-                "&::-webkit-scrollbar-thumb:hover": {
-                  background: "#000000",
-                },
               }}
             >
               <Table
                 stickyHeader
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                sx={{
-                  "& .MuiTableCell-root": {
-                    color: "#eee",
-                    borderBottom: "1px solid #333", // or 'none' to remove
-                  },
-                }}
               >
-                <TableHead
-                  sx={{
-                    backgroundColor: "#1a1a1a",
-                    "& .MuiTableCell-root": {
-                      color: "#f5f5f5",
-                      fontWeight: "800",
-                      backgroundColor: "#1a1a1a",
-                      borderBottom: "1px solid #282828",
-                      borderRight: "1px solid #282828",
-                      textAlign: "center",
-                      textTransform: "uppercase",
-                      fontSize: "14px",
-                      letterSpacing: "0.5px",
-                      fontFamily: "Inter, Roboto, sans-serif",
-                      zIndex: 3,
-                    },
-                  }}
-                >
+                <TableHead>
                   <TableRow>
                     <TableCell padding="checkbox">
                       <Checkbox
@@ -406,6 +371,7 @@ export default function MixerTrackTable({
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           hover
+                          className={previewedTrackName === track.name ? "previewed-row" : ""}
                           onClick={() =>
                             onTrackClick &&
                             onTrackClick({
@@ -419,36 +385,6 @@ export default function MixerTrackTable({
                               },
                             })
                           }
-                          sx={{
-                            backgroundColor:
-                              previewedTrackName === track.name
-                                ? "#2a3f2f"
-                                : "#1c1c1c",
-                            color: "#e0e0e0",
-                            boxShadow:
-                              previewedTrackName === track.name
-                                ? "inset 0 0 20px rgba(29, 185, 84, 0.15)"
-                                : "none",
-                            cursor: onTrackClick ? "pointer" : "default",
-                            transition: "all 0.2s ease",
-                            "&:hover": {
-                              backgroundColor:
-                                previewedTrackName === track.name
-                                  ? "#2a3f2f"
-                                  : "#252525",
-                            },
-                            "& .MuiTableCell-root": {
-                              color: "#eee !important",
-                              fontWeight:
-                                previewedTrackName === track.name ? 500 : 400,
-                            },
-                            "& .MuiTableCell-root:first-of-type": {
-                              borderLeft:
-                                previewedTrackName === track.name
-                                  ? "3px solid #1db954 !important"
-                                  : "none",
-                            },
-                          }}
                         >
                           <TableCell
                             padding="checkbox"
@@ -534,11 +470,6 @@ export default function MixerTrackTable({
                                 handleFadeChange(i, "fadeIn", e.target.value)
                               }
                               placeholder="MM:SS"
-                              inputProps={{ style: { color: "#eee" } }}
-                              sx={{
-                                input: { backgroundColor: "#2a2a2a" },
-                                width: "80px",
-                              }}
                             />
                           </TableCell>
                           <TableCell onClick={(e) => e.stopPropagation()}>
@@ -550,11 +481,6 @@ export default function MixerTrackTable({
                                 handleFadeChange(i, "fadeOut", e.target.value)
                               }
                               placeholder="MM:SS"
-                              inputProps={{ style: { color: "#eee" } }}
-                              sx={{
-                                input: { backgroundColor: "#2a2a2a" },
-                                width: "80px",
-                              }}
                             />
                           </TableCell>
                           <TableCell onClick={(e) => e.stopPropagation()}>
@@ -568,11 +494,6 @@ export default function MixerTrackTable({
                                 handleFadeChange(i, "entrance", e.target.value)
                               }
                               placeholder="MM:SS"
-                              inputProps={{ style: { color: "#eee" } }}
-                              sx={{
-                                input: { backgroundColor: "#2a2a2a" },
-                                width: "80px",
-                              }}
                             />
                           </TableCell>
                           <TableCell onClick={(e) => e.stopPropagation()}>
@@ -616,11 +537,6 @@ export default function MixerTrackTable({
                                 );
                               }}
                               placeholder="MM:SS"
-                              inputProps={{ style: { color: "#eee" } }}
-                              sx={{
-                                input: { backgroundColor: "#2a2a2a" },
-                                width: "80px",
-                              }}
                             />
                           </TableCell>
                           <TableCell

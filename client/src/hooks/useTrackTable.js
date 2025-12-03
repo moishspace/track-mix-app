@@ -1,5 +1,5 @@
 // useTrackTable.js
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState } from 'react';
 
 const useTrackTable = (filteredTracks, setSelectedTrack, setSelectedTrackIndex, selectedTrackIds, setSelectedTrackIds, selectAllChecked, setSelectAllChecked) => {
     const [contextMenu, setContextMenu] = useState(null);
@@ -43,11 +43,7 @@ const useTrackTable = (filteredTracks, setSelectedTrack, setSelectedTrackIndex, 
         });
     }, [filteredTracks.length, setSelectedTrackIds, setSelectAllChecked]);
 
-    const trackIdMap = useMemo(() => {
-        return filteredTracks.map((track, index) => ({ id: track.id, index }));
-      }, [filteredTracks]);
-      
-      const handleRowClick = useCallback(
+    const handleRowClick = useCallback(
         (row) => {
         const trackIndex = filteredTracks.findIndex((track) => track.id === row.id);
           if (trackIndex !== -1) {
@@ -57,7 +53,7 @@ const useTrackTable = (filteredTracks, setSelectedTrack, setSelectedTrackIndex, 
             console.warn('Track not found in filteredTracks');
           }
         },
-        [trackIdMap, setSelectedTrack, setSelectedTrackIndex]
+        [filteredTracks, setSelectedTrack, setSelectedTrackIndex]
       );
 
     const handleRowRightClick = useCallback((event, row) => {

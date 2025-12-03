@@ -28,6 +28,7 @@ export default function MixerPage() {
   const [mixingMode, setMixingMode] = useState("transition"); // "transition" or "overlap"
   const [previewTrack, setPreviewTrack] = useState(null); // Track currently being previewed
   const [settingsFileExists, setSettingsFileExists] = useState(false); // Track if settings file exists
+  const [isFormCollapsed, setIsFormCollapsed] = useState(false); // Track if form section is collapsed
 
   // Get settings file path based on folder name
   const getSettingsFilePath = useCallback(() => {
@@ -322,117 +323,222 @@ export default function MixerPage() {
           }}
         >
           <h1 className="form-title">🎛️ Track Mixer</h1>
-          <button className="action-button" onClick={goBackToHome}>
-            ← go back
-          </button>
-        </div>
-
-        <div className="form-fields">
-          <div className="form-group">
-            <FolderPicker
-              folderPath={folderPath}
-              setFolderPath={setFolderPath}
-              setTracks={setTracks}
-            />
-          </div>
-          <div className="form-group">
-            <FolderPicker
-              folderPath={outFolderPath}
-              setFolderPath={setOutFolderPath}
-              title="Export to Folder"
-            />
-          </div>
-          <div className="form-group">
-            <label>Default Fade In</label>
-            <input
-              type="text"
-              value={msToMMSS(defaultFadeIn)}
-              onChange={(e) => setDefaultFadeIn(mmssToMs(e.target.value))}
-              placeholder="MM:SS"
-            />
-          </div>
-          <div className="form-group">
-            <label>Default Fade Out</label>
-            <input
-              type="text"
-              value={msToMMSS(defaultFadeOut)}
-              onChange={(e) => setDefaultFadeOut(mmssToMs(e.target.value))}
-              placeholder="MM:SS"
-            />
-          </div>
-          <div className="form-group">
-            <label>Default Entrance</label>
-            <input
-              type="text"
-              value={msToMMSS(defaultEntrance)}
-              onChange={(e) => setDefaultEntrance(mmssToMs(e.target.value))}
-              placeholder="MM:SS"
-            />
-          </div>
-          <div className="form-group">
-            <label>Default Exit</label>
-            <input
-              type="text"
-              value={msToMMSS(defaultExit)}
-              onChange={(e) => setDefaultExit(mmssToMs(e.target.value))}
-              placeholder="MM:SS"
-            />
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <button
+              className="collapse-toggle-button"
+              onClick={() => setIsFormCollapsed(!isFormCollapsed)}
+              title={isFormCollapsed ? "Show settings" : "Hide settings"}
+            >
+              {isFormCollapsed ? "▼" : "▲"}
+            </button>
+            <button className="action-button" onClick={goBackToHome}>
+              ← go back
+            </button>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <div
-            className="analysis-section"
-            style={{ flex: "1", minWidth: "300px" }}
-          >
-            <h3 className="analysis-section-title">Track Analysis</h3>
-            <div className="analysis-controls">
+        {!isFormCollapsed && (
+          <>
+            <div className="folder-pickers">
               <div className="form-group">
-                <label>Analysis Mode</label>
-                <select
-                  value={analysisMode}
-                  onChange={(e) => setAnalysisMode(e.target.value)}
-                >
-                  <option value="manual">Manual (Loudness-based)</option>
-                  <option value="dance">Dance/Electronic (Beat-aligned)</option>
-                  <option value="ambient">
-                    Ambient/Meditation (Phrase-based)
-                  </option>
-                  <option value="pop">Pop/Rock (Hybrid)</option>
-                  <option value="classical">Classical/Orchestral</option>
-                </select>
+                <FolderPicker
+                  folderPath={folderPath}
+                  setFolderPath={setFolderPath}
+                  setTracks={setTracks}
+                />
               </div>
+              <div className="form-group">
+                <FolderPicker
+                  folderPath={outFolderPath}
+                  setFolderPath={setOutFolderPath}
+                  title="Export to Folder"
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              <div
+                className="analysis-section"
+                style={{ flex: "1", minWidth: "300px" }}
+              >
+                <h3 className="analysis-section-title">Default Settings</h3>
+                <div className="analysis-controls">
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "12px",
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <div className="form-group" style={{ flex: "0 0 auto" }}>
+                      <label>Fade In</label>
+                      <input
+                        type="text"
+                        value={msToMMSS(defaultFadeIn)}
+                        onChange={(e) =>
+                          setDefaultFadeIn(mmssToMs(e.target.value))
+                        }
+                        placeholder="MM:SS"
+                        style={{ width: "60px", textAlign: "center" }}
+                      />
+                    </div>
+                    <div className="form-group" style={{ flex: "0 0 auto" }}>
+                      <label>Fade Out</label>
+                      <input
+                        type="text"
+                        value={msToMMSS(defaultFadeOut)}
+                        onChange={(e) =>
+                          setDefaultFadeOut(mmssToMs(e.target.value))
+                        }
+                        placeholder="MM:SS"
+                        style={{ width: "60px", textAlign: "center" }}
+                      />
+                    </div>
+                    <div className="form-group" style={{ flex: "0 0 auto" }}>
+                      <label>Entrance</label>
+                      <input
+                        type="text"
+                        value={msToMMSS(defaultEntrance)}
+                        onChange={(e) =>
+                          setDefaultEntrance(mmssToMs(e.target.value))
+                        }
+                        placeholder="MM:SS"
+                        style={{ width: "60px", textAlign: "center" }}
+                      />
+                    </div>
+                    <div className="form-group" style={{ flex: "0 0 auto" }}>
+                      <label>Exit</label>
+                      <input
+                        type="text"
+                        value={msToMMSS(defaultExit)}
+                        onChange={(e) =>
+                          setDefaultExit(mmssToMs(e.target.value))
+                        }
+                        placeholder="MM:SS"
+                        style={{ width: "60px", textAlign: "center" }}
+                        m
+                        c
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="analysis-section"
+                style={{ flex: "1", minWidth: "300px" }}
+              >
+                <h3 className="analysis-section-title">Mixing Settings</h3>
+                <div className="analysis-controls">
+                  <div className="form-group">
+                    <label>Mixing Mode</label>
+                    <select
+                      value={mixingMode}
+                      onChange={(e) => setMixingMode(e.target.value)}
+                    >
+                      <option value="transition">
+                        Transition Mode (Entrance = Fade Start)
+                      </option>
+                      <option value="overlap">
+                        Overlap Mode (Full Entrance Duration)
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                className="analysis-section"
+                style={{ flex: "1", minWidth: "300px" }}
+              >
+                <h3 className="analysis-section-title">Track Analysis</h3>
+                <div className="analysis-controls">
+                  <div className="form-group">
+                    <label>Analysis Mode</label>
+                    <select
+                      value={analysisMode}
+                      onChange={(e) => setAnalysisMode(e.target.value)}
+                    >
+                      <option value="manual">Manual (Loudness-based)</option>
+                      <option value="dance">
+                        Dance/Electronic (Beat-aligned)
+                      </option>
+                      <option value="ambient">
+                        Ambient/Meditation (Phrase-based)
+                      </option>
+                      <option value="pop">Pop/Rock (Hybrid)</option>
+                      <option value="classical">Classical/Orchestral</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                marginTop: "1rem",
+                gap: "8px",
+              }}
+            >
+              <button
+                className="action-button"
+                title="Open Output Folder"
+                onClick={() => window.electronAPI?.openFolder?.(outFolderPath)}
+                disabled={tracks.length === 0}
+                style={{
+                  opacity: tracks.length === 0 ? 0.5 : 1,
+                  cursor: tracks.length === 0 ? "not-allowed" : "pointer",
+                }}
+              >
+                📂 Open
+              </button>
+
+              <button
+                className="action-button"
+                onClick={handleSaveSettings}
+                disabled={tracks.length === 0}
+                style={{
+                  opacity: tracks.length === 0 ? 0.5 : 1,
+                  cursor: tracks.length === 0 ? "not-allowed" : "pointer",
+                }}
+                title="Save track settings"
+              >
+                💾 Save
+              </button>
+
+              <button
+                className="action-button"
+                onClick={handleLoadSettings}
+                disabled={!settingsFileExists}
+                style={{
+                  opacity: !settingsFileExists ? 0.5 : 1,
+                  cursor: !settingsFileExists ? "not-allowed" : "pointer",
+                }}
+                title={
+                  settingsFileExists
+                    ? "Load saved settings"
+                    : "No saved settings found"
+                }
+              >
+                📂 Load
+              </button>
+
               <button className="action-button" onClick={handleAnalyze}>
                 Analyze Tracks
               </button>
-            </div>
-          </div>
 
-          <div
-            className="analysis-section"
-            style={{ flex: "1", minWidth: "300px" }}
-          >
-            <h3 className="analysis-section-title">Mixing Settings</h3>
-            <div className="analysis-controls">
-              <div className="form-group">
-                <label>Mixing Mode</label>
-                <select
-                  value={mixingMode}
-                  onChange={(e) => setMixingMode(e.target.value)}
-                >
-                  <option value="transition">
-                    Transition Mode (Entrance = Fade Start)
-                  </option>
-                  <option value="overlap">
-                    Overlap Mode (Full Entrance Duration)
-                  </option>
-                </select>
-              </div>
+              <button className="action-button" onClick={handleStartMix}>
+                Start Mixing
+              </button>
             </div>
-          </div>
-        </div>
+          </>
+        )}
 
-        {/* Track Preview Player */}
+        {/* Track Preview Player - Always visible */}
         <div style={{ marginTop: "1rem" }}>
           <MixerTrackPlayer
             track={previewTrack}
@@ -478,58 +584,6 @@ export default function MixerPage() {
                 : false
             }
           />
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            marginTop: "1rem",
-            gap: "8px",
-          }}
-        >
-          <button
-            className="open-finder-button"
-            title="Open Output Folder"
-            onClick={() => window.electronAPI?.openFolder?.(outFolderPath)}
-          >
-            📂
-          </button>
-
-          <button
-            className="action-button"
-            onClick={handleSaveSettings}
-            disabled={tracks.length === 0}
-            style={{
-              opacity: tracks.length === 0 ? 0.5 : 1,
-              cursor: tracks.length === 0 ? "not-allowed" : "pointer",
-            }}
-            title="Save track settings"
-          >
-            💾 Save
-          </button>
-
-          <button
-            className="action-button"
-            onClick={handleLoadSettings}
-            disabled={!settingsFileExists}
-            style={{
-              opacity: !settingsFileExists ? 0.5 : 1,
-              cursor: !settingsFileExists ? "not-allowed" : "pointer",
-            }}
-            title={
-              settingsFileExists
-                ? "Load saved settings"
-                : "No saved settings found"
-            }
-          >
-            📂 Load
-          </button>
-
-          <button className="action-button" onClick={handleStartMix}>
-            Start Mixing
-          </button>
         </div>
       </div>
       <div className="table-box">

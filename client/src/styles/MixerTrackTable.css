@@ -1,0 +1,178 @@
+/* MixerTrackTable.css - Matching DataGrid styling */
+
+/* Table container */
+.mixer-track-table-container {
+  background-color: #000000 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  border: none !important;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Table itself */
+.mixer-track-table-container .MuiTable-root {
+  background-color: #000000 !important;
+  font-family: "Inter", "Roboto", sans-serif !important;
+  font-size: 14px !important;
+  color: #e0e0e0 !important;
+}
+
+/* Header styling - matching DataGrid */
+.mixer-track-table-container .MuiTableHead-root {
+  background: #1a1a1a !important;
+}
+
+.mixer-track-table-container .MuiTableHead-root .MuiTableCell-root {
+  background: #1a1a1a !important;
+  font-family: "Inter", "Roboto", sans-serif !important;
+  letter-spacing: 0.5px;
+  color: #f5f5f5 !important;
+  font-weight: 800 !important;
+  font-size: 14px !important;
+  border-bottom: 1px solid #282828 !important;
+  text-align: center !important;
+  text-transform: uppercase;
+  border-right: 1px solid #282828 !important;
+  padding: 16px 10px !important;
+}
+
+/* Remove the last border on the right */
+.mixer-track-table-container .MuiTableHead-root .MuiTableCell-root:last-child {
+  border-right: none !important;
+}
+
+/* Row styling - pure black background */
+.mixer-track-table-container .MuiTableRow-root {
+  background-color: #000000 !important;
+  border-bottom: 1px solid #1a1a1a !important;
+  transition: all 0.2s ease;
+}
+
+/* Alternating row colors - very subtle */
+.mixer-track-table-container .MuiTableBody-root .MuiTableRow-root:nth-of-type(even) {
+  background-color: #000000 !important;
+}
+
+.mixer-track-table-container .MuiTableBody-root .MuiTableRow-root:nth-of-type(odd) {
+  background-color: #0a0a0a !important;
+}
+
+/* Previewed/Selected row - dark green background with green left border */
+.mixer-track-table-container .MuiTableRow-root.previewed-row {
+  background-color: #2a3f2f !important;
+  color: #e0e0e0 !important;
+  font-weight: 500 !important;
+  box-shadow: inset 0 0 20px rgba(29, 185, 84, 0.15) !important;
+}
+
+.mixer-track-table-container .MuiTableRow-root.previewed-row .MuiTableCell-root:first-of-type {
+  border-left: 3px solid #1db954 !important;
+}
+
+/* Cell styling */
+.mixer-track-table-container .MuiTableCell-root {
+  display: table-cell;
+  align-items: center;
+  justify-content: center;
+  color: #d0d0d0 !important;
+  background-color: inherit !important;
+  border-right: 1px solid #2a2a2a !important;
+  border-bottom: 1px solid #1a1a1a !important;
+  text-align: center;
+  padding: 10px !important;
+  font-size: 14px !important;
+}
+
+/* Remove the last border on the right */
+.mixer-track-table-container .MuiTableCell-root:last-child {
+  border-right: none !important;
+}
+
+/* Track name cell - bold and white */
+.mixer-track-table-container .track-name-cell {
+  color: white !important;
+  /* font-weight: bold !important; */
+  font-size: 14px !important;
+}
+
+/* Remove focus outline */
+.mixer-track-table-container .MuiTableCell-root:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Row hover effect */
+.mixer-track-table-container .MuiTableRow-root:hover {
+  background-color: #1a1a1a !important;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Don't change hover for previewed row */
+.mixer-track-table-container .MuiTableRow-root.previewed-row:hover {
+  background-color: #2a3f2f !important;
+}
+
+/* Scrollbar styling */
+.mixer-track-table-container::-webkit-scrollbar {
+  width: 12px;
+}
+
+.mixer-track-table-container::-webkit-scrollbar-track {
+  background: #000000 !important;
+}
+
+.mixer-track-table-container::-webkit-scrollbar-thumb {
+  background: #333333 !important;
+  border-radius: 6px;
+}
+
+.mixer-track-table-container::-webkit-scrollbar-thumb:hover {
+  background: #444444 !important;
+}
+
+/* TextField styling for editable cells */
+.mixer-track-table-container .MuiTextField-root {
+  width: 80px;
+}
+
+.mixer-track-table-container .MuiTextField-root .MuiInputBase-input {
+  background-color: #2a2a2a !important;
+  color: #eee !important;
+  padding: 6px 8px !important;
+  font-size: 14px !important;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.mixer-track-table-container .MuiTextField-root .MuiOutlinedInput-root {
+  border-radius: 4px;
+}
+
+.mixer-track-table-container .MuiTextField-root .MuiOutlinedInput-notchedOutline {
+  border-color: #333 !important;
+}
+
+.mixer-track-table-container .MuiTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #444 !important;
+}
+
+.mixer-track-table-container .MuiTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #f1b93c !important;
+  box-shadow: 0 0 4px rgba(241, 185, 60, 0.3);
+}
+
+/* Checkbox styling */
+.mixer-track-table-container .MuiCheckbox-root {
+  color: #6b7280 !important;
+}
+
+.mixer-track-table-container .MuiCheckbox-root.Mui-checked {
+  color: #1db954 !important;
+}
+
+/* Drag handle cursor */
+.mixer-track-table-container .MuiTableRow-root[draggable="true"] {
+  cursor: move;
+}

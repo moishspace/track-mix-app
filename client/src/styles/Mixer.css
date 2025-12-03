@@ -4,7 +4,7 @@
   padding: 0;
   margin: 0;
   font-family: "Inter", "Roboto", sans-serif;
-  background: #212121;
+  background: #2a2a2a;
   /* background: linear-gradient(to right, #393e40, #052a38); */
   height: 100vh;
   width: 100vw;
@@ -32,6 +32,8 @@
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
   color: #e0e0e0;
+  align-items: center;
+  width: 100%;
 }
 
 .form-fields {
@@ -95,7 +97,7 @@
   background: transparent;
   padding: 0.5rem;
   border-radius: 6px;
-  border: 1px solid #7b7b7b;
+  border: 1px solid #6a6a6a;
   max-width: 320px;
   box-shadow: none;
 }
@@ -137,13 +139,14 @@
 .open-finder-button {
   background: #1a1a1a;
   color: #e0e0e0;
-  padding: 0.4rem 0.9rem;
+  padding: 0;
   border: 1px solid #2a2a2a;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95rem;
   height: 38px;
+  min-width: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,4 +158,45 @@
   color: #f1b93c;
   border-color: #3a3a3a;
   transform: scale(1.05);
+}
+
+.collapse-toggle-button {
+  background: #1a1a1a;
+  color: #e0e0e0;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  height: 38px;
+  min-width: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.collapse-toggle-button:hover {
+  background: #2a2a2a;
+  color: #f1b93c;
+  border-color: #3a3a3a;
+  transform: scale(1.05);
+}
+
+/* Folder picker container */
+.folder-pickers {
+  display: flex;
+  flex-wrap: nowrap; /* prevent wrapping */
+  justify-content: flex-start; /* keep them next to each other */
+  align-items: flex-end;
+  gap: 16px; /* small gap between them */
+  margin-bottom: 1.5rem;
+}
+
+/* Each picker takes equal width but doesn’t stretch too far */
+.folder-pickers .form-group {
+  flex: 1;
+  min-width: 250px;
+  max-width: 400px;
 }
