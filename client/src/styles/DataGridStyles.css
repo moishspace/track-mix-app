@@ -15,6 +15,7 @@
 .custom-data-grid {
   --DataGrid-rowBorderColor: #000000 !important;
   --DataGrid-cellBorderColor: #000000 !important;
+  --DataGrid-containerBackground: #000000 !important;
 }
 
 /* Remove outer border of the DataGrid */
@@ -274,3 +275,4 @@
   color: inherit !important; /* use color from sx prop */
   fill: currentColor !important;
 }
+

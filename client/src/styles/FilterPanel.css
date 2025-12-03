@@ -1,0 +1,243 @@
+/* 🔸 Filter panel container */
+.filter-panel {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02); /* much lighter divider */
+  box-shadow: none; /* remove shadow that caused the dot */
+  padding: 12px 18px;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  margin-bottom: 18px; /* a bit more breathing room */
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar */
+  -ms-overflow-style: none; /* IE/Edge */
+  list-style: none !important;
+  list-style-type: none !important;
+  position: relative;
+}
+
+/* Hide scrollbar for Chrome/Safari/Opera */
+.filter-panel::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Kill any pseudo-elements that might appear as dots */
+.filter-panel::before,
+.filter-panel::marker {
+  display: none !important;
+  content: none !important;
+}
+
+/* 🔸 Generic filter group */
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  list-style: none;
+}
+
+.filter-group::before,
+.filter-group::marker {
+  display: none !important;
+  content: none !important;
+}
+
+.filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #bbb;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  list-style: none;
+}
+
+.filter-group label::before,
+.filter-group label::marker {
+  display: none !important;
+}
+
+/* 🔸 Inputs and selects */
+.filter-input,
+.filter-select {
+  padding: 6px 10px;
+  background: #1c1c1c;
+  color: #f0f0f0;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-size: 13px;
+  height: 32px;
+  min-width: 140px;
+  box-sizing: border-box;
+  outline: none !important;
+  transition: all 0.2s ease;
+  list-style: none;
+}
+
+.filter-input::before,
+.filter-input::marker,
+.filter-select::before,
+.filter-select::marker {
+  display: none !important;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  border-color: #f1b93c;
+  box-shadow: 0 0 4px rgba(241, 185, 60, 0.3);
+}
+
+/* 🔸 BPM group (dual slider setup) */
+.bpm-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bpm-sliders {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bpm-value {
+  font-size: 12px;
+  color: #ccc;
+  font-weight: 500;
+  min-width: 30px;
+  text-align: center;
+}
+
+.bpm-slider {
+  width: 120px;
+  height: 4px;
+  border-radius: 2px;
+  background: #333;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* 🔸 Slider thumbs */
+.bpm-slider::-webkit-slider-thumb,
+.bpm-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #f1b93c;
+  border: 1px solid #c68c1b;
+  transition: all 0.2s ease;
+}
+
+.bpm-slider::-webkit-slider-thumb:hover,
+.bpm-slider::-moz-range-thumb:hover {
+  background: #ffd166;
+  transform: scale(1.1);
+}
+
+/* 🔸 Clear filters icon (flat, minimal) */
+.clear-filters-icon {
+  background: none;
+  border: 1px solid #2a2a2a; /* subtle outline */
+  color: #e0e0e0; /* white icon */
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px; /* slightly rounded corners */
+}
+
+.clear-filters-icon:hover {
+  background: #1a1a1a; /* dark hover */
+  color: #f1b93c;      /* warm accent glow on hover */
+  border-color: #3a3a3a;
+  transform: scale(1.05);
+}
+
+.clear-filters-icon i {
+  pointer-events: none;
+}
+
+/* 🔸 Make title wider and perfectly aligned */
+.filter-group.title-group,
+.filter-group:first-of-type {
+  flex: 1;
+  min-width: 220px;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+}
+
+.filter-group:first-of-type label {
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.filter-group:first-of-type .filter-input {
+  height: 32px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  margin-top: 1px;
+}
+
+
+
+/* Hide scrollbar but keep horizontal scroll behavior */
+.filter-panel {
+  overflow-x: auto;
+  scrollbar-width: none;                 /* Firefox */
+  -ms-overflow-style: none;              /* IE/Edge legacy */
+  transform: translateZ(0);              /* new layer: kills AA artifacts */
+  backface-visibility: hidden;
+}
+
+.filter-panel::-webkit-scrollbar {       /* Chrome/Safari */
+  display: none;
+}
+
+/* Make the bottom edge solid so no subpixel highlight appears */
+.filter-panel {
+  border-bottom: 1px solid #101010;  /* solid, not rgba */
+  box-shadow: none;                  /* prevent light specks from shadow */
+}
+
+/* Gentle bottom line for the Filter Panel */
+.filter-panel {
+  border: 1px solid #1a1a1a;       /* slightly darker outline */
+  border-bottom: 1px solid #0d0d0d; /* soft, subtle separator line */
+  border-radius: 8px;
+  background: #121212;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); /* minimal depth */
+  margin-bottom: 10px;              /* small breathing space above table */
+}
+
+/* Optional hover accent (looks modern but stays clean) */
+.filter-panel:hover {
+  border-color: #2a2a2a;
+}
+
+.filter-panel {
+  border: 1px solid #111;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(241, 185, 60, 0.06); /* warm inner highlight */
+}
+
+
+

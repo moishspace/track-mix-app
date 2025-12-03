@@ -12,7 +12,7 @@ import {
 import useExportToCSV from './useExportToCSV';
 
 
-const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDetails, selectedTrackIds, setSelectedTrackIds, setSelectAllChecked) => {
+const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDetails, selectedTrackIds, setSelectedTrackIds, setSelectAllChecked, setPlaylistTotal) => {
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [playlistFetchController, setPlaylistFetchController] = useState(null);
@@ -36,14 +36,18 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
   useEffect(() => {
     if (selectedPlaylist && filteredTracks.length > 0) {
       // Update the cache with current tracks and details
-      setPlaylistCache((prevCache) => ({
-        ...prevCache,
-        [selectedPlaylist]: {
-          tracks: filteredTracks,
-          details: trackDetails,
-          cachedAt: new Date().toISOString()
-        }
-      }));
+      setPlaylistCache((prevCache) => {
+        const existing = prevCache[selectedPlaylist];
+        return {
+          ...prevCache,
+          [selectedPlaylist]: {
+            tracks: filteredTracks,
+            details: trackDetails,
+            total: existing?.total, // Preserve the total from initial fetch
+            cachedAt: new Date().toISOString()
+          }
+        };
+      });
     }
   }, [selectedPlaylist, filteredTracks, trackDetails]);
 
@@ -63,11 +67,20 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
       return;
     }
 
+    // Clear tracks first when switching playlists to avoid showing old data
+    setFilteredTracks([]);
+    setTrackDetails({});
+
     // Check if playlist is already in cache
     if (playlistCache[targetPlaylist]) {
       console.log(`✓ Loading playlist from cache: ${targetPlaylist}`);
       const cached = playlistCache[targetPlaylist];
       setFilteredTracks(cached.tracks);
+
+      // Set the total from cache
+      if (cached.total !== undefined && setPlaylistTotal) {
+        setPlaylistTotal(cached.total);
+      }
 
       // Load cached details if available
       if (cached.details && Object.keys(cached.details).length > 0) {
@@ -97,6 +110,7 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
         let offset = 0;
         const limit = 50;
         let hasMore = true;
+        let totalTracks = 0;
 
         // Fetch all pages of tracks
         while (hasMore && !controller.signal.aborted) {
@@ -106,6 +120,26 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
           if (controller.signal.aborted) {
             console.log('Playlist fetch cancelled');
             return;
+          }
+
+          // Get total from first response and set it immediately
+          if (offset === 0 && response.total !== undefined) {
+            totalTracks = response.total;
+            if (setPlaylistTotal) {
+              setPlaylistTotal(totalTracks);
+            }
+            console.log(`Playlist total tracks: ${totalTracks}`);
+
+            // Update cache with the total immediately
+            setPlaylistCache((prevCache) => ({
+              ...prevCache,
+              [targetPlaylist]: {
+                tracks: [],
+                details: {},
+                total: totalTracks,
+                cachedAt: new Date().toISOString()
+              }
+            }));
           }
 
           const playlistData = response.items || [];

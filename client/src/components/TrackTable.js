@@ -109,6 +109,7 @@ const TrackTable = ({
   handleCheckboxClick,
   handleRowClick,
   handleRowRightClick,
+  playlistTotal = 0,
 }) => {
   const columns = useMemo(
     () => [
@@ -397,6 +398,7 @@ const TrackTable = ({
       disableSelectionOnClick
       disableColumnMenu
       getRowId={(row) => row.id}
+      rowCount={playlistTotal > 0 ? playlistTotal : processedTracks.length}
       onRowClick={(params, event) => {
         if (!event.target.closest('input[type="checkbox"]')) {
           handleRowClick(params.row);

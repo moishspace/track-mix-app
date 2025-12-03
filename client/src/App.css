@@ -245,3 +245,31 @@ body, html {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(255, 179, 0, 0.4);
 }
+
+/* === Global Modern Scrollbar Styling === */
+* {
+  scrollbar-width: thin;              /* Firefox */
+  scrollbar-color: #444 #111;         /* Firefox thumb and track */
+}
+
+/* Chrome, Edge, Safari */
+*::-webkit-scrollbar {
+  height: 8px;                        /* horizontal scrollbar height */
+  width: 8px;                         /* vertical scrollbar width */
+}
+
+*::-webkit-scrollbar-track {
+  background: #111;                   /* scrollbar track color */
+  border-radius: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #444;             /* thumb color */
+  border-radius: 8px;
+  border: 1px solid #222;             /* subtle border for depth */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #f1b93c;          /* gold accent on hover */
+  border: 1px solid #dca437;
+}

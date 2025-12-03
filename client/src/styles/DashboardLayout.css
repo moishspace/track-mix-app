@@ -16,6 +16,19 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  list-style: none;
+  padding: 16px;
+}
+
+/* Prevent any child elements from showing list markers */
+.main-content * {
+  list-style: none !important;
+  list-style-type: none !important;
+}
+
+.main-content *::before,
+.main-content *::marker {
+  display: none !important;
 }
 
 /* Table wrapper - takes most of the space */

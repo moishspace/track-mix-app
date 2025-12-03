@@ -177,3 +177,8 @@ html, body, #root {
 .clear-history:hover {
   color: #ffffff;
 }
+
+.custom-data-grid .MuiDataGrid-columnHeaders {
+  border-top: 1px solid #000 !important;
+}
+
