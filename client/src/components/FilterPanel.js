@@ -2,7 +2,6 @@
 import React from "react";
 import "../styles/FilterPanel.css";
 
-
 const FilterPanel = ({ filters, onFilterChange, genres, keys }) => {
   const handleInputChange = (filterType, value) => {
     onFilterChange({ ...filters, [filterType]: value });
@@ -92,10 +91,16 @@ const FilterPanel = ({ filters, onFilterChange, genres, keys }) => {
           <span className="bpm-value">{filters.bpmMax || 200}</span>
         </div>
       </div>
-
-<button className="clear-filters-icon" title="Clear Filters" onClick={handleClearFilters}> X
-  <i className="fa fa-times"></i>
-</button>
+      <div className="filter-group">
+        <button
+          className="clear-filters-icon"
+          title="Clear Filters"
+          onClick={handleClearFilters}
+        >
+          {" "}
+          X<i className="fa fa-times"></i>
+        </button>
+      </div>
     </div>
   );
 };

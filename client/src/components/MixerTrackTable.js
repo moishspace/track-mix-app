@@ -300,7 +300,7 @@ export default function MixerTrackTable({
                         }}
                       />
                     </TableCell>
-                    <TableCell>#</TableCell>
+                    <TableCell sx={{ width: "40px", textAlign: "center" }}>#</TableCell>
                     <TableCell>Title</TableCell>
                     <TableCell>Waveform</TableCell>
                     <TableCell>BPM</TableCell>

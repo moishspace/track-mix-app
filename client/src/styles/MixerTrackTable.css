@@ -4,7 +4,7 @@
 .mixer-track-table-container {
   background-color: #000000 !important;
   border-radius: 0 !important;
-  overflow: hidden !important;
+  overflow: auto !important; 
   border: none !important;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
 }
@@ -33,7 +33,7 @@
   text-align: center !important;
   text-transform: uppercase;
   border-right: 1px solid #282828 !important;
-  padding: 16px 10px !important;
+  padding: 1px 1px !important;
 }
 
 /* Remove the last border on the right */
@@ -92,6 +92,7 @@
 .mixer-track-table-container .track-name-cell {
   color: white !important;
   /* font-weight: bold !important; */
+  text-align: left;
   font-size: 14px !important;
 }
 

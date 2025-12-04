@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import './MixerTrackPlayer.css';
+import '../styles/MixerTrackPlayer.css';
 import TrackWaveformPreview from './TrackWaveformPreview';
 
 const MixerTrackPlayer = ({ track, audioFolderPath, onUpdateTrack, onNext, onPrevious, hasNext, hasPrevious }) => {

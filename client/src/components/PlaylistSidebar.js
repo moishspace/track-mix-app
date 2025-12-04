@@ -107,7 +107,17 @@ const PlaylistSidebar = ({
               }}
             >
               <div className="playlist-info">
-                <i className="fas fa-music playlist-icon"></i>
+                {playlist.images && playlist.images.length > 0 ? (
+                  <img
+                    src={playlist.images[0].url}
+                    alt={playlist.name}
+                    className="playlist-image"
+                  />
+                ) : (
+                  <div className="playlist-image-placeholder">
+                    <i className="fas fa-music"></i>
+                  </div>
+                )}
                 <div className="playlist-details">
                   <span className="playlist-name">{playlist.name}</span>
                   <span className="playlist-count">

@@ -144,18 +144,18 @@
 /* 🔸 Clear filters icon (flat, minimal) */
 .clear-filters-icon {
   background: none;
-  border: 1px solid #2a2a2a; /* subtle outline */
-  color: #e0e0e0; /* white icon */
-  font-size: 14px;
+  border: 1px solid #2a2a2a;
+  color: #e0e0e0;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.25s ease;
   margin-left: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px; /* slightly rounded corners */
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
 }
 
 .clear-filters-icon:hover {

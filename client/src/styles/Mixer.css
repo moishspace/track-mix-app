@@ -134,6 +134,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
+  margin-bottom: 20px;
 }
 
 .open-finder-button {
