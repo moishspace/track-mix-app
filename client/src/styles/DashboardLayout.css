@@ -150,7 +150,8 @@
 
 /* Smooth rounded panels */
 .playlist-sidebar,
-.main-content {
+.main-content,
+.recommendation-sidebar {
   background: #121212;
   border-radius: 16px;
   border: 1px solid #282828;

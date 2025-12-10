@@ -57,12 +57,19 @@ const useTrackTable = (filteredTracks, setSelectedTrack, setSelectedTrackIndex, 
       );
 
     const handleRowRightClick = useCallback((event, row) => {
+        console.log('🖱️ handleRowRightClick called', { event, row });
         event.preventDefault();
-        setContextMenu({
+        const contextMenuData = {
             mouseX: event.clientX,
             mouseY: event.clientY,
             row,
-        });
+        };
+        console.log('📋 Setting context menu:', contextMenuData);
+        setContextMenu(contextMenuData);
+    }, []);
+
+    const handleCloseContextMenu = useCallback(() => {
+        setContextMenu(null);
     }, []);
 
     return {
@@ -70,6 +77,8 @@ const useTrackTable = (filteredTracks, setSelectedTrack, setSelectedTrackIndex, 
         handleRowClick,
         handleCheckboxClick,
         handleRowRightClick,
+        contextMenu,
+        handleCloseContextMenu,
     };
 };
 

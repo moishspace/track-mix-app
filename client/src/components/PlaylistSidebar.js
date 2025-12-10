@@ -8,6 +8,8 @@ const PlaylistSidebar = ({
   onCreatePlaylist,
   onDeletePlaylist,
   onShowPlaylist,
+  onRefreshPlaylists,
+  isRefreshing,
 }) => {
   const [sortBy, setSortBy] = useState("date"); // 'date' or 'name'
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -69,7 +71,7 @@ const PlaylistSidebar = ({
             sortDir === "asc" ? "Ascending" : "Descending"
           })`}
         ></i>
-        <span>Sorted by:</span>
+        {/* <span>Sorted by:</span> */}
         <button
           className={`sort-btn ${sortBy === "date" ? "active" : ""}`}
           onClick={() => setSortBy("date")}
@@ -81,6 +83,14 @@ const PlaylistSidebar = ({
           onClick={() => setSortBy("name")}
         >
           Name
+        </button>
+        <button
+          className={`refresh-btn ${isRefreshing ? "refreshing" : ""}`}
+          onClick={onRefreshPlaylists}
+          disabled={isRefreshing}
+          title="Refresh playlists"
+        >
+          <i className={`fas fa-sync-alt ${isRefreshing ? "spinning" : ""}`}></i>
         </button>
       </div>
 

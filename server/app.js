@@ -13,21 +13,23 @@ const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:8000";
 
 // Configure CORS to allow both development (port 8000) and production (port 3001)
 const allowedOrigins = [
-  "http://localhost:8000",  // Development mode (React dev server)
-  "http://localhost:3001"   // Production mode (packaged app)
+  "http://localhost:8000", // Development mode (React dev server)
+  "http://localhost:3001", // Production mode (packaged app)
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, Postman, or same-origin)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, or same-origin)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 // app.use(express.json());
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
@@ -341,9 +343,10 @@ app.get("/api/callback", async (req, res) => {
 
     // In production (packaged app), redirect to the same origin (port 3001)
     // In development, redirect to React dev server (port 8000)
-    const redirectUrl = process.env.NODE_ENV === 'production'
-      ? `http://localhost:${PORT}/?success=true`
-      : `${CLIENT_URL}/?success=true`;
+    const redirectUrl =
+      process.env.NODE_ENV === "production"
+        ? `http://localhost:${PORT}/?success=true`
+        : `${CLIENT_URL}/?success=true`;
 
     res.redirect(redirectUrl);
   } catch (error) {
@@ -352,9 +355,10 @@ app.get("/api/callback", async (req, res) => {
       error.response?.data || error.message
     );
 
-    const redirectUrl = process.env.NODE_ENV === 'production'
-      ? `http://localhost:${PORT}/?error=token_exchange_failed`
-      : `${CLIENT_URL}/?error=token_exchange_failed`;
+    const redirectUrl =
+      process.env.NODE_ENV === "production"
+        ? `http://localhost:${PORT}/?error=token_exchange_failed`
+        : `${CLIENT_URL}/?error=token_exchange_failed`;
 
     res.redirect(redirectUrl);
   }
@@ -594,6 +598,41 @@ app.get("/api/spotify-playlists", ensureValidAccessToken, async (req, res) => {
   }
 });
 
+// Search for public playlists
+app.get("/api/search-playlists", ensureValidAccessToken, async (req, res) => {
+  const { query, limit = 20 } = req.query;
+
+  if (!query) {
+    return res.status(400).json({ error: "Query parameter is required" });
+  }
+
+  try {
+    const response = await axios.get("https://api.spotify.com/v1/search", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params: {
+        q: query,
+        type: "playlist",
+        limit: Math.min(parseInt(limit), 50), // Max 50
+      },
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    if (error.response) {
+      console.error(
+        `Error searching playlists: ${error.response.status}`,
+        error.response.data
+      );
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      console.error(`Network or unknown error: ${error.message}`);
+      res.status(500).json({ error: "Failed to search playlists" });
+    }
+  }
+});
+
 app.post("/api/create-playlist", ensureValidAccessToken, async (req, res) => {
   const { name, description, public: isPublic } = req.body;
   if (name.length === 0) {
@@ -720,6 +759,57 @@ app.get("/api/playlist-tracks", ensureValidAccessToken, async (req, res) => {
       );
   }
 });
+
+// Get Spotify recommendations
+app.get(
+  "/api/spotify-recommendations",
+  ensureValidAccessToken,
+  async (req, res) => {
+    const { seed_tracks, seed_artists, seed_genres, limit = 50 } = req.query;
+
+    // At least one seed is required
+    if (!seed_tracks && !seed_artists && !seed_genres) {
+      return res.status(400).json({
+        error: "At least one seed (tracks, artists, or genres) is required",
+      });
+    }
+
+    try {
+      const params = { limit: Math.min(parseInt(limit), 100) }; // Max 100
+
+      if (seed_tracks) params.seed_tracks = seed_tracks;
+      if (seed_artists) params.seed_artists = seed_artists;
+      if (seed_genres) params.seed_genres = seed_genres;
+
+      console.log("🎵 Requesting Spotify recommendations with params:", params);
+
+      const response = await axios.get(
+        "https://api.spotify.com/v1/recommendations",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          params,
+        }
+      );
+
+      console.log(
+        `✅ Got ${
+          response.data.tracks?.length || 0
+        } recommendations from Spotify`
+      );
+      res.json(response.data);
+    } catch (error) {
+      console.error(
+        "❌ Error fetching Spotify recommendations:",
+        error.response?.data || error.message
+      );
+      res
+        .status(error.response?.status || 500)
+        .json(
+          error.response?.data || { error: "Failed to fetch recommendations" }
+        );
+    }
+  }
+);
 
 app.get("/api/track-analysis", ensureValidAccessToken, async (req, res) => {
   const trackId = req.query.trackId;
@@ -868,7 +958,7 @@ app.get(
         camelot: deezerAnalysis.camelot ?? "",
         energy: deezerAnalysis.energy ?? "",
         energyLevel: deezerAnalysis.energyLevel ?? "",
-        cachedAt: new Date().toISOString()
+        cachedAt: new Date().toISOString(),
       };
 
       // Save to cache for future use
@@ -1148,8 +1238,8 @@ function getCacheKey(artist, title) {
   // Normalize and create a safe filename
   const normalized = `${artist}-${title}`
     .toLowerCase()
-    .replace(/[^a-z0-9]/g, '-')
-    .replace(/-+/g, '-')
+    .replace(/[^a-z0-9]/g, "-")
+    .replace(/-+/g, "-")
     .substring(0, 200); // Limit length
   return `${normalized}.json`;
 }
@@ -1158,7 +1248,7 @@ function getCacheKey(artist, title) {
 async function readCache(cacheKey) {
   try {
     const cachePath = path.join(CACHE_DIR, cacheKey);
-    const data = await fs.readFile(cachePath, 'utf8');
+    const data = await fs.readFile(cachePath, "utf8");
     const cached = JSON.parse(data);
 
     // Check if cache is still valid (optional: add expiration logic here)
@@ -1173,7 +1263,7 @@ async function writeCache(cacheKey, data) {
   try {
     await ensureCacheDir();
     const cachePath = path.join(CACHE_DIR, cacheKey);
-    await fs.writeFile(cachePath, JSON.stringify(data, null, 2), 'utf8');
+    await fs.writeFile(cachePath, JSON.stringify(data, null, 2), "utf8");
   } catch (error) {
     console.error("Cache write error:", error.message);
   }
@@ -1189,7 +1279,7 @@ async function readTrackCache(trackId) {
   try {
     const cacheKey = getTrackCacheKey(trackId);
     const cachePath = path.join(TRACK_CACHE_DIR, cacheKey);
-    const data = await fs.readFile(cachePath, 'utf8');
+    const data = await fs.readFile(cachePath, "utf8");
     const cached = JSON.parse(data);
     return cached;
   } catch (error) {
@@ -1203,7 +1293,7 @@ async function writeTrackCache(trackId, data) {
     await ensureTrackCacheDir();
     const cacheKey = getTrackCacheKey(trackId);
     const cachePath = path.join(TRACK_CACHE_DIR, cacheKey);
-    await fs.writeFile(cachePath, JSON.stringify(data, null, 2), 'utf8');
+    await fs.writeFile(cachePath, JSON.stringify(data, null, 2), "utf8");
   } catch (error) {
     console.error("Track cache write error:", error.message);
   }
@@ -1236,7 +1326,7 @@ app.get("/api/platforms/search", async (req, res) => {
       artist,
       title,
       results,
-      cachedAt: new Date().toISOString()
+      cachedAt: new Date().toISOString(),
     };
     await writeCache(cacheKey, cacheData);
 
@@ -1267,22 +1357,94 @@ app.post("/api/platforms/add-to-cart", async (req, res) => {
 });
 
 // Serve React static files in production (for packaged app)
-if (process.env.NODE_ENV === 'production') {
-  const buildPath = path.join(__dirname, '../client/build');
+if (process.env.NODE_ENV === "production") {
+  const buildPath = path.join(__dirname, "../client/build");
 
   // Serve static files (CSS, JS, images, etc.)
   app.use(express.static(buildPath));
 
   // Handle React routing - return index.html for all non-API routes
   // This must come AFTER all API routes
-  app.get('*', (req, res) => {
+  app.get("*", (req, res) => {
     // Only serve index.html for non-API routes
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(path.join(buildPath, 'index.html'));
+    if (!req.path.startsWith("/api")) {
+      res.sendFile(path.join(buildPath, "index.html"));
     }
   });
 }
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+// GET /api/artist?id=123
+app.get("/api/artist", ensureValidAccessToken, async (req, res) => {
+  const { id } = req.query;
+  if (!id) return res.status(400).json({ error: "Artist ID is required" });
+
+  try {
+    const r = await axios.get(`https://api.spotify.com/v1/artists/${id}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    res.json(r.data);
+  } catch (error) {
+    console.error(
+      `Error fetching artist ${id}:`,
+      error.response?.data || error.message
+    );
+    res
+      .status(error.response?.status || 500)
+      .json(error.response?.data || { error: "Failed to fetch artist" });
+  }
+});
+
+// GET /api/artist-by-name?name=Geju
+app.get("/api/artist-by-name", ensureValidAccessToken, async (req, res) => {
+  const { name } = req.query;
+  if (!name) return res.status(400).json({ error: "No artist name provided" });
+
+  try {
+    const r = await axios.get("https://api.spotify.com/v1/search", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      params: { q: name, type: "artist", limit: 1 },
+    });
+    const artist = r.data.artists?.items?.[0] || null;
+    if (!artist) return res.status(404).json({ error: "Artist not found" });
+    res.json(artist);
+  } catch (error) {
+    console.error(
+      "Error fetching artist by name:",
+      error.response?.data || error.message
+    );
+    res
+      .status(error.response?.status || 500)
+      .json(
+        error.response?.data || { error: "Failed to fetch artist by name" }
+      );
+  }
+});
+
+// GET /api/related-artists?artistId=123
+app.get("/api/related-artists", ensureValidAccessToken, async (req, res) => {
+  const { artistId } = req.query;
+  if (!artistId)
+    return res.status(400).json({ error: "Artist ID is required" });
+
+  try {
+    const r = await axios.get(
+      `https://api.spotify.com/v1/artists/${artistId}/related-artists`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    res.json(r.data);
+  } catch (error) {
+    console.error(
+      `Error fetching related artists for ${artistId}:`,
+      error.response?.data || error.message
+    );
+    res
+      .status(error.response?.status || 500)
+      .json(
+        error.response?.data || { error: "Failed to fetch related artists" }
+      );
+  }
 });

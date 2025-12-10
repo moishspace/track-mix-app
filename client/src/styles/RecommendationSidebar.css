@@ -1,0 +1,283 @@
+.recommendation-sidebar {
+  width: 300px;
+  height: 100%;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  padding: 20px;
+  overflow-y: auto;
+  border-left: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recommendation-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #333;
+}
+
+.recommendation-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.track-count {
+  font-size: 13px;
+  color: #1db954;
+  font-weight: 500;
+}
+
+/* Selected Artists */
+.selected-artists {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.selected-artists h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #b3b3b3;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.artist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.artist-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #282828;
+  transition: background-color 0.2s;
+}
+
+.artist-item:hover {
+  background-color: #333;
+}
+
+.artist-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.artist-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.artist-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.artist-placeholder i {
+  font-size: 20px;
+}
+
+.artist-name {
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Recommendation Modes */
+.recommendation-modes,
+.recommendation-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recommendation-modes h3,
+.recommendation-options h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #b3b3b3;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.recommendation-modes .MuiFormGroup-root,
+.recommendation-options .MuiFormGroup-root {
+  padding-left: 4px;
+}
+
+.mode-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.recommendation-modes .MuiFormControlLabel-root,
+.recommendation-options .MuiFormControlLabel-root {
+  margin: 0;
+}
+
+.mode-description {
+  font-size: 11px;
+  color: #888;
+  margin: 0;
+  padding-left: 0;
+  line-height: 0;
+  text-align: left;
+}
+
+.recommendation-modes .MuiFormControlLabel-label,
+.recommendation-options .MuiFormControlLabel-label {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.recommendation-modes .MuiCheckbox-root,
+.recommendation-options .MuiCheckbox-root {
+  color: #b3b3b3;
+}
+
+.recommendation-modes .MuiCheckbox-root.Mui-checked,
+.recommendation-options .MuiCheckbox-root.Mui-checked {
+  color: #1db954;
+}
+
+.recommendation-modes .MuiCheckbox-root.Mui-disabled,
+.recommendation-options .MuiCheckbox-root.Mui-disabled {
+  color: #666 !important;
+  cursor: not-allowed;
+}
+
+.recommendation-modes .MuiCheckbox-root.Mui-checked.Mui-disabled,
+.recommendation-options .MuiCheckbox-root.Mui-checked.Mui-disabled {
+  color: #4a7c59 !important;
+}
+
+.recommendation-modes .MuiFormControlLabel-root.Mui-disabled,
+.recommendation-options .MuiFormControlLabel-root.Mui-disabled {
+  cursor: not-allowed;
+}
+
+.recommendation-modes .MuiFormControlLabel-label.Mui-disabled,
+.recommendation-options .MuiFormControlLabel-label.Mui-disabled {
+  color: #888 !important;
+}
+
+/* Action Button */
+.recommendation-action {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recommendation-action button {
+  background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+  color: white;
+  font-weight: 600;
+  text-transform: none;
+  padding: 12px;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+  transition: all 0.2s;
+}
+
+.recommendation-action button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1ed760 0%, #1db954 100%);
+  box-shadow: 0 6px 16px rgba(29, 185, 84, 0.4);
+  transform: translateY(-1px);
+}
+
+.recommendation-action button:disabled {
+  background: #333;
+  color: #666;
+  box-shadow: none;
+}
+
+.help-text {
+  font-size: 12px;
+  color: #b3b3b3;
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Info Panel */
+.recommendation-info {
+  background-color: #282828;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: auto;
+}
+
+.recommendation-info h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1db954;
+}
+
+.recommendation-info ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.recommendation-info li {
+  font-size: 12px;
+  color: #b3b3b3;
+  line-height: 1.6;
+  margin-bottom: 6px;
+  text-align:left;
+}
+
+/* Scrollbar Styling */
+.recommendation-sidebar::-webkit-scrollbar,
+.artist-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.recommendation-sidebar::-webkit-scrollbar-track,
+.artist-list::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.recommendation-sidebar::-webkit-scrollbar-thumb,
+.artist-list::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+.recommendation-sidebar::-webkit-scrollbar-thumb:hover,
+.artist-list::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .recommendation-sidebar {
+    width: 250px;
+  }
+}

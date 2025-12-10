@@ -17,19 +17,28 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [playlistFetchController, setPlaylistFetchController] = useState(null);
   const [playlistCache, setPlaylistCache] = useState({}); // Cache for playlist tracks
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const exportToCSV = useExportToCSV();
+
+  // Load playlists function (can be called on demand)
+  const loadPlaylists = async () => {
+    setIsRefreshing(true);
+    try {
+      console.log("🔄 Refreshing playlists...");
+      const fetchedPlaylists = await fetchPlaylists();
+      setPlaylists(fetchedPlaylists);
+      console.log(`✅ Loaded ${fetchedPlaylists.length} playlists`);
+    } catch (error) {
+      console.error("Error fetching playlists:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Fetch the list of playlists when the hook is initialized
   useEffect(() => {
-    const loadPlaylists = async () => {
-      try {
-        const fetchedPlaylists = await fetchPlaylists();
-        setPlaylists(fetchedPlaylists);
-      } catch (error) {
-        console.error("Error fetching playlists:", error);
-      }
-    };
     loadPlaylists();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update cache with track details as they're fetched
@@ -269,6 +278,8 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
     handleAddToPlaylist,
     handleDeletePlaylist,
     handleExportPlaylist,
+    refreshPlaylists: loadPlaylists,
+    isRefreshing,
   };
 };
 

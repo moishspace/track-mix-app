@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import TrackTable from "./TrackTable";
 import PlaylistControls from "./PlaylistControls";
 import PlaylistSidebar from "./PlaylistSidebar";
+import RecommendationSidebar from "./RecommendationSidebar";
 import TrackPlayer from "./TrackPlayer";
 import CriteriaFilterPanel from "./CriteriaFilterPanel";
 import AudioWaveform from "./AudioWaveform";
@@ -13,7 +14,8 @@ import useSimilarTracks from "../hooks/useSimilarTracks";
 import useTrackTable from "../hooks/useTrackTable";
 import useTrackPlayer from "../hooks/useTrackPlayer";
 import usePlaylist from "../hooks/usePlaylist";
-import { searchPlatforms } from "../services/api";
+import useRecommendations from "../hooks/useRecommendations";
+import { searchPlatforms, fetchAndUpdateTrackDetails } from "../services/api";
 import "../styles/DashboardLayout.css";
 
 const MainDashboard = ({ searchTerm }) => {
@@ -34,6 +36,38 @@ const MainDashboard = ({ searchTerm }) => {
   });
   const { filteredTracks, trackDetails, setFilteredTracks, setTrackDetails } =
     useTrackSearch(searchTerm);
+
+  useEffect(() => {
+    if (!filteredTracks?.length) return;
+
+    // find tracks missing details
+    const missingTracks = filteredTracks.filter((t) => !trackDetails[t.id]);
+    if (missingTracks.length === 0) return;
+
+    const abort = new AbortController();
+    const delay = 150; // ms between requests to avoid overload
+
+    const fetchMissingDetails = async () => {
+
+      for (const track of missingTracks) {
+        if (abort.signal.aborted) break;
+
+        try {
+          await fetchAndUpdateTrackDetails(track.id, setTrackDetails, track);
+        } catch (err) {
+          if (abort.signal.aborted) return;
+          console.error(`❌ Error fetching details for ${track.name}`, err);
+        }
+
+        // Small delay to avoid hammering the API
+        await new Promise((res) => setTimeout(res, delay));
+      }
+    };
+
+    fetchMissingDetails();
+
+    return () => abort.abort();
+  }, [filteredTracks, trackDetails, setTrackDetails]);
 
   // Search platforms for all visible tracks (called when tracks load)
   useEffect(() => {
@@ -254,6 +288,8 @@ const MainDashboard = ({ searchTerm }) => {
     handleAddToPlaylist,
     handleDeletePlaylist,
     handleExportPlaylist,
+    refreshPlaylists,
+    isRefreshing,
   } = usePlaylist(
     filteredTracks,
     trackDetails,
@@ -265,20 +301,20 @@ const MainDashboard = ({ searchTerm }) => {
     setPlaylistTotal
   );
 
-  const {
-    handleSelectAllClick,
-    handleRowClick,
-    handleCheckboxClick,
-    handleRowRightClick,
-  } = useTrackTable(
-    filteredProcessedTracks,
-    setSelectedTrack,
-    setSelectedTrackIndex,
-    selectedTrackIds,
-    setSelectedTrackIds,
-    selectAllChecked,
-    setSelectAllChecked
-  );
+  const { handleSelectAllClick, handleRowClick, handleCheckboxClick } =
+    useTrackTable(
+      filteredProcessedTracks,
+      setSelectedTrack,
+      setSelectedTrackIndex,
+      selectedTrackIds,
+      setSelectedTrackIds,
+      selectAllChecked,
+      setSelectAllChecked
+    );
+
+  // Recommendations hook
+  const { getRecommendationsByModes, loading: recommendationsLoading } =
+    useRecommendations();
 
   const { searchSimilar } = useSimilarTracks(
     selectedTrack,
@@ -286,6 +322,110 @@ const MainDashboard = ({ searchTerm }) => {
     setFilteredTracks,
     setTrackDetails
   );
+
+  // Handle "Get Recommendations" from sidebar
+  const handleGetRecommendationsFromSidebar = async ({
+    modes,
+    includeLatestReleases,
+    excludeSeedArtists,
+    mixedPlaylistsOnly,
+  }) => {
+    if (!selectedTrackIds || selectedTrackIds.length === 0) {
+      alert("Please select at least one track");
+      return;
+    }
+
+    // Get the selected tracks from filteredTracks
+    const selectedTracks = filteredTracks.filter((t) =>
+      selectedTrackIds.includes(t.id)
+    );
+
+    if (selectedTracks.length === 0) {
+      alert("Could not find selected tracks");
+      return;
+    }
+
+    console.log(
+      `🎵 Getting recommendations for ${selectedTracks.length} selected tracks`
+    );
+    console.log("Modes:", modes);
+    console.log("Latest releases only:", includeLatestReleases);
+    console.log("Exclude seed artists:", excludeSeedArtists);
+    console.log("Mixed playlists only:", mixedPlaylistsOnly);
+
+    // Ensure all tracks have artists array
+    selectedTracks.forEach((track) => {
+      if (!track.artists || track.artists.length === 0) {
+        const artistName = track.artistsName || "";
+        if (artistName) {
+          console.warn(
+            `⚠️ Track "${track.name}" missing artists array, constructing from artistsName`
+          );
+          track.artists = artistName.split(",").map((name, index) => ({
+            id: `fake-${track.id}-${index}`,
+            name: name.trim(),
+          }));
+        }
+      }
+    });
+
+    try {
+      // Get recommendations using multiple modes
+      // The recommendation engine will search for playlists containing the seed tracks
+      console.log("🔍 Searching for playlists containing selected tracks...");
+
+      const recommendations = await getRecommendationsByModes(
+        selectedTracks,
+        modes,
+        {
+          limit: 50,
+          includeLatestReleases,
+          excludeSeedArtists,
+          mixedPlaylistsOnly,
+        }
+      );
+
+      console.log("📊 Recommendations received:", recommendations.length);
+
+      if (recommendations && recommendations.length > 0) {
+        // Convert recommendations to track format
+        const recommendedTracks = recommendations
+          .map((rec) => {
+            const track = rec.track;
+            return {
+              id: track.id,
+              name: track.name,
+              artists: track.artists,
+              artistsName: track.artists?.map((a) => a.name).join(", ") || "",
+              album: track.album,
+              duration_ms: track.duration_ms,
+              preview_url: track.preview_url,
+              uri: track.uri,
+            };
+          })
+          .filter(Boolean);
+
+        console.log("✅ Processed tracks:", recommendedTracks.length);
+
+        // Clear playlist selection to prevent caching
+        handlePlaylistChange({ target: { value: null } });
+
+        // Clear selections
+        setSelectedTrackIds([]);
+        setSelectAllChecked(false);
+
+        // Replace current track list with recommendations
+        setFilteredTracks(recommendedTracks);
+
+        console.log(`✅ Loaded ${recommendedTracks.length} recommended tracks`);
+      } else {
+        alert("No recommendations found. Try different tracks or modes.");
+      }
+    } catch (error) {
+      console.error("❌ Error getting recommendations:", error);
+      alert("Failed to get recommendations. Check console for details.");
+    }
+  };
 
   const {
     playerRef,
@@ -335,6 +475,8 @@ const MainDashboard = ({ searchTerm }) => {
         onCreatePlaylist={openCreateModal}
         onDeletePlaylist={handleDeletePlaylist}
         onShowPlaylist={handleShowPlaylist}
+        onRefreshPlaylists={refreshPlaylists}
+        isRefreshing={isRefreshing}
       />
 
       {/* Main Content Area */}
@@ -357,7 +499,6 @@ const MainDashboard = ({ searchTerm }) => {
             handleSelectAllClick={handleSelectAllClick}
             handleCheckboxClick={handleCheckboxClick}
             handleRowClick={handleRowClick}
-            handleRowRightClick={handleRowRightClick}
             playlistTotal={playlistTotal}
           />
         </div>
@@ -392,6 +533,15 @@ const MainDashboard = ({ searchTerm }) => {
           </div>
         </div>
       </div>
+
+      {/* Right Sidebar - Recommendations */}
+      <RecommendationSidebar
+        selectedTracks={filteredTracks.filter((t) =>
+          selectedTrackIds.includes(t.id)
+        )}
+        onGetRecommendations={handleGetRecommendationsFromSidebar}
+        loading={recommendationsLoading}
+      />
 
       {/* Create Playlist Modal */}
       <CreatePlaylistModal

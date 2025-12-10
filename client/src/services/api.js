@@ -154,7 +154,24 @@ export const fetchPlaylists = async () => {
   );
 };
 
-export const fetchPlaylistTracks = async (playlistId, offset = 0, limit = 50) => {
+export const searchPlaylists = async (query, limit = 20) => {
+  return withRetry(() =>
+    axios
+      .get(`${API_URL}/search-playlists`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        params: { query, limit },
+      })
+      .then((response) => response.data.playlists?.items || [])
+  );
+};
+
+export const fetchPlaylistTracks = async (
+  playlistId,
+  offset = 0,
+  limit = 50
+) => {
   return withRetry(
     () =>
       axios
@@ -323,7 +340,11 @@ export const startMix = async ({
   );
 };
 
-export const analyzeTracks = async ({ folderPath, tracks, analysisMode = "manual" }) => {
+export const analyzeTracks = async ({
+  folderPath,
+  tracks,
+  analysisMode = "manual",
+}) => {
   return withRetry(() =>
     axios
       .post(`${API_URL}/analyze-tracks`, {
@@ -341,7 +362,7 @@ export const searchPlatforms = async (artist, title, signal = null) => {
   return axios
     .get(`${API_URL}/platforms/search`, {
       params: { artist, title },
-      signal: signal  // Pass AbortSignal for cancellation
+      signal: signal, // Pass AbortSignal for cancellation
     })
     .then((response) => response.data);
 };
@@ -351,7 +372,71 @@ export const addToCart = async (platform, trackId, trackUrl) => {
     .post(`${API_URL}/platforms/add-to-cart`, {
       platform,
       trackId,
-      trackUrl
+      trackUrl,
     })
     .then((response) => response.data);
+};
+
+// ============== SPOTIFY RECOMMENDATIONS APIs ==============
+
+/**
+ * Get Spotify recommendations based on seed tracks, artists, or genres
+ * @param {Object} params - { seed_tracks: [], seed_artists: [], seed_genres: [], limit: 50 }
+ */
+export const getSpotifyRecommendations = async (params) => {
+  return withRetry(() =>
+    axios
+      .get(`${API_URL}/spotify-recommendations`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        params,
+      })
+      .then((response) => response.data)
+  );
+};
+
+/**
+ * Get related artists for an artist
+ * @param {string} artistId - The Spotify artist ID
+ */
+export const getRelatedArtists = async (artistId) => {
+  return withRetry(() =>
+    axios
+      .get(`${API_URL}/related-artists`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        params: { artistId },
+      })
+      .then((response) => response.data)
+  );
+};
+
+// Fetch artist info by Spotify ID
+export const getArtistById = async (artistId) => {
+  return withRetry(() =>
+    axios
+      .get(`${API_URL}/artist`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        params: { id: artistId },
+      })
+      .then((res) => res.data)
+  );
+};
+
+// Search artist by name (to fix or find missing IDs)
+export const getArtistByName = async (name) => {
+  return withRetry(() =>
+    axios
+      .get(`${API_URL}/artist-by-name`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        params: { name },
+      })
+      .then((res) => res.data)
+  );
 };

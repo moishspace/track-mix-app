@@ -411,9 +411,23 @@ const TrackTable = ({
           isEvenRow ? "even-row" : "odd-row"
         }`.trim();
       }}
-      onRowContextMenu={(event, params) => {
-        event.preventDefault();
-        handleRowRightClick(event, params.row);
+      slotProps={{
+        row: {
+          onContextMenu: (event) => {
+            console.log('✅ Right-click detected via slotProps!', event);
+            event.preventDefault();
+            // Get the row data from the event target
+            const rowElement = event.currentTarget;
+            const rowId = rowElement.getAttribute('data-id');
+            const row = processedTracks.find(t => t.id === rowId);
+            if (row) {
+              console.log('Found row:', row);
+              handleRowRightClick(event, row);
+            } else {
+              console.warn('Row not found for id:', rowId);
+            }
+          }
+        }
       }}
     />
   );
