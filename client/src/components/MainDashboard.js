@@ -34,6 +34,31 @@ const MainDashboard = ({ searchTerm }) => {
     bpmMin: 0,
     bpmMax: 200,
   });
+
+  // Collapsible sidebar state (with localStorage persistence)
+  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(
+    () => localStorage.getItem('leftSidebarCollapsed') === 'true'
+  );
+  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(
+    () => localStorage.getItem('rightSidebarCollapsed') === 'true'
+  );
+
+  // Toggle functions
+  const toggleLeftSidebar = () => {
+    setLeftSidebarCollapsed(prev => {
+      const newValue = !prev;
+      localStorage.setItem('leftSidebarCollapsed', newValue);
+      return newValue;
+    });
+  };
+
+  const toggleRightSidebar = () => {
+    setRightSidebarCollapsed(prev => {
+      const newValue = !prev;
+      localStorage.setItem('rightSidebarCollapsed', newValue);
+      return newValue;
+    });
+  };
   const { filteredTracks, trackDetails, setFilteredTracks, setTrackDetails } =
     useTrackSearch(searchTerm);
 
@@ -468,16 +493,25 @@ const MainDashboard = ({ searchTerm }) => {
   return (
     <div className="dashboard-layout">
       {/* Left Sidebar - Playlists */}
-      <PlaylistSidebar
-        playlists={playlists}
-        selectedPlaylist={selectedPlaylist}
-        onPlaylistChange={handlePlaylistChange}
-        onCreatePlaylist={openCreateModal}
-        onDeletePlaylist={handleDeletePlaylist}
-        onShowPlaylist={handleShowPlaylist}
-        onRefreshPlaylists={refreshPlaylists}
-        isRefreshing={isRefreshing}
-      />
+      <div className={`sidebar-container left ${leftSidebarCollapsed ? 'collapsed' : ''}`}>
+        <button
+          className="sidebar-toggle left-toggle"
+          onClick={toggleLeftSidebar}
+          title={leftSidebarCollapsed ? "Expand playlists" : "Collapse playlists"}
+        >
+          <i className={`fas fa-chevron-${leftSidebarCollapsed ? 'right' : 'left'}`}></i>
+        </button>
+        <PlaylistSidebar
+          playlists={playlists}
+          selectedPlaylist={selectedPlaylist}
+          onPlaylistChange={handlePlaylistChange}
+          onCreatePlaylist={openCreateModal}
+          onDeletePlaylist={handleDeletePlaylist}
+          onShowPlaylist={handleShowPlaylist}
+          onRefreshPlaylists={refreshPlaylists}
+          isRefreshing={isRefreshing}
+        />
+      </div>
 
       {/* Main Content Area */}
       <div className="main-content">
@@ -535,13 +569,22 @@ const MainDashboard = ({ searchTerm }) => {
       </div>
 
       {/* Right Sidebar - Recommendations */}
-      <RecommendationSidebar
-        selectedTracks={filteredTracks.filter((t) =>
-          selectedTrackIds.includes(t.id)
-        )}
-        onGetRecommendations={handleGetRecommendationsFromSidebar}
-        loading={recommendationsLoading}
-      />
+      <div className={`sidebar-container right ${rightSidebarCollapsed ? 'collapsed' : ''}`}>
+        <button
+          className="sidebar-toggle right-toggle"
+          onClick={toggleRightSidebar}
+          title={rightSidebarCollapsed ? "Expand recommendations" : "Collapse recommendations"}
+        >
+          <i className={`fas fa-chevron-${rightSidebarCollapsed ? 'left' : 'right'}`}></i>
+        </button>
+        <RecommendationSidebar
+          selectedTracks={filteredTracks.filter((t) =>
+            selectedTrackIds.includes(t.id)
+          )}
+          onGetRecommendations={handleGetRecommendationsFromSidebar}
+          loading={recommendationsLoading}
+        />
+      </div>
 
       {/* Create Playlist Modal */}
       <CreatePlaylistModal

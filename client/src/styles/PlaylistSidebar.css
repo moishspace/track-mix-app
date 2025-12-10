@@ -1,6 +1,6 @@
 .playlist-sidebar {
   width: 280px;
-  background: #000000;
+  background: #121212;
   border-right: 1px solid #282828;
   display: flex;
   flex-direction: column;
@@ -55,8 +55,8 @@
 }
 
 .sort-btn {
-  background: #181818;              /* soft dark background for better contrast */
-  border: 1px solid #2a2a2a;        /* slightly darker border */
+  background: #181818; /* soft dark background for better contrast */
+  border: 1px solid #2a2a2a; /* slightly darker border */
   color: #b3b3b3;
   padding: 4px 12px;
   border-radius: 16px;
@@ -66,12 +66,12 @@
 }
 
 .sort-btn:hover {
-  border-color: #1db954;            /* Spotify green hover accent */
+  border-color: #1db954; /* Spotify green hover accent */
   color: #ffffff;
 }
 
 .sort-btn.active {
-  background: #1db954;              /* active button green */
+  background: #1db954; /* active button green */
   border-color: #1db954;
   color: #ffffff;
   font-weight: 600;
@@ -224,6 +224,7 @@
 .playlist-count {
   color: #b3b3b3;
   font-size: 12px;
+  text-align: left;
 }
 
 .playlist-actions {
@@ -420,6 +421,12 @@
 
 /* Animation */
 @keyframes popIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
