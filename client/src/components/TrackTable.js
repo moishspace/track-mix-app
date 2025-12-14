@@ -349,6 +349,63 @@ const TrackTable = ({
         },
       },
       // {
+      //   field: "traxsource",
+      //   headerName: "Traxsource",
+      //   minWidth: 70,
+      //   flex: 0.5,
+      //   sortable: false,
+      //   renderCell: (params) => {
+      //     const platform = params.row.platforms?.traxsource;
+      //     if (!platform?.found) return null;
+      //     return (
+      //       <PlatformCartButton
+      //         platform="traxsource"
+      //         trackId={platform.trackId}
+      //         trackUrl={platform.url}
+      //         color="#FF0077" /* choose a distinct color */
+      //       />
+      //     );
+      //   },
+      // },
+      // {
+      //   field: "sevendigital",
+      //   headerName: "7digital",
+      //   minWidth: 70,
+      //   flex: 0.5,
+      //   sortable: false,
+      //   renderCell: (params) => {
+      //     const platform = params.row.platforms?.sevendigital;
+      //     if (!platform?.found) return null;
+      //     return (
+      //       <PlatformCartButton
+      //         platform="sevendigital"
+      //         trackId={platform.trackId}
+      //         trackUrl={platform.url}
+      //         color="#e56e0dff"
+      //       />
+      //     );
+      //   },
+      // },
+      // {
+      //   field: "junodownload",
+      //   headerName: "junodownload",
+      //   minWidth: 70,
+      //   flex: 0.5,
+      //   sortable: false,
+      //   renderCell: (params) => {
+      //     const platform = params.row.platforms?.junodownload;
+      //     if (!platform?.found) return null;
+      //     return (
+      //       <PlatformCartButton
+      //         platform="junodownload"
+      //         trackId={platform.trackId}
+      //         trackUrl={platform.url}
+      //         color="#d34a00ff" /* choose a distinct color */
+      //       />
+      //     );
+      //   },
+      // },
+      // {
       //   field: "danceability",
       //   headerName: "Danceability",
       //   minWidth: 80,
@@ -414,20 +471,20 @@ const TrackTable = ({
       slotProps={{
         row: {
           onContextMenu: (event) => {
-            console.log('✅ Right-click detected via slotProps!', event);
+            console.log("✅ Right-click detected via slotProps!", event);
             event.preventDefault();
             // Get the row data from the event target
             const rowElement = event.currentTarget;
-            const rowId = rowElement.getAttribute('data-id');
-            const row = processedTracks.find(t => t.id === rowId);
+            const rowId = rowElement.getAttribute("data-id");
+            const row = processedTracks.find((t) => t.id === rowId);
             if (row) {
-              console.log('Found row:', row);
+              console.log("Found row:", row);
               handleRowRightClick(event, row);
             } else {
-              console.warn('Row not found for id:', rowId);
+              console.warn("Row not found for id:", rowId);
             }
-          }
-        }
+          },
+        },
       }}
     />
   );

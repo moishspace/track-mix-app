@@ -17,8 +17,9 @@
   flex-direction: column;
   overflow: hidden;
   list-style: none;
-  padding: 16px;
+  padding: 12px;
   margin: 0 16px;
+  gap: 8px;
 }
 
 /* Prevent any child elements from showing list markers */
@@ -32,14 +33,22 @@
   display: none !important;
 }
 
-/* Table wrapper - takes most of the space */
+/* Table wrapper - takes most of the space and contains table + footer controls */
 .table-wrapper {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: 0;
   background: #000000;
   min-height: 0; /* Important for flex scrolling */
+}
+
+/* DataGrid container should scroll */
+.table-wrapper > .custom-data-grid {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Scrollbar styling for table */
@@ -163,6 +172,10 @@
   width: 280px;
 }
 
+.sidebar-container.far-right {
+  width: 280px;
+}
+
 /* Collapsed state */
 .sidebar-container.collapsed {
   width: 40px !important;
@@ -170,7 +183,8 @@
 }
 
 .sidebar-container.collapsed .playlist-sidebar,
-.sidebar-container.collapsed .recommendation-sidebar {
+.sidebar-container.collapsed .recommendation-sidebar,
+.sidebar-container.collapsed .recently-played-sidebar {
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
@@ -210,12 +224,21 @@
   border-radius: 8px 0 0 8px;
 }
 
+.sidebar-toggle.far-right-toggle {
+  left: -16px; /* Position exactly in the gap */
+  border-radius: 8px 0 0 8px;
+}
+
 /* When collapsed, move toggle to edge */
 .sidebar-container.collapsed .sidebar-toggle.left-toggle {
   right: -16px;
 }
 
 .sidebar-container.collapsed .sidebar-toggle.right-toggle {
+  left: -16px;
+}
+
+.sidebar-container.collapsed .sidebar-toggle.far-right-toggle {
   left: -16px;
 }
 
@@ -245,6 +268,10 @@
   right: -16px;
 }
 
+.sidebar-container.far-right.collapsed::before {
+  right: -16px;
+}
+
 /* Icon animation */
 .sidebar-toggle i {
   transition: transform 0.3s ease;
@@ -258,7 +285,8 @@
 /* Smooth rounded panels */
 .playlist-sidebar,
 .main-content,
-.recommendation-sidebar {
+.recommendation-sidebar,
+.recently-played-sidebar {
   background: #121212;
   border-radius: 16px;
   border: 1px solid #282828;
@@ -285,17 +313,111 @@
   border-top: 1px solid #282828;
 }
 
+/* Custom table footer with controls - compact and minimalist */
+.table-footer-with-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+  background: transparent;
+  border-top: 0px solid #282828;
+  min-height: 40px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.footer-left-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+/* Minimalist button styling */
+.footer-left-controls .button-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-left-controls .action-button {
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  background: transparent !important;
+  color: #888 !important;
+  border: 1px solid #333 !important;
+  border-radius: 4px !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 28px;
+  white-space: nowrap;
+}
+
+.footer-left-controls .action-button:hover {
+  color: #bbb !important;
+  border-color: #555 !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.footer-left-controls .playlist-dropdown {
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  background: transparent !important;
+  color: #888 !important;
+  border: 1px solid #333 !important;
+  border-radius: 4px !important;
+  cursor: pointer;
+  height: 28px;
+  min-width: 140px;
+  max-width: 180px;
+}
+
+.footer-left-controls .playlist-dropdown:hover {
+  color: #bbb !important;
+  border-color: #555 !important;
+}
+
+.footer-left-controls .button-group-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Player section below table - full width */
+.player-section {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #1a1a1a;
+  border-top: 1px solid #282828;
+  border-radius: 0 0 16px 16px;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* Ensure player takes full width */
+.player-section > * {
+  width: 100%;
+  flex: 1;
+}
+
 /* Responsive - adjust sidebar widths */
 @media (max-width: 1400px) {
   .sidebar-container.left,
-  .sidebar-container.right {
+  .sidebar-container.right,
+  .sidebar-container.far-right {
     width: 250px;
   }
 }
 
 @media (max-width: 1200px) {
   .sidebar-container.left,
-  .sidebar-container.right {
+  .sidebar-container.right,
+  .sidebar-container.far-right {
     width: 240px;
+  }
+
+  .footer-left-controls {
+    flex-wrap: wrap;
   }
 }

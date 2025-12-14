@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
-import { CircularProgress, Checkbox, FormControlLabel, FormGroup, Button, Tooltip } from '@mui/material';
-import { RECOMMENDATION_MODES } from '../utils/recommendationEngine';
-import '../styles/RecommendationSidebar.css';
+import React, { useState } from "react";
+import {
+  CircularProgress,
+  Checkbox,
+  FormControlLabel,
+  FormGroup,
+  Button,
+  Tooltip,
+} from "@mui/material";
+import { RECOMMENDATION_MODES } from "../utils/recommendationEngine";
+import "../styles/RecommendationSidebar.css";
 
 const RecommendationSidebar = ({
   selectedTracks = [],
   onGetRecommendations,
-  loading = false
+  loading = false,
 }) => {
   const [selectedModes, setSelectedModes] = useState({
     SIMILAR: true,
     POPULAR: false,
     DISCOVERY: false,
-    DEEP_CUTS: false
+    DEEP_CUTS: false,
   });
 
   const [includeLatestReleases, setIncludeLatestReleases] = useState(false);
@@ -20,9 +27,9 @@ const RecommendationSidebar = ({
   const [mixedPlaylistsOnly, setMixedPlaylistsOnly] = useState(true);
 
   const handleModeChange = (mode) => {
-    setSelectedModes(prev => ({
+    setSelectedModes((prev) => ({
       ...prev,
-      [mode]: !prev[mode]
+      [mode]: !prev[mode],
     }));
   };
 
@@ -32,7 +39,7 @@ const RecommendationSidebar = ({
       .map(([mode, _]) => mode);
 
     if (activeModes.length === 0) {
-      alert('Please select at least one recommendation mode');
+      alert("Please select at least one recommendation mode");
       return;
     }
 
@@ -40,7 +47,7 @@ const RecommendationSidebar = ({
       modes: activeModes,
       includeLatestReleases,
       excludeSeedArtists,
-      mixedPlaylistsOnly
+      mixedPlaylistsOnly,
     });
   };
 
@@ -50,11 +57,13 @@ const RecommendationSidebar = ({
     <div className="recommendation-sidebar">
       <div className="recommendation-header">
         <h2>Get Recommendations</h2>
+      </div>
+      <div>
         <span className="track-count">
-          {selectedTracks.length} track{selectedTracks.length !== 1 ? 's' : ''} selected
+          {selectedTracks.length} track{selectedTracks.length !== 1 ? "s" : ""}{" "}
+          selected
         </span>
       </div>
-
       {/* Selected Artists Display */}
       {hasSelectedTracks && (
         <div className="selected-artists">
@@ -170,9 +179,7 @@ const RecommendationSidebar = ({
               Loading...
             </>
           ) : (
-            <>
-              🎵 Get Recommendations (50 tracks)
-            </>
+            <>Get Recommendations</>
           )}
         </Button>
 
@@ -202,9 +209,9 @@ const RecommendationSidebar = ({
 const getUniqueArtists = (tracks) => {
   const artistMap = new Map();
 
-  tracks.forEach(track => {
+  tracks.forEach((track) => {
     const artists = track.artists || [];
-    artists.forEach(artist => {
+    artists.forEach((artist) => {
       if (!artistMap.has(artist.id)) {
         artistMap.set(artist.id, artist);
       }

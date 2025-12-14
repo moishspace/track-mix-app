@@ -1,0 +1,62 @@
+/* Ensure your PlaylistControls styles override Dashboard defaults */
+div.button-container .action-button,
+div.button-container .playlist-dropdown {
+  font-family: "Inter", sans-serif;
+  background: rgba(24, 24, 24, 0.9);
+  color: #d0d0d0;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 9px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  cursor: pointer;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* Hover + focus */
+div.button-container .action-button:hover,
+div.button-container .playlist-dropdown:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+div.button-container .playlist-dropdown:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Group container for Add + Select */
+div.button-container .button-group-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Make Export button distinct but consistent */
+div.button-container > .action-button:last-child {
+  background: rgba(18, 18, 18, 0.9);
+  color: #ccc;
+}
+
+div.button-container > .action-button:last-child:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+/* --- Remove any inherited glows or shadows --- */
+div.button-container .action-button,
+div.button-container .playlist-dropdown {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Also reset group wrapper shadow if inherited */
+div.button-container .button-group-container {
+  box-shadow: none !important;
+}

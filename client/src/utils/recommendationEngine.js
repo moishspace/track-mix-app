@@ -90,19 +90,19 @@ export const getArtistSimilarityRecommendations = (seedTracks, allTracks) => {
     }
   });
 
-  console.log("🎯 Seed artists:", Array.from(seedArtistNames));
-  console.log("📊 Checking", allTracks.length, "tracks from playlists");
+  // console.log("🎯 Seed artists:", Array.from(seedArtistNames));
+  // console.log("📊 Checking", allTracks.length, "tracks from playlists");
 
   // Sample first track for debugging
   if (allTracks.length > 0) {
     const sampleTrack = allTracks[0];
-    console.log("📝 Sample track structure:", {
-      id: sampleTrack.id || sampleTrack.track?.id,
-      hasArtists: !!sampleTrack.artists,
-      hasTrack: !!sampleTrack.track,
-      trackArtists: sampleTrack.track?.artists,
-      directArtists: sampleTrack.artists,
-    });
+    // console.log("📝 Sample track structure:", {
+    //   id: sampleTrack.id || sampleTrack.track?.id,
+    //   hasArtists: !!sampleTrack.artists,
+    //   hasTrack: !!sampleTrack.track,
+    //   trackArtists: sampleTrack.track?.artists,
+    //   directArtists: sampleTrack.artists,
+    // });
   }
 
   // Score all tracks based on artist overlap
@@ -152,7 +152,7 @@ export const getArtistSimilarityRecommendations = (seedTracks, allTracks) => {
     });
   });
 
-  console.log(`🎵 Found ${matchCount} artist matches`);
+  // console.log(`🎵 Found ${matchCount} artist matches`);
 
   return scores;
 };
@@ -264,11 +264,11 @@ export const findCoOccurrenceRecommendations = async (
   } = options;
 
   try {
-    console.log("🎵 Starting related artists + playlist co-occurrence...", {
-      coOccurrenceWeight,
-      artistSimilarityWeight,
-      usePopularityBoost,
-    });
+    // console.log("🎵 Starting related artists + playlist co-occurrence...", {
+    //   coOccurrenceWeight,
+    //   artistSimilarityWeight,
+    //   usePopularityBoost,
+    // });
 
     // === Collect seed data ===
     const seedTrackIds = new Set(seedTracks.map((t) => t.id));
@@ -286,7 +286,7 @@ export const findCoOccurrenceRecommendations = async (
       }
     });
 
-    console.log(`🎤 Found ${seedArtists.length} seed artists`);
+    // console.log(`🎤 Found ${seedArtists.length} seed artists`);
 
     // === Helpers ===
     const getTrackName = (t) =>
@@ -306,7 +306,7 @@ export const findCoOccurrenceRecommendations = async (
 
     // === Step 1: Build artist cluster (seed + related artists) ===
     const artistCluster = [...seedArtists];
-    console.log("🎯 Building artist cluster (seed + related)...");
+    // console.log("🎯 Building artist cluster (seed + related)...");
 
     for (const seedArtist of seedArtists) {
       try {
@@ -315,14 +315,14 @@ export const findCoOccurrenceRecommendations = async (
 
         // 🧩 If missing or fake, or if ID doesn't look valid
         if (!artistId || artistId.startsWith("fake-")) {
-          console.log(`🔍 Invalid artist ID for "${artistName}", searching by name...`);
+          // console.log(`🔍 Invalid artist ID for "${artistName}", searching by name...`);
           const found = await getArtistByName(artistName).catch(() => null);
           if (!found?.id) {
             console.warn(`⚠️ Skipping "${artistName}" — no Spotify match`);
             continue;
           }
           artistId = found.id;
-          console.log(`✅ Found valid ID for "${artistName}": ${artistId}`);
+          // console.log(`✅ Found valid ID for "${artistName}": ${artistId}`);
         }
 
         // 🧠 Verify this really is an artist
@@ -335,11 +335,11 @@ export const findCoOccurrenceRecommendations = async (
             () => null
           );
           if (!foundAgain?.id) {
-            console.warn(`❌ Skipping "${artistName}" — could not find valid artist`);
+            // console.warn(`❌ Skipping "${artistName}" — could not find valid artist`);
             continue; // give up
           }
           artistId = foundAgain.id;
-          console.log(`✅ Found valid ID for "${artistName}": ${artistId}`);
+          // console.log(`✅ Found valid ID for "${artistName}": ${artistId}`);
         }
 
         // ✅ Now safe to call related artists
@@ -348,7 +348,7 @@ export const findCoOccurrenceRecommendations = async (
           return { artists: [] };
         });
         const related = relatedResponse.artists || [];
-        console.log(`🎵 Found ${related.length} related artists for "${artistName}"`);
+        // console.log(`🎵 Found ${related.length} related artists for "${artistName}"`);
         related.slice(0, 5).forEach((ra) => {
           if (!artistCluster.find((a) => a.id === ra.id))
             artistCluster.push(ra);
@@ -361,17 +361,17 @@ export const findCoOccurrenceRecommendations = async (
       }
     }
 
-    console.log(`🎤 Total artist cluster size: ${artistCluster.length}`);
-    console.log(
-      "🎶 Cluster artists:",
-      artistCluster.map((a) => a.name).join(", ")
-    );
+    // console.log(`🎤 Total artist cluster size: ${artistCluster.length}`);
+    // console.log(
+    //   "🎶 Cluster artists:",
+    //   artistCluster.map((a) => a.name).join(", ")
+    // );
 
     // === Step 2: Search playlists for each artist ===
     const candidatePlaylists = [];
 
     for (const artist of artistCluster.slice(0, 10)) {
-      console.log(`🔍 Searching playlists for artist: ${artist.name}`);
+      // console.log(`🔍 Searching playlists for artist: ${artist.name}`);
       try {
         const playlists = await searchPlaylists(artist.name, 100);
         playlists.forEach((p) => {
@@ -385,7 +385,7 @@ export const findCoOccurrenceRecommendations = async (
     }
 
     console.log(
-      `📋 Found ${candidatePlaylists.length} candidate playlists from cluster`
+      // `📋 Found ${candidatePlaylists.length} candidate playlists from cluster`
     );
 
     // === Step 3: Fetch playlists & keep only relevant ones ===
@@ -451,17 +451,17 @@ export const findCoOccurrenceRecommendations = async (
           // Only accept playlists with 10-70% seed artist content
           // This filters out dedicated playlists (>70%) and irrelevant playlists (<10%)
           if (seedArtistPercentage < 10 || seedArtistPercentage > 70) {
-            console.log(
-              `⏭️ Skipping playlist "${playlist.name}" - ${seedArtistPercentage.toFixed(1)}% seed artist (need 10-70%)`
-            );
+            // console.log(
+            //   `⏭️ Skipping playlist "${playlist.name}" - ${seedArtistPercentage.toFixed(1)}% seed artist (need 10-70%)`
+            // );
             continue;
           }
 
-          console.log(
-            `✅ Playlist "${playlist.name}" - ${seedArtistPercentage.toFixed(1)}% seed artist (mixed ✓)`
-          );
+          // console.log(
+          //   `✅ Playlist "${playlist.name}" - ${seedArtistPercentage.toFixed(1)}% seed artist (mixed ✓)`
+          // );
         } else {
-          console.log(`✅ Playlist "${playlist.name}" matched cluster artist`);
+          // console.log(`✅ Playlist "${playlist.name}" matched cluster artist`);
         }
 
         validPlaylists.push({ ...playlist, tracks: items });
@@ -474,12 +474,12 @@ export const findCoOccurrenceRecommendations = async (
       }
     }
 
-    console.log(
-      `🎧 Using ${validPlaylists.length} relevant playlists for co-occurrence`
-    );
+    // console.log(
+    //   `🎧 Using ${validPlaylists.length} relevant playlists for co-occurrence`
+    // );
 
     if (validPlaylists.length === 0) {
-      console.warn("❌ No relevant playlists found");
+      // console.warn("❌ No relevant playlists found");
       return [];
     }
 
@@ -510,11 +510,11 @@ export const findCoOccurrenceRecommendations = async (
       });
     });
 
-    console.log(
-      `🔗 Found ${
-        Object.keys(trackFrequency).length
-      } unique tracks across playlists`
-    );
+    // console.log(
+    //   `🔗 Found ${
+    //     Object.keys(trackFrequency).length
+    //   } unique tracks across playlists`
+    // );
 
     // === Step 5: Compute scores & return recommendations ===
     const trackMap = new Map();
@@ -545,9 +545,9 @@ export const findCoOccurrenceRecommendations = async (
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
 
-    console.log(
-      `✅ Returning ${recommendations.length} co-occurrence recommendations`
-    );
+    // console.log(
+    //   `✅ Returning ${recommendations.length} co-occurrence recommendations`
+    // );
     return recommendations;
   } catch (error) {
     console.error("❌ Related artists playlist search failed:", error);
@@ -570,17 +570,17 @@ export const getHybridRecommendations = async (seedTracks, options = {}) => {
     genreMatchingWeight = 1.2,
   } = options;
 
-  console.log("🎵 Getting hybrid recommendations...", {
-    seedTracks: seedTracks.length,
-    limit,
-    weights: {
-      coOccurrence: coOccurrenceWeight,
-      artistSimilarity: artistSimilarityWeight,
-      genreMatching: genreMatchingWeight,
-    },
-    usePopularityBoost,
-    requireArtistInPlaylistName: options.requireArtistInPlaylistName,
-  });
+  // console.log("🎵 Getting hybrid recommendations...", {
+  //   seedTracks: seedTracks.length,
+  //   limit,
+  //   weights: {
+  //     coOccurrence: coOccurrenceWeight,
+  //     artistSimilarity: artistSimilarityWeight,
+  //     genreMatching: genreMatchingWeight,
+  //   },
+  //   usePopularityBoost,
+  //   requireArtistInPlaylistName: options.requireArtistInPlaylistName,
+  // });
 
   let recommendations = await findCoOccurrenceRecommendations(seedTracks, {
     limit,
@@ -611,7 +611,7 @@ export const getHybridRecommendations = async (seedTracks, options = {}) => {
       }
     });
 
-    console.log(`🚫 Excluding seed artists:`, Array.from(seedArtistNames));
+    // console.log(`🚫 Excluding seed artists:`, Array.from(seedArtistNames));
 
     const beforeCount = recommendations.length;
     recommendations = recommendations.filter((rec) => {
@@ -634,9 +634,9 @@ export const getHybridRecommendations = async (seedTracks, options = {}) => {
       return !hasSeedArtist;
     });
 
-    console.log(
-      `🚫 Excluded ${beforeCount - recommendations.length} tracks by seed artists (${recommendations.length} remaining)`
-    );
+    // console.log(
+    //   `🚫 Excluded ${beforeCount - recommendations.length} tracks by seed artists (${recommendations.length} remaining)`
+    // );
   }
 
   // Apply filters if needed
@@ -651,9 +651,9 @@ export const getHybridRecommendations = async (seedTracks, options = {}) => {
       })
       .slice(0, 50); // Take top 50 most recent
 
-    console.log(
-      `🗓️ Returning ${recommendations.length} most recent tracks`
-    );
+    // console.log(
+    //   `🗓️ Returning ${recommendations.length} most recent tracks`
+    // );
   }
 
   console.log(`✅ Returning ${recommendations.length} total recommendations`);

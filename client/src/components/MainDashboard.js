@@ -1,14 +1,16 @@
 // MainDashboard.js
 import React, { useState, useEffect, useMemo } from "react";
 import TrackTable from "./TrackTable";
-import PlaylistControls from "./PlaylistControls";
+import "../styles/DashboardLayout.css";
 import PlaylistSidebar from "./PlaylistSidebar";
 import RecommendationSidebar from "./RecommendationSidebar";
+import RecentlyPlayedSidebar from "./RecentlyPlayedSidebar";
 import TrackPlayer from "./TrackPlayer";
 import CriteriaFilterPanel from "./CriteriaFilterPanel";
 import AudioWaveform from "./AudioWaveform";
 import CreatePlaylistModal from "./CreatePlaylistModal";
 import FilterPanel from "./FilterPanel";
+import PlaylistControls from "./PlaylistControls";
 import useTrackSearch from "../hooks/useTrackSearch";
 import useSimilarTracks from "../hooks/useSimilarTracks";
 import useTrackTable from "../hooks/useTrackTable";
@@ -16,7 +18,6 @@ import useTrackPlayer from "../hooks/useTrackPlayer";
 import usePlaylist from "../hooks/usePlaylist";
 import useRecommendations from "../hooks/useRecommendations";
 import { searchPlatforms, fetchAndUpdateTrackDetails } from "../services/api";
-import "../styles/DashboardLayout.css";
 
 const MainDashboard = ({ searchTerm }) => {
   const [criteria, setCriteria] = useState({});
@@ -42,6 +43,9 @@ const MainDashboard = ({ searchTerm }) => {
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(
     () => localStorage.getItem('rightSidebarCollapsed') === 'true'
   );
+  const [recentlyPlayedCollapsed, setRecentlyPlayedCollapsed] = useState(
+    () => localStorage.getItem('recentlyPlayedCollapsed') === 'true'
+  );
 
   // Toggle functions
   const toggleLeftSidebar = () => {
@@ -56,6 +60,14 @@ const MainDashboard = ({ searchTerm }) => {
     setRightSidebarCollapsed(prev => {
       const newValue = !prev;
       localStorage.setItem('rightSidebarCollapsed', newValue);
+      return newValue;
+    });
+  };
+
+  const toggleRecentlyPlayed = () => {
+    setRecentlyPlayedCollapsed(prev => {
+      const newValue = !prev;
+      localStorage.setItem('recentlyPlayedCollapsed', newValue);
       return newValue;
     });
   };
@@ -452,6 +464,37 @@ const MainDashboard = ({ searchTerm }) => {
     }
   };
 
+  // Handle recently played track click - play directly without adding to table
+  const handleRecentlyPlayedTrackClick = (track) => {
+    console.log('🎵 Recently played track clicked:', track);
+    console.log('🎵 Track URI:', track.uri);
+    console.log('🎵 PlayerRef:', playerRef.current);
+
+    // Play the track directly without adding to table
+    if (playerRef.current?.playTrackUri) {
+      console.log('🎵 Calling playTrackUri...');
+      playerRef.current.playTrackUri(track.uri);
+    } else {
+      console.error('❌ playTrackUri not available on playerRef');
+    }
+
+    // Update selected track for display purposes only
+    const convertedTrack = {
+      id: track.id,
+      name: track.name,
+      artists: track.artists,
+      artistsName: track.artists?.map((a) => a.name).join(", ") || "",
+      albumName: track.album?.name || "",
+      albumImageUrl: track.album?.images?.[0]?.url || "",
+      duration_ms: track.duration_ms,
+      preview_url: track.preview_url,
+      uri: track.uri,
+      album: track.album,
+    };
+
+    setSelectedTrack(convertedTrack);
+  };
+
   const {
     playerRef,
     trackProgress,
@@ -523,7 +566,7 @@ const MainDashboard = ({ searchTerm }) => {
           keys={uniqueKeys}
         />
 
-        {/* Track Table */}
+        {/* Track Table with integrated controls */}
         <div className="table-wrapper">
           <TrackTable
             processedTracks={filteredProcessedTracks}
@@ -535,36 +578,35 @@ const MainDashboard = ({ searchTerm }) => {
             handleRowClick={handleRowClick}
             playlistTotal={playlistTotal}
           />
+
+          {/* Custom footer row with playlist controls on left, pagination info on right */}
+          <div className="table-footer-with-controls">
+            <div className="footer-left-controls">
+              <PlaylistControls
+                playlists={playlists}
+                selectedPlaylist={selectedPlaylist}
+                handlePlaylistChange={handlePlaylistChange}
+                handleAddToPlaylist={handleAddToPlaylist}
+                handleShowPlaylist={handleShowPlaylist}
+                handleCreatePlaylist={openCreateModal}
+                handleDeletePlaylist={handleDeletePlaylist}
+                handleExportPlaylist={handleExportPlaylist}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Controls Section - Centered under table */}
-        <div className="controls-section">
-          {/* Track Player */}
-          <div className="player-wrapper">
-            <TrackPlayer
-              ref={playerRef}
-              processedTracks={filteredProcessedTracks}
-              selectedTrack={selectedTrack}
-              currentTrackIndex={currentTrackIndex}
-              setCurrentTrackIndex={setSelectedTrackIndex}
-              onProgress={handleProgressUpdate}
-              onTrackChange={handleTrackChange}
-            />
-          </div>
-
-          {/* Playlist Controls */}
-          <div className="controls-wrapper">
-            <PlaylistControls
-              playlists={playlists}
-              selectedPlaylist={selectedPlaylist}
-              handlePlaylistChange={handlePlaylistChange}
-              handleAddToPlaylist={handleAddToPlaylist}
-              handleShowPlaylist={handleShowPlaylist}
-              handleCreatePlaylist={openCreateModal}
-              handleDeletePlaylist={handleDeletePlaylist}
-              handleExportPlaylist={handleExportPlaylist}
-            />
-          </div>
+        {/* Track Player Section - Below table */}
+        <div className="player-section">
+          <TrackPlayer
+            ref={playerRef}
+            processedTracks={filteredProcessedTracks}
+            selectedTrack={selectedTrack}
+            currentTrackIndex={currentTrackIndex}
+            setCurrentTrackIndex={setSelectedTrackIndex}
+            onProgress={handleProgressUpdate}
+            onTrackChange={handleTrackChange}
+          />
         </div>
       </div>
 
@@ -584,6 +626,18 @@ const MainDashboard = ({ searchTerm }) => {
           onGetRecommendations={handleGetRecommendationsFromSidebar}
           loading={recommendationsLoading}
         />
+      </div>
+
+      {/* Far Right Sidebar - Recently Played */}
+      <div className={`sidebar-container far-right ${recentlyPlayedCollapsed ? 'collapsed' : ''}`}>
+        <button
+          className="sidebar-toggle far-right-toggle"
+          onClick={toggleRecentlyPlayed}
+          title={recentlyPlayedCollapsed ? "Expand recently played" : "Collapse recently played"}
+        >
+          <i className={`fas fa-chevron-${recentlyPlayedCollapsed ? 'left' : 'right'}`}></i>
+        </button>
+        <RecentlyPlayedSidebar onTrackClick={handleRecentlyPlayedTrackClick} />
       </div>
 
       {/* Create Playlist Modal */}

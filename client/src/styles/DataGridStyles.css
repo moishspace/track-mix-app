@@ -33,16 +33,31 @@
 
 /* Header styling - Metallic gradient */
 .custom-data-grid .MuiDataGrid-columnHeader {
-  background: #1a1a1a !important; /* Dark grey header */
-  font-family: "Inter", "Roboto", sans-serif !important; /* Consistent font for header */
-  letter-spacing: 0.5px; /* Slight letter spacing */
-  color: #f5f5f5 !important; /* Bright text color for header titles */
-  font-weight: 800 !important; /* Bold font for headers */
-  font-size: 14px !important; /* Larger font for headers */
-  border-bottom: 1px solid #282828 !important; /* Subtle border */
-  text-align: center !important; /* Center-align text for uniformity */
+  background: #1a1a1a !important;
+  font-family: "Inter", "Roboto", sans-serif !important;
+  color: #f5f5f5 !important;
+  font-weight: 700 !important;
+  font-size: 10px !important;
+  border-bottom: 1px solid #282828 !important;
   text-transform: uppercase;
-  border-right: 1px solid #282828 !important; /* Very dark border between headers */
+  border-right: 1px solid #282828 !important;
+  letter-spacing: 0.5px;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  height: auto !important;
+  padding: 6px 4px !important;
+}
+
+.custom-data-grid .MuiDataGrid-columnHeaderTitle {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  line-height: 1.4 !important;
+  text-align: center !important;
+  display: inline-block !important;
+  width: 100% !important;
 }
 
 /* Checkbox column header - extra padding */
@@ -275,4 +290,3 @@
   color: inherit !important; /* use color from sx prop */
   fill: currentColor !important;
 }
-

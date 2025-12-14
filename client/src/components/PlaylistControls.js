@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import CreatePlaylistModal from "./CreatePlaylistModal";
+import "../styles/PlaylistControls.css";
 
 const PlaylistControls = ({
   playlists,

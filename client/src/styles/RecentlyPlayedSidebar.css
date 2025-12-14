@@ -1,0 +1,259 @@
+.recently-played-sidebar {
+  width: 280px;
+  height: 100%;
+  background-color: #121212;
+  color: #ffffff;
+  padding: 0;
+  overflow-y: auto;
+  border-left: 1px solid #282828;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.recently-played-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid #282828;
+}
+
+.recently-played-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.recently-played-header .refresh-btn {
+  background: #181818;
+  border: 1px solid #2a2a2a;
+  color: #b3b3b3;
+  padding: 6px 10px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recently-played-header .refresh-btn:hover:not(:disabled) {
+  border-color: #1db954;
+  color: #ffffff;
+}
+
+.recently-played-header .refresh-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.recently-played-header .refresh-btn i {
+  transition: transform 0.6s ease;
+}
+
+.recently-played-header .refresh-btn i.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Loading, Error, Empty States */
+.loading-state,
+.error-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #b3b3b3;
+}
+
+.loading-state i,
+.error-state i,
+.empty-state i {
+  font-size: 32px;
+  margin-bottom: 12px;
+  color: #1db954;
+}
+
+.error-state i {
+  color: #e22134;
+}
+
+.error-state p,
+.empty-state p,
+.loading-state p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.retry-btn {
+  margin-top: 12px;
+  background: #1db954;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.retry-btn:hover {
+  background: #1ed760;
+  transform: translateY(-1px);
+}
+
+/* Recently Played List */
+.recently-played-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+/* Date Group */
+.date-group {
+  margin-bottom: 16px;
+}
+
+.date-header {
+  padding: 12px 20px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b3b3b3;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  background: #121212;
+  z-index: 10;
+}
+
+/* Tracks in Date */
+.tracks-in-date {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Track Item */
+.track-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.track-item:hover {
+  background: #282828;
+}
+
+.track-image-container {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+}
+
+.track-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.track-image-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  background: #282828;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b3b3b3;
+  font-size: 18px;
+}
+
+.track-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.track-name {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.track-artist {
+  color: #b3b3b3;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+    text-align: left;
+
+}
+
+.track-time {
+  color: #888;
+  font-size: 11px;
+  margin-top: 2px;
+    text-align: left;
+
+}
+
+/* Scrollbar Styling */
+.recently-played-sidebar::-webkit-scrollbar,
+.recently-played-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.recently-played-sidebar::-webkit-scrollbar-track,
+.recently-played-list::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.recently-played-sidebar::-webkit-scrollbar-thumb,
+.recently-played-list::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+.recently-played-sidebar::-webkit-scrollbar-thumb:hover,
+.recently-played-list::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+  .recently-played-sidebar {
+    width: 250px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .recently-played-sidebar {
+    width: 240px;
+  }
+}

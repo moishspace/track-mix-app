@@ -307,7 +307,7 @@ const getAdditionalTrackDetailsWithRetry = async (
 // Routes
 app.get("/api/login", (req, res) => {
   const scope =
-    "user-read-private user-read-email playlist-modify-public playlist-modify-private user-read-playback-state user-modify-playback-state streaming user-library-read";
+    "user-read-private user-read-email playlist-modify-public playlist-modify-private user-read-playback-state user-modify-playback-state streaming user-library-read user-read-recently-played";
 
   console.log("=== Spotify OAuth Debug ===");
   console.log("CLIENT_ID:", CLIENT_ID);
@@ -629,6 +629,38 @@ app.get("/api/search-playlists", ensureValidAccessToken, async (req, res) => {
     } else {
       console.error(`Network or unknown error: ${error.message}`);
       res.status(500).json({ error: "Failed to search playlists" });
+    }
+  }
+});
+
+// Get recently played tracks
+app.get("/api/recently-played", ensureValidAccessToken, async (req, res) => {
+  const { limit = 50 } = req.query;
+
+  try {
+    const response = await axios.get(
+      "https://api.spotify.com/v1/me/player/recently-played",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        params: {
+          limit: Math.min(parseInt(limit), 50), // Max 50
+        },
+      }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    if (error.response) {
+      console.error(
+        `Error fetching recently played: ${error.response.status}`,
+        error.response.data
+      );
+      res.status(error.response.status).json(error.response.data);
+    } else {
+      console.error(`Network or unknown error: ${error.message}`);
+      res.status(500).json({ error: "Failed to fetch recently played tracks" });
     }
   }
 });

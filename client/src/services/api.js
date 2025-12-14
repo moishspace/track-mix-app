@@ -440,3 +440,20 @@ export const getArtistByName = async (name) => {
       .then((res) => res.data)
   );
 };
+
+/**
+ * Get recently played tracks from Spotify
+ * @param {number} limit - Number of recently played items to return (max 50)
+ */
+export const getRecentlyPlayedTracks = async (limit = 50) => {
+  return withRetry(() =>
+    axios
+      .get(`${API_URL}/recently-played`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        params: { limit },
+      })
+      .then((response) => response.data)
+  );
+};

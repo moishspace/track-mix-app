@@ -2,6 +2,34 @@ import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 're
 import SpotifyPlayer, { spotifyApi } from 'react-spotify-web-playback';
 import { getAccessToken } from '../services/api';
 
+// Camelot wheel colors - same as TrackTable
+const CAMELOT_COLORS = {
+  "1A": { bg: "#f0c6d4", text: "#6b2040" },
+  "1B": { bg: "#f5d6e0", text: "#6b2040" },
+  "2A": { bg: "#d4c6e8", text: "#4a2870" },
+  "2B": { bg: "#e0d4f0", text: "#4a2870" },
+  "3A": { bg: "#c6c8e8", text: "#303070" },
+  "3B": { bg: "#d4d6f0", text: "#303070" },
+  "4A": { bg: "#c6d4e8", text: "#284060" },
+  "4B": { bg: "#d4e0f0", text: "#284060" },
+  "5A": { bg: "#c6e0f0", text: "#1a4a60" },
+  "5B": { bg: "#d4e8f5", text: "#1a4a60" },
+  "6A": { bg: "#c6e8f0", text: "#1a5560" },
+  "6B": { bg: "#d4f0f5", text: "#1a5560" },
+  "7A": { bg: "#c6f0e8", text: "#1a6055" },
+  "7B": { bg: "#d4f5f0", text: "#1a6055" },
+  "8A": { bg: "#c6e8d4", text: "#1a5530" },
+  "8B": { bg: "#d4f0e0", text: "#1a5530" },
+  "9A": { bg: "#c6e0c6", text: "#2a4a2a" },
+  "9B": { bg: "#d4ead4", text: "#2a4a2a" },
+  "10A": { bg: "#d4e8c6", text: "#3a4a1a" },
+  "10B": { bg: "#e0f0d4", text: "#3a4a1a" },
+  "11A": { bg: "#f0e8c6", text: "#5a4a1a" },
+  "11B": { bg: "#f5f0d4", text: "#5a4a1a" },
+  "12A": { bg: "#f0d8c6", text: "#5a3a1a" },
+  "12B": { bg: "#f5e4d4", text: "#5a3a1a" },
+};
+
 // Detect if running in Electron
 const isElectron = () => {
   return typeof window !== 'undefined' &&
@@ -45,7 +73,31 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
         }
       }
     },
-  }));
+    playTrackUri: async (trackUri) => {
+      if (!accessToken) return;
+      try {
+        const targetDevice = runningInElectron ? selectedDevice : deviceId;
+        if (!targetDevice) {
+          console.warn('No device available to play track');
+          return;
+        }
+
+        await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${targetDevice}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            uris: [trackUri]
+          })
+        });
+        setPlay(true);
+      } catch (error) {
+        console.error('Failed to play track:', error);
+      }
+    },
+  }), [accessToken, selectedDevice, deviceId, runningInElectron]);
 
   // Fetch access token
   useEffect(() => {
@@ -338,6 +390,14 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
   if (runningInElectron) {
     const selectedDeviceName = devices.find(d => d.id === selectedDevice)?.name || 'No device';
 
+    // Get current track data from processedTracks
+    const currentTrackData = currentTrack?.id
+      ? processedTracks.find(track => track.id === currentTrack.id)
+      : null;
+    const camelotKey = currentTrackData?.camelot || null;
+    const bpm = currentTrackData?.tempo || null;
+    const keyColors = camelotKey ? CAMELOT_COLORS[camelotKey] : null;
+
     return (
       <div style={{
         backgroundColor: '#282828',
@@ -467,11 +527,31 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
             </button>
           </div>
 
-          {/* Progress Bar */}
+          {/* Progress Bar with Key/BPM */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%', maxWidth: '400px' }}>
-            <span style={{ fontSize: '11px', color: '#b3b3b3', minWidth: '40px', textAlign: 'right' }}>
-              {formatTime(currentPosition)}
-            </span>
+            {/* Key above current time */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '40px' }}>
+              {keyColors && camelotKey ? (
+                <span style={{
+                  backgroundColor: keyColors.bg,
+                  color: keyColors.text,
+                  padding: '2px 6px',
+                  borderRadius: '3px',
+                  fontWeight: 'bold',
+                  fontSize: '9px',
+                  marginBottom: '2px'
+                }}>
+                  {camelotKey}
+                </span>
+              ) : (
+                <span style={{ fontSize: '9px', color: 'transparent', marginBottom: '2px' }}>—</span>
+              )}
+              <span style={{ fontSize: '11px', color: '#b3b3b3', textAlign: 'right' }}>
+                {formatTime(currentPosition)}
+              </span>
+            </div>
+
+            {/* Progress bar */}
             <div
               style={{
                 flex: 1,
@@ -508,9 +588,27 @@ const SpotifyWebPlayer = forwardRef(({ processedTracks, playlistUris = [], initi
                 }} />
               </div>
             </div>
-            <span style={{ fontSize: '11px', color: '#b3b3b3', minWidth: '40px' }}>
-              {formatTime(duration)}
-            </span>
+
+            {/* BPM above duration time */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '40px' }}>
+              {bpm ? (
+                <span style={{
+                  color: '#b3b3b3',
+                  padding: '2px 6px',
+                  borderRadius: '3px',
+                  fontSize: '9px',
+                  marginBottom: '2px',
+                  fontWeight: 'bold'
+                }}>
+                  {Math.round(bpm)}
+                </span>
+              ) : (
+                <span style={{ fontSize: '9px', color: 'transparent', marginBottom: '2px' }}>—</span>
+              )}
+              <span style={{ fontSize: '11px', color: '#b3b3b3' }}>
+                {formatTime(duration)}
+              </span>
+            </div>
           </div>
         </div>
 

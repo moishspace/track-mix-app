@@ -11,7 +11,10 @@
     "bottleneck": "^2.19.5",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "express": "^4.21.1"
+    "express": "^4.21.1",
+    "puppeteer": "^24.32.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
   },
   "keywords": [],
   "author": "moishs",
