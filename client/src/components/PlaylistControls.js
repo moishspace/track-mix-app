@@ -82,9 +82,9 @@ const PlaylistControls = ({
           onCreate={handleCreatePlaylistWrapper}
         />
       </div>
-      <button className="action-button" onClick={handleExportPlaylist}>
+      {/* <button className="action-button" onClick={handleExportPlaylist}>
         Export to CSV
-      </button>
+      </button> */}
     </div>
   );
 };

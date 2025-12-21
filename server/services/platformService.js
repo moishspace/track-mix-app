@@ -132,6 +132,11 @@ class PlatformService {
         return { success: false, error: "Unknown platform" };
     }
   }
+
+  addToCart(platform, _trackId, trackUrl) {
+    // Route to the same platform-specific open method
+    return this.openInPlatform(platform, trackUrl);
+  }
 }
 
 module.exports = new PlatformService();
