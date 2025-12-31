@@ -1,5 +1,5 @@
 // usePlaylist.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   fetchPlaylists,
   fetchPlaylistTracks,
@@ -7,6 +7,10 @@ import {
   addTracksToPlaylist,
   deletePlaylist,
   fetchAndUpdateTrackDetails,
+  reorderPlaylistTracks,
+  updatePlaylistDetails,
+  removeTracksFromPlaylist,
+  unlikeTracks,
 } from '../services/api';
 
 import useExportToCSV from './useExportToCSV';
@@ -16,6 +20,8 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
   const [playlists, setPlaylists] = useState([]);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [playlistFetchController, setPlaylistFetchController] = useState(null);
+  const [currentlyFetchingPlaylist, setCurrentlyFetchingPlaylist] = useState(null);
+  const currentlyFetchingPlaylistRef = useRef(null);
   const [playlistCache, setPlaylistCache] = useState({}); // Cache for playlist tracks
   const [isRefreshing, setIsRefreshing] = useState(false);
   const exportToCSV = useExportToCSV();
@@ -42,23 +48,30 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
   }, []);
 
   // Update cache with track details as they're fetched
+  // This runs when trackDetails are updated by fetchAndUpdateTrackDetails
   useEffect(() => {
     if (selectedPlaylist && filteredTracks.length > 0) {
-      // Update the cache with current tracks and details
-      setPlaylistCache((prevCache) => {
-        const existing = prevCache[selectedPlaylist];
-        return {
-          ...prevCache,
-          [selectedPlaylist]: {
-            tracks: filteredTracks,
-            details: trackDetails,
-            total: existing?.total, // Preserve the total from initial fetch
-            cachedAt: new Date().toISOString()
+      // Only update cache if we're not currently fetching a DIFFERENT playlist
+      // (Allow updates if we're fetching the same playlist)
+      if (!currentlyFetchingPlaylist || currentlyFetchingPlaylist === selectedPlaylist) {
+        setPlaylistCache((prevCache) => {
+          const existing = prevCache[selectedPlaylist];
+          // Only update if we have meaningful data and it's for the right playlist
+          if (existing && existing.tracks.length > 0) {
+            return {
+              ...prevCache,
+              [selectedPlaylist]: {
+                ...existing,
+                details: trackDetails, // Update details while preserving tracks and total
+                cachedAt: new Date().toISOString()
+              }
+            };
           }
-        };
-      });
+          return prevCache;
+        });
+      }
     }
-  }, [selectedPlaylist, filteredTracks, trackDetails]);
+  }, [selectedPlaylist, filteredTracks, trackDetails, currentlyFetchingPlaylist]);
 
   // Handle playlist selection change
   const handlePlaylistChange = (event) => {
@@ -81,29 +94,43 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
     setTrackDetails({});
 
     // Check if playlist is already in cache
-    if (playlistCache[targetPlaylist]) {
-      console.log(`✓ Loading playlist from cache: ${targetPlaylist}`);
-      const cached = playlistCache[targetPlaylist];
-      setFilteredTracks(cached.tracks);
+    const cached = playlistCache[targetPlaylist];
+    const isComplete = cached && cached.total !== undefined && cached.tracks.length >= cached.total;
 
-      // Set the total from cache
-      if (cached.total !== undefined && setPlaylistTotal) {
-        setPlaylistTotal(cached.total);
-      }
+    // Reset or set the playlist total immediately
+    if (setPlaylistTotal) {
+      setPlaylistTotal(cached?.total || 0);
+    }
+
+    if (cached) {
+      console.log(`✓ Loading playlist from cache: ${targetPlaylist} (${cached.tracks.length}/${cached.total || '?'} tracks)`);
+      setFilteredTracks(cached.tracks);
 
       // Load cached details if available
       if (cached.details && Object.keys(cached.details).length > 0) {
         setTrackDetails(cached.details);
       }
-      return;
-    }
 
-    console.log(`⚠ Cache miss for playlist: ${targetPlaylist}, fetching from Spotify...`);
+      // If cache is complete, we're done
+      if (isComplete) {
+        console.log(`✓ Cache is complete for playlist: ${targetPlaylist}`);
+        return;
+      }
+
+      // Cache is incomplete - continue loading from where we left off
+      console.log(`⚠ Cache incomplete for playlist: ${targetPlaylist}, continuing from track ${cached.tracks.length}...`);
+    } else {
+      console.log(`⚠ Cache miss for playlist: ${targetPlaylist}, fetching from Spotify...`);
+    }
 
     // Cancel any ongoing playlist fetch
     if (playlistFetchController) {
       playlistFetchController.abort();
     }
+
+    // Immediately update which playlist we're fetching to prevent cross-contamination
+    setCurrentlyFetchingPlaylist(targetPlaylist);
+    currentlyFetchingPlaylistRef.current = targetPlaylist;
 
     // Create new abort controller for this fetch
     const controller = new AbortController();
@@ -114,16 +141,25 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
 
     // Fetch all pages in background (non-blocking)
     const fetchAllPages = async () => {
+      // Capture the playlist ID we're fetching
+      const fetchingPlaylistId = targetPlaylist;
+
       try {
-        let allTracks = [];
-        let offset = 0;
+        // Start with cached tracks if available
+        let allTracks = cached?.tracks || [];
+        let offset = cached?.tracks.length || 0;
         const limit = 50;
         let hasMore = true;
-        let totalTracks = 0;
+        let totalTracks = cached?.total || 0;
+
+        // Log if we're resuming from cache
+        if (offset > 0) {
+          console.log(`Resuming playlist fetch from track ${offset}...`);
+        }
 
         // Fetch all pages of tracks
         while (hasMore && !controller.signal.aborted) {
-          const response = await fetchPlaylistTracks(targetPlaylist, offset, limit);
+          const response = await fetchPlaylistTracks(fetchingPlaylistId, offset, limit, controller.signal);
 
           // Check if cancelled after API call
           if (controller.signal.aborted) {
@@ -131,24 +167,19 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
             return;
           }
 
-          // Get total from first response and set it immediately
-          if (offset === 0 && response.total !== undefined) {
+          // Get total from response and set it immediately (only if not aborted)
+          if (response.total !== undefined && !controller.signal.aborted) {
+            // Log only when we first discover the total
+            if (totalTracks === 0) {
+              console.log(`Playlist total tracks: ${response.total}`);
+            }
+
             totalTracks = response.total;
+
+            // Update the total
             if (setPlaylistTotal) {
               setPlaylistTotal(totalTracks);
             }
-            console.log(`Playlist total tracks: ${totalTracks}`);
-
-            // Update cache with the total immediately
-            setPlaylistCache((prevCache) => ({
-              ...prevCache,
-              [targetPlaylist]: {
-                tracks: [],
-                details: {},
-                total: totalTracks,
-                cachedAt: new Date().toISOString()
-              }
-            }));
           }
 
           const playlistData = response.items || [];
@@ -176,14 +207,33 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
 
           allTracks = allTracks.concat(basicTracks);
 
-          // Update UI immediately with current tracks (only if not cancelled)
-          if (!controller.signal.aborted) {
+          // Update UI immediately with current tracks (only if not cancelled AND still fetching this playlist)
+          if (!controller.signal.aborted && currentlyFetchingPlaylistRef.current === fetchingPlaylistId) {
             setFilteredTracks([...allTracks]);
+
+            // Update cache immediately with current progress
+            // Note: We update trackDetails via the useEffect, not here, to avoid stale closure data
+            setPlaylistCache((prevCache) => ({
+              ...prevCache,
+              [fetchingPlaylistId]: {
+                tracks: [...allTracks],
+                details: prevCache[fetchingPlaylistId]?.details || {},
+                total: totalTracks,
+                cachedAt: new Date().toISOString()
+              }
+            }));
 
             // Fetch additional details asynchronously
             basicTracks.forEach((track) => {
-              fetchAndUpdateTrackDetails(track.id, setTrackDetails, track);
+              fetchAndUpdateTrackDetails(track.id, setTrackDetails, track, controller.signal);
             });
+
+            // Log progress
+            if (totalTracks > 0) {
+              console.log(`Loaded ${allTracks.length}/${totalTracks} tracks (${Math.round(allTracks.length / totalTracks * 100)}%)`);
+            }
+          } else if (currentlyFetchingPlaylistRef.current !== fetchingPlaylistId) {
+            console.log(`Skipping update - switched from ${fetchingPlaylistId} to ${currentlyFetchingPlaylistRef.current}`);
           }
 
           // Check if there are more pages
@@ -193,13 +243,35 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
             hasMore = false;
           }
         }
-        // Cache will be automatically updated by the useEffect
+
+        // Log completion
+        if (!controller.signal.aborted && allTracks.length > 0) {
+          console.log(`✅ Finished loading playlist: ${allTracks.length} tracks`);
+        }
       } catch (error) {
-        if (error.name === 'AbortError' || controller.signal.aborted) {
+        if (error.name === 'AbortError' || error.name === 'CanceledError' || controller.signal.aborted) {
           console.log('Playlist fetch aborted');
         } else {
           console.error("Error fetching playlist tracks:", error);
         }
+      } finally {
+        // Always clear the controller reference when done (whether successful, aborted, or error)
+        // This ensures we can create a new controller for the next playlist
+        setPlaylistFetchController((prev) => {
+          // Only clear if this is still the active controller
+          if (prev === controller) {
+            return null;
+          }
+          return prev;
+        });
+        setCurrentlyFetchingPlaylist((prev) => {
+          // Only clear if we're still fetching this playlist
+          if (prev === fetchingPlaylistId) {
+            currentlyFetchingPlaylistRef.current = null;
+            return null;
+          }
+          return prev;
+        });
       }
     };
 
@@ -261,12 +333,109 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
       alert("Please select a playlist to export.");
       return;
     }
-  
+
     if (!filteredTracks || filteredTracks.length === 0) {
       alert("No tracks available in the selected playlist.");
       return;
     }
     exportToCSV(filteredTracks);
+  };
+
+  // Reorder tracks in playlist
+  const handleReorderTrack = async (playlistId, fromIndex, toIndex) => {
+    try {
+      // Calculate insert_before based on direction
+      let insertBefore = toIndex;
+      if (fromIndex < toIndex) {
+        // Moving down: need to add 1 because we're removing from above
+        insertBefore = toIndex + 1;
+      }
+
+      // Call Spotify API to reorder
+      await reorderPlaylistTracks(playlistId, fromIndex, insertBefore);
+
+      // Optimistically update local state
+      const newTracks = [...filteredTracks];
+      const [movedTrack] = newTracks.splice(fromIndex, 1);
+      newTracks.splice(toIndex, 0, movedTrack);
+      setFilteredTracks(newTracks);
+
+      // Update cache
+      setPlaylistCache((prevCache) => ({
+        ...prevCache,
+        [playlistId]: {
+          ...prevCache[playlistId],
+          tracks: newTracks,
+          cachedAt: new Date().toISOString()
+        }
+      }));
+
+      console.log(`✅ Moved track from position ${fromIndex} to ${toIndex}`);
+    } catch (error) {
+      console.error("Error reordering track:", error);
+      alert("Failed to reorder track. Please try again.");
+      // Refresh playlist to get correct order
+      handleShowPlaylist(playlistId);
+    }
+  };
+
+  // Rename playlist
+  const handleRenamePlaylist = async (playlistId, newName) => {
+    try {
+      await updatePlaylistDetails(playlistId, { name: newName });
+
+      // Update local playlists state
+      setPlaylists((prevPlaylists) =>
+        prevPlaylists.map((p) =>
+          p.id === playlistId ? { ...p, name: newName } : p
+        )
+      );
+
+      console.log(`✅ Renamed playlist to "${newName}"`);
+    } catch (error) {
+      console.error("Error renaming playlist:", error);
+      alert("Failed to rename playlist. Please try again.");
+      throw error;
+    }
+  };
+
+  // Delete tracks from playlist or unlike from Liked Songs
+  const handleDeleteTracksFromPlaylist = async (playlistId, trackUris) => {
+    if (!playlistId) {
+      alert("No playlist selected.");
+      return;
+    }
+
+    if (!trackUris || trackUris.length === 0) {
+      alert("No tracks selected.");
+      return;
+    }
+
+    try {
+      // Handle Liked Songs differently - use unlike endpoint
+      if (playlistId === 'liked-songs') {
+        await unlikeTracks(trackUris);
+        console.log(`✅ Unliked ${trackUris.length} track(s)`);
+      } else {
+        await removeTracksFromPlaylist(playlistId, trackUris);
+        console.log(`✅ Deleted ${trackUris.length} track(s) from playlist`);
+      }
+
+      // Clear cache for this playlist so it gets refreshed
+      setPlaylistCache((prevCache) => {
+        const newCache = { ...prevCache };
+        delete newCache[playlistId];
+        return newCache;
+      });
+
+      // Reload the playlist to show updated tracks
+      handleShowPlaylist(playlistId);
+    } catch (error) {
+      const action = playlistId === 'liked-songs' ? 'unlike' : 'delete';
+      console.error(`Error ${action}ing tracks:`, error);
+      alert(`Failed to ${action} tracks. Please try again.`);
+      throw error;
+    }
   };
 
   return {
@@ -278,6 +447,9 @@ const usePlaylist = (filteredTracks, trackDetails, setFilteredTracks, setTrackDe
     handleAddToPlaylist,
     handleDeletePlaylist,
     handleExportPlaylist,
+    handleReorderTrack,
+    handleRenamePlaylist,
+    handleDeleteTracksFromPlaylist,
     refreshPlaylists: loadPlaylists,
     isRefreshing,
   };

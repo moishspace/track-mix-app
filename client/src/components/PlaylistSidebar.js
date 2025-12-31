@@ -6,15 +6,19 @@ const PlaylistSidebar = ({
   selectedPlaylist,
   onPlaylistChange,
   onCreatePlaylist,
+  onImportFromCSV,
   onDeletePlaylist,
   onShowPlaylist,
   onRefreshPlaylists,
+  onRenamePlaylist,
   isRefreshing,
 }) => {
   const [sortBy, setSortBy] = useState("date"); // 'date' or 'name'
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [playlistToDelete, setPlaylistToDelete] = useState(null);
   const [sortDir, setSortDir] = useState("desc"); // 'asc' or 'desc'
+  const [editingPlaylistId, setEditingPlaylistId] = useState(null);
+  const [editingPlaylistName, setEditingPlaylistName] = useState('');
 
   const sortedPlaylists = useMemo(() => {
     const copy = [...playlists];
@@ -48,17 +52,49 @@ const PlaylistSidebar = ({
     setPlaylistToDelete(null);
   };
 
+  const handleRenameClick = (e, playlist) => {
+    e.stopPropagation();
+    setEditingPlaylistId(playlist.id);
+    setEditingPlaylistName(playlist.name);
+  };
+
+  const handleRenameSubmit = async (playlistId) => {
+    if (editingPlaylistName.trim() && editingPlaylistName !== playlists.find(p => p.id === playlistId)?.name) {
+      try {
+        await onRenamePlaylist(playlistId, editingPlaylistName.trim());
+      } catch (error) {
+        console.error('Failed to rename playlist:', error);
+      }
+    }
+    setEditingPlaylistId(null);
+    setEditingPlaylistName('');
+  };
+
+  const handleRenameCancel = () => {
+    setEditingPlaylistId(null);
+    setEditingPlaylistName('');
+  };
+
   return (
     <div className="playlist-sidebar">
       <div className="sidebar-header">
         <h2>Your Playlists</h2>
-        <button
-          className="create-playlist-btn"
-          onClick={onCreatePlaylist}
-          title="Create new playlist"
-        >
-          <i className="fas fa-plus"></i>
-        </button>
+        <div className="header-buttons">
+          <button
+            className="create-playlist-btn"
+            onClick={onImportFromCSV}
+            title="Import playlist from CSV"
+          >
+            <i className="fas fa-file-csv"></i>
+          </button>
+          <button
+            className="create-playlist-btn"
+            onClick={onCreatePlaylist}
+            title="Create new playlist"
+          >
+            <i className="fas fa-plus"></i>
+          </button>
+        </div>
       </div>
 
       <div className="sort-controls">
@@ -129,20 +165,50 @@ const PlaylistSidebar = ({
                   </div>
                 )}
                 <div className="playlist-details">
-                  <span className="playlist-name">{playlist.name}</span>
+                  {editingPlaylistId === playlist.id ? (
+                    <input
+                      type="text"
+                      className="playlist-name-input"
+                      value={editingPlaylistName}
+                      onChange={(e) => setEditingPlaylistName(e.target.value)}
+                      onBlur={() => handleRenameSubmit(playlist.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleRenameSubmit(playlist.id);
+                        } else if (e.key === 'Escape') {
+                          handleRenameCancel();
+                        }
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      autoFocus
+                    />
+                  ) : (
+                    <span className="playlist-name">{playlist.name}</span>
+                  )}
                   <span className="playlist-count">
                     {playlist.tracks?.total || 0} tracks
                   </span>
                 </div>
               </div>
               <div className="playlist-actions">
-                <button
-                  className="action-btn delete-btn"
-                  onClick={(e) => handleDeleteClick(e, playlist)}
-                  title="Delete playlist"
-                >
-                  <i className="fas fa-trash"></i>
-                </button>
+                {playlist.id !== 'liked-songs' && (
+                  <>
+                    <button
+                      className="action-btn rename-btn"
+                      onClick={(e) => handleRenameClick(e, playlist)}
+                      title="Rename playlist"
+                    >
+                      <i className="fas fa-pen"></i>
+                    </button>
+                    <button
+                      className="action-btn delete-btn"
+                      onClick={(e) => handleDeleteClick(e, playlist)}
+                      title="Delete playlist"
+                    >
+                      <i className="fas fa-trash"></i>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))

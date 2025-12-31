@@ -9,6 +9,7 @@ import TrackPlayer from "./TrackPlayer";
 import CriteriaFilterPanel from "./CriteriaFilterPanel";
 import AudioWaveform from "./AudioWaveform";
 import CreatePlaylistModal from "./CreatePlaylistModal";
+import CSVImportModal from "./CSVImportModal";
 import FilterPanel from "./FilterPanel";
 import PlaylistControls from "./PlaylistControls";
 import useTrackSearch from "../hooks/useTrackSearch";
@@ -17,6 +18,7 @@ import useTrackTable from "../hooks/useTrackTable";
 import useTrackPlayer from "../hooks/useTrackPlayer";
 import usePlaylist from "../hooks/usePlaylist";
 import useRecommendations from "../hooks/useRecommendations";
+import useTrackAnnotations from "../hooks/useTrackAnnotations";
 import { searchPlatforms, fetchAndUpdateTrackDetails } from "../services/api";
 
 const MainDashboard = ({ searchTerm }) => {
@@ -27,6 +29,7 @@ const MainDashboard = ({ searchTerm }) => {
   const [selectAllChecked, setSelectAllChecked] = useState(false);
   const [platformData, setPlatformData] = useState({});
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCSVImportModalOpen, setIsCSVImportModalOpen] = useState(false);
   const [playlistTotal, setPlaylistTotal] = useState(0);
   const [filters, setFilters] = useState({
     title: "",
@@ -325,6 +328,9 @@ const MainDashboard = ({ searchTerm }) => {
     handleAddToPlaylist,
     handleDeletePlaylist,
     handleExportPlaylist,
+    handleReorderTrack,
+    handleRenamePlaylist,
+    handleDeleteTracksFromPlaylist,
     refreshPlaylists,
     isRefreshing,
   } = usePlaylist(
@@ -352,6 +358,10 @@ const MainDashboard = ({ searchTerm }) => {
   // Recommendations hook
   const { getRecommendationsByModes, loading: recommendationsLoading } =
     useRecommendations();
+
+  // Track annotations hook (colors and comments)
+  const { setTrackColor, setTrackComment, getTrackAnnotation } =
+    useTrackAnnotations();
 
   const { searchSimilar } = useSimilarTracks(
     selectedTrack,
@@ -495,6 +505,32 @@ const MainDashboard = ({ searchTerm }) => {
     setSelectedTrack(convertedTrack);
   };
 
+  // Handle delete selected tracks (or unlike for Liked Songs)
+  const handleDeleteSelectedTracksFromPlaylist = async () => {
+    if (!selectedPlaylist) {
+      return;
+    }
+
+    if (selectedTrackIds.length === 0) {
+      return;
+    }
+
+    // Get URIs of selected tracks
+    const selectedTracks = filteredTracks.filter(t => selectedTrackIds.includes(t.id));
+    const trackUris = selectedTracks.map(t => t.uri);
+
+    try {
+      await handleDeleteTracksFromPlaylist(selectedPlaylist, trackUris);
+
+      // Clear selections after successful delete/unlike
+      setSelectedTrackIds([]);
+      setSelectAllChecked(false);
+    } catch (error) {
+      const action = selectedPlaylist === 'liked-songs' ? 'unliking' : 'deleting';
+      console.error(`Error ${action} selected tracks:`, error);
+    }
+  };
+
   const {
     playerRef,
     trackProgress,
@@ -528,9 +564,21 @@ const MainDashboard = ({ searchTerm }) => {
   const openCreateModal = () => setIsCreateModalOpen(true);
   const closeCreateModal = () => setIsCreateModalOpen(false);
 
+  const openCSVImportModal = () => setIsCSVImportModalOpen(true);
+  const closeCSVImportModal = () => setIsCSVImportModalOpen(false);
+
   const handleCreatePlaylistWithModal = (playlistData) => {
     handleCreatePlaylist(playlistData);
     closeCreateModal();
+  };
+
+  const handleCSVImportSuccess = async (playlist) => {
+    // Refresh playlists to show the newly imported playlist
+    await refreshPlaylists();
+    // Select and show the new playlist
+    handlePlaylistChange({ target: { value: playlist.id } });
+    handleShowPlaylist(playlist.id);
+    closeCSVImportModal();
   };
 
   return (
@@ -549,7 +597,9 @@ const MainDashboard = ({ searchTerm }) => {
           selectedPlaylist={selectedPlaylist}
           onPlaylistChange={handlePlaylistChange}
           onCreatePlaylist={openCreateModal}
+          onImportFromCSV={openCSVImportModal}
           onDeletePlaylist={handleDeletePlaylist}
+          onRenamePlaylist={handleRenamePlaylist}
           onShowPlaylist={handleShowPlaylist}
           onRefreshPlaylists={refreshPlaylists}
           isRefreshing={isRefreshing}
@@ -576,7 +626,15 @@ const MainDashboard = ({ searchTerm }) => {
             handleSelectAllClick={handleSelectAllClick}
             handleCheckboxClick={handleCheckboxClick}
             handleRowClick={handleRowClick}
+            handleRowRightClick={(e) => e.preventDefault()}
             playlistTotal={playlistTotal}
+            onReorderTrack={handleReorderTrack}
+            selectedPlaylistId={selectedPlaylist}
+            isReorderingEnabled={selectedPlaylist && selectedPlaylist !== 'liked-songs'}
+            onColorChange={setTrackColor}
+            onCommentChange={setTrackComment}
+            getAnnotation={getTrackAnnotation}
+            onDeleteTrack={handleDeleteTracksFromPlaylist}
           />
 
           {/* Custom footer row with playlist controls on left, pagination info on right */}
@@ -591,6 +649,8 @@ const MainDashboard = ({ searchTerm }) => {
                 handleCreatePlaylist={openCreateModal}
                 handleDeletePlaylist={handleDeletePlaylist}
                 handleExportPlaylist={handleExportPlaylist}
+                handleDeleteSelectedTracks={handleDeleteSelectedTracksFromPlaylist}
+                selectedTrackIds={selectedTrackIds}
               />
             </div>
           </div>
@@ -645,6 +705,14 @@ const MainDashboard = ({ searchTerm }) => {
         isOpen={isCreateModalOpen}
         onClose={closeCreateModal}
         onCreate={handleCreatePlaylistWithModal}
+      />
+
+      {/* CSV Import Modal */}
+      <CSVImportModal
+        open={isCSVImportModalOpen}
+        onClose={closeCSVImportModal}
+        onSuccess={handleCSVImportSuccess}
+        playlists={playlists}
       />
     </div>
   );

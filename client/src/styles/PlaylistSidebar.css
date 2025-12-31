@@ -24,6 +24,11 @@
   margin: 0;
 }
 
+.header-buttons {
+  display: flex;
+  gap: 8px;
+}
+
 .create-playlist-btn {
   background: #1db954;
   border: none;
@@ -41,6 +46,14 @@
 .create-playlist-btn:hover {
   background: #1ed760;
   transform: scale(1.05);
+}
+
+.create-playlist-btn:first-child {
+  background: #1e88e5;
+}
+
+.create-playlist-btn:first-child:hover {
+  background: #2196f3;
 }
 
 .sort-controls {
@@ -219,6 +232,23 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.playlist-name-input {
+  background: #181818;
+  border: 1px solid #1db954;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+  width: 100%;
+  outline: none;
+}
+
+.playlist-name-input:focus {
+  border-color: #1ed760;
+  background: #202020;
 }
 
 .playlist-count {

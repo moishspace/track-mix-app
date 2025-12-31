@@ -13,6 +13,8 @@ const PlaylistControls = ({
   handleCreatePlaylist,
   handleDeletePlaylist,
   handleExportPlaylist,
+  handleDeleteSelectedTracks,
+  selectedTrackIds = [],
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -52,6 +54,32 @@ const PlaylistControls = ({
     }
   };
 
+  const handleDeleteClick = () => {
+    if (!handleDeleteSelectedTracks) return;
+
+    if (selectedTrackIds.length === 0) {
+      alert("Please select tracks.");
+      return;
+    }
+
+    if (!selectedPlaylist) {
+      alert("No playlist selected.");
+      return;
+    }
+
+    const isLikedSongs = selectedPlaylist === 'liked-songs';
+    const action = isLikedSongs ? 'Unlike' : 'Delete';
+    const confirmMessage = `${action} ${selectedTrackIds.length} selected track${selectedTrackIds.length > 1 ? 's' : ''}${isLikedSongs ? '' : ' from this playlist'}?`;
+
+    if (window.confirm(confirmMessage)) {
+      handleDeleteSelectedTracks();
+    }
+  };
+
+  const canDeleteTracks = selectedPlaylist && selectedTrackIds.length > 0;
+  const isLikedSongs = selectedPlaylist === 'liked-songs';
+  const buttonText = isLikedSongs ? 'Unlike Selected' : 'Delete Selected';
+
   return (
     <div className="button-container">
       <div className="button-group-container">
@@ -82,6 +110,18 @@ const PlaylistControls = ({
           onCreate={handleCreatePlaylistWrapper}
         />
       </div>
+
+      {/* Delete/Unlike Selected Tracks Button - Outside group container */}
+      {handleDeleteSelectedTracks && (
+        <button
+          className="action-button delete-button"
+          onClick={handleDeleteClick}
+          disabled={!canDeleteTracks}
+          title={!canDeleteTracks ? "Select tracks from a playlist" : `${buttonText} ${selectedTrackIds.length} track(s)`}
+        >
+          {buttonText} ({selectedTrackIds.length})
+        </button>
+      )}
       {/* <button className="action-button" onClick={handleExportPlaylist}>
         Export to CSV
       </button> */}

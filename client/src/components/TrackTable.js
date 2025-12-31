@@ -1,10 +1,28 @@
 // TrackTable.js
 import React, { useMemo, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Checkbox, IconButton, Tooltip, CircularProgress } from "@mui/material";
+import { Checkbox, IconButton, Tooltip, CircularProgress, Box, Select, MenuItem, TextField } from "@mui/material";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { addToCart } from "../services/api";
+import useColumnVisibility from "../hooks/useColumnVisibility";
+import useColumnOrder from "../hooks/useColumnOrder";
+import ColumnVisibilityMenu from "./ColumnVisibilityMenu";
+
+// Track annotation colors
+const ANNOTATION_COLORS = [
+  { value: 'red', label: 'Red', hex: '#ff4444' },
+  { value: 'orange', label: 'Orange', hex: '#ff9944' },
+  { value: 'yellow', label: 'Yellow', hex: '#ffdd44' },
+  { value: 'green', label: 'Green', hex: '#44ff44' },
+  { value: 'blue', label: 'Blue', hex: '#4444ff' },
+  { value: 'purple', label: 'Purple', hex: '#dd44dd' },
+  { value: 'pink', label: 'Pink', hex: '#ff88cc' },
+  { value: 'gray', label: 'Gray', hex: '#888888' },
+];
 
 // Energy level colors - soft palette
 const ENERGY_COLORS = {
@@ -110,9 +128,125 @@ const TrackTable = ({
   handleRowClick,
   handleRowRightClick,
   playlistTotal = 0,
+  onReorderTrack = null,
+  selectedPlaylistId = null,
+  isReorderingEnabled = false,
+  onColorChange = null,
+  onCommentChange = null,
+  getAnnotation = null,
+  onDeleteTrack = null,
 }) => {
+  const [reorderingTrackId, setReorderingTrackId] = useState(null);
+  const [deletingTrackId, setDeletingTrackId] = useState(null);
+  const { isColumnVisible, toggleColumnVisibility } = useColumnVisibility();
+  const { columnOrder, initializeOrder, setOrder, resetColumnOrder } = useColumnOrder();
+
+  const handleMoveTrack = async (trackIndex, direction) => {
+    if (!onReorderTrack || !selectedPlaylistId) return;
+
+    const newPosition = direction === 'up' ? trackIndex - 1 : trackIndex + 1;
+
+    // Prevent moving beyond boundaries
+    if (newPosition < 0 || newPosition >= processedTracks.length) return;
+
+    setReorderingTrackId(processedTracks[trackIndex].id);
+
+    try {
+      await onReorderTrack(selectedPlaylistId, trackIndex, newPosition);
+    } catch (error) {
+      console.error('Error reordering track:', error);
+    } finally {
+      setReorderingTrackId(null);
+    }
+  };
+
+  const handleDeleteTrack = async (track) => {
+    if (!onDeleteTrack || !selectedPlaylistId) return;
+
+    setDeletingTrackId(track.id);
+
+    try {
+      await onDeleteTrack(selectedPlaylistId, [track.uri]);
+    } catch (error) {
+      console.error('Error deleting track:', error);
+    } finally {
+      setDeletingTrackId(null);
+    }
+  };
+
   const columns = useMemo(
     () => [
+      // Reorder column (only show if enabled)
+      ...(isReorderingEnabled && onReorderTrack ? [{
+        field: "reorder",
+        headerName: "Order",
+        width: 80,
+        sortable: false,
+        align: "center",
+        renderCell: (params) => {
+          const trackIndex = processedTracks.findIndex(t => t.id === params.row.id);
+          const isFirst = trackIndex === 0;
+          const isLast = trackIndex === processedTracks.length - 1;
+          const isReordering = reorderingTrackId === params.row.id;
+
+          return (
+            <Box sx={{ display: 'flex', gap: 0.5 }}>
+              <Tooltip title="Move up">
+                <span>
+                  <IconButton
+                    size="small"
+                    disabled={isFirst || isReordering}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMoveTrack(trackIndex, 'up');
+                    }}
+                    sx={{
+                      padding: '2px',
+                      color: isFirst ? '#666' : '#1db954',
+                      '&:hover': {
+                        color: '#1ed760',
+                        backgroundColor: 'rgba(29, 185, 84, 0.1)'
+                      }
+                    }}
+                  >
+                    {isReordering ? (
+                      <CircularProgress size={16} sx={{ color: '#1db954' }} />
+                    ) : (
+                      <ArrowUpwardIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title="Move down">
+                <span>
+                  <IconButton
+                    size="small"
+                    disabled={isLast || isReordering}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMoveTrack(trackIndex, 'down');
+                    }}
+                    sx={{
+                      padding: '2px',
+                      color: isLast ? '#666' : '#1db954',
+                      '&:hover': {
+                        color: '#1ed760',
+                        backgroundColor: 'rgba(29, 185, 84, 0.1)'
+                      }
+                    }}
+                  >
+                    {isReordering ? (
+                      <CircularProgress size={16} sx={{ color: '#1db954' }} />
+                    ) : (
+                      <ArrowDownwardIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Box>
+          );
+        },
+      }] : []),
       {
         field: "select",
         width: 120,
@@ -143,6 +277,54 @@ const TrackTable = ({
         width: 50,
         align: "center",
       },
+      // Actions column (delete/unlike track) - positioned early for visibility
+      ...(onDeleteTrack && selectedPlaylistId ? [{
+        field: "actions",
+        headerName: "Actions",
+        width: 80,
+        sortable: false,
+        align: "center",
+        renderCell: (params) => {
+          const isDeleting = deletingTrackId === params.row.id;
+          const isLikedSongs = selectedPlaylistId === 'liked-songs';
+          const actionText = isLikedSongs ? 'Unlike' : 'Delete';
+          const tooltipText = isLikedSongs ? 'Unlike track' : 'Delete track from playlist';
+          const confirmMessage = isLikedSongs
+            ? `Unlike "${params.row.name}"?`
+            : `Delete "${params.row.name}" from playlist?`;
+
+          return (
+            <Tooltip title={tooltipText}>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={isDeleting}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(confirmMessage)) {
+                      handleDeleteTrack(params.row);
+                    }
+                  }}
+                  sx={{
+                    padding: '4px',
+                    color: '#ff4444',
+                    '&:hover': {
+                      color: '#ff0000',
+                      backgroundColor: 'rgba(255, 68, 68, 0.1)'
+                    }
+                  }}
+                >
+                  {isDeleting ? (
+                    <CircularProgress size={20} sx={{ color: '#ff4444' }} />
+                  ) : (
+                    <DeleteIcon fontSize="small" />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+          );
+        },
+      }] : []),
       {
         field: "albumImageUrl",
         headerName: "Album Art",
@@ -178,6 +360,123 @@ const TrackTable = ({
         minWidth: 150,
         flex: 1,
         sortable: true,
+      },
+      {
+        field: "color",
+        headerName: "Color",
+        minWidth: 100,
+        flex: 0.8,
+        sortable: false,
+        align: "center",
+        renderCell: (params) => {
+          if (!getAnnotation) return null;
+
+          const annotation = getAnnotation(params.row.id);
+          const currentColor = annotation?.color || '';
+
+          return (
+            <Select
+              value={currentColor}
+              onChange={(e) => {
+                e.stopPropagation();
+                if (onColorChange) {
+                  onColorChange(params.row.id, e.target.value);
+                }
+              }}
+              displayEmpty
+              size="small"
+              onClick={(e) => e.stopPropagation()}
+              sx={{
+                minWidth: 80,
+                color: '#ffffff',
+                '.MuiSelect-select': {
+                  padding: '4px 8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                },
+                '.MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#404040',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#1db954',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#1db954',
+                },
+                '.MuiSvgIcon-root': {
+                  color: '#ffffff',
+                },
+              }}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {ANNOTATION_COLORS.map((color) => (
+                <MenuItem key={color.value} value={color.value}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: '50%',
+                        backgroundColor: color.hex,
+                        border: '1px solid #ccc'
+                      }}
+                    />
+                    <span>{color.label}</span>
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          );
+        },
+      },
+      {
+        field: "comment",
+        headerName: "Comment",
+        minWidth: 180,
+        flex: 1.2,
+        sortable: false,
+        renderCell: (params) => {
+          if (!getAnnotation) return null;
+
+          const annotation = getAnnotation(params.row.id);
+          const currentComment = annotation?.comment || '';
+
+          return (
+            <TextField
+              value={currentComment}
+              onChange={(e) => {
+                e.stopPropagation();
+                if (onCommentChange) {
+                  onCommentChange(params.row.id, e.target.value);
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+              placeholder="Add comment..."
+              size="small"
+              fullWidth
+              sx={{
+                '.MuiInputBase-input': {
+                  padding: '4px 8px',
+                  fontSize: '14px',
+                  color: '#ffffff',
+                },
+                '.MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: '#404040',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#1db954',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#1db954',
+                  },
+                },
+              }}
+            />
+          );
+        },
       },
       {
         field: "releaseDate",
@@ -441,15 +740,83 @@ const TrackTable = ({
       //   sortable: true,
       // },
     ],
-    [selectAllChecked, selectedTrackIds]
+    [selectAllChecked, selectedTrackIds, isReorderingEnabled, onReorderTrack, processedTracks, reorderingTrackId, onColorChange, onCommentChange, getAnnotation, onDeleteTrack, deletingTrackId, selectedPlaylistId]
+  );
+
+  // Initialize column order when columns change
+  React.useEffect(() => {
+    const allFields = columns.map(col => col.field);
+    initializeOrder(allFields);
+  }, [columns, initializeOrder]);
+
+  // Filter columns based on visibility
+  const visibleColumns = useMemo(
+    () => columns.filter(col => {
+      // Always show select, reorder, and albumImageUrl columns
+      if (col.field === 'select' || col.field === 'reorder' || col.field === 'albumImageUrl') {
+        return true;
+      }
+      return isColumnVisible(col.field);
+    }),
+    [columns, isColumnVisible]
+  );
+
+  // Apply column order
+  const orderedColumns = useMemo(() => {
+    if (!columnOrder || columnOrder.length === 0) {
+      return visibleColumns;
+    }
+
+    // Separate fixed columns (select, reorder, albumImageUrl)
+    const fixedColumns = visibleColumns.filter(col =>
+      col.field === 'select' || col.field === 'reorder' || col.field === 'albumImageUrl'
+    );
+
+    // Get movable columns
+    const movableColumns = visibleColumns.filter(col =>
+      col.field !== 'select' && col.field !== 'reorder' && col.field !== 'albumImageUrl'
+    );
+
+    // Sort movable columns by saved order
+    const sortedMovable = movableColumns.sort((a, b) => {
+      const indexA = columnOrder.indexOf(a.field);
+      const indexB = columnOrder.indexOf(b.field);
+
+      // If not in order, put at end
+      if (indexA === -1 && indexB === -1) return 0;
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+
+      return indexA - indexB;
+    });
+
+    return [...fixedColumns, ...sortedMovable];
+  }, [visibleColumns, columnOrder]);
+
+  // Handle column reordering - receives the entire new order
+  const handleSaveColumnOrder = (newOrder) => {
+    setOrder(newOrder);
+  };
+
+  // Custom toolbar with column visibility menu
+  const CustomToolbar = () => (
+    <Box sx={{ p: 1, display: 'flex', justifyContent: 'flex-end', borderBottom: '1px solid #404040' }}>
+      <ColumnVisibilityMenu
+        columns={columns}
+        isColumnVisible={isColumnVisible}
+        toggleColumnVisibility={toggleColumnVisibility}
+        columnOrder={columnOrder}
+        onSaveOrder={handleSaveColumnOrder}
+        onResetOrder={resetColumnOrder}
+      />
+    </Box>
   );
 
   return (
     <DataGrid
       className="custom-data-grid"
-      key={processedTracks.length}
       rows={processedTracks}
-      columns={columns}
+      columns={orderedColumns}
       pageSize={10}
       rowHeight={90}
       disableSelectionOnClick
@@ -467,6 +834,9 @@ const TrackTable = ({
         return `${isSelected ? "selected-row" : ""} ${
           isEvenRow ? "even-row" : "odd-row"
         }`.trim();
+      }}
+      slots={{
+        toolbar: CustomToolbar,
       }}
       slotProps={{
         row: {

@@ -170,7 +170,8 @@ export const searchPlaylists = async (query, limit = 20) => {
 export const fetchPlaylistTracks = async (
   playlistId,
   offset = 0,
-  limit = 50
+  limit = 50,
+  signal = null
 ) => {
   return withRetry(
     () =>
@@ -180,6 +181,7 @@ export const fetchPlaylistTracks = async (
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
           params: { playlistId, offset, limit },
+          signal: signal, // Pass AbortSignal for cancellation
         })
         .then((response) => response.data) // Return full response with items and next
   );
@@ -230,6 +232,84 @@ export const deletePlaylist = async (playlistId) => {
   );
 };
 
+export const reorderPlaylistTracks = async (playlistId, rangeStart, insertBefore, rangeLength = 1, snapshotId = null) => {
+  return withRetry(() =>
+    axios
+      .put(
+        `${API_URL}/playlists/${playlistId}/reorder`,
+        {
+          range_start: rangeStart,
+          insert_before: insertBefore,
+          range_length: rangeLength,
+          snapshot_id: snapshotId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      )
+      .then((response) => response.data)
+  );
+};
+
+export const updatePlaylistDetails = async (playlistId, { name, description, isPublic }) => {
+  return withRetry(() =>
+    axios
+      .put(
+        `${API_URL}/playlists/${playlistId}/details`,
+        {
+          name,
+          description,
+          public: isPublic,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      )
+      .then((response) => response.data)
+  );
+};
+
+export const removeTracksFromPlaylist = async (playlistId, trackUris, snapshotId = null) => {
+  return withRetry(() =>
+    axios
+      .delete(
+        `${API_URL}/playlists/${playlistId}/tracks`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+          data: {
+            tracks: trackUris,
+            snapshot_id: snapshotId,
+          },
+        }
+      )
+      .then((response) => response.data)
+  );
+};
+
+export const unlikeTracks = async (trackUris) => {
+  return withRetry(() =>
+    axios
+      .delete(
+        `${API_URL}/me/tracks`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+          data: {
+            tracks: trackUris,
+          },
+        }
+      )
+      .then((response) => response.data)
+  );
+};
+
 export const fetchTrackDetails = async (trackId) => {
   return withRetry(() =>
     axios
@@ -272,7 +352,8 @@ export const fetchAudioFeatures = async (trackId) => {
 export const fetchAndUpdateTrackDetails = async (
   trackId,
   setTrackDetails,
-  basicDetails = null
+  basicDetails = null,
+  signal = null
 ) => {
   if (!trackId) {
     console.error("Track ID is required for fetching details.");
@@ -290,23 +371,30 @@ export const fetchAndUpdateTrackDetails = async (
           trackId,
           basicDetails: basicDetails ? JSON.stringify(basicDetails) : null,
         },
+        signal: signal, // Pass AbortSignal for cancellation
       }
     );
 
     const trackDetails = trackResponse.data;
 
-    // Update the state with all combined details
-    setTrackDetails((prevDetails) => ({
-      ...prevDetails,
-      [trackId]: {
-        ...prevDetails[trackId],
-        ...trackDetails,
-        features: trackDetails.features || prevDetails[trackId]?.features || {},
-        analysis: trackDetails.analysis || prevDetails[trackId]?.analysis || {},
-        genres: trackDetails.genres || prevDetails[trackId]?.genres || [],
-      },
-    }));
+    // Update the state with all combined details (only if not aborted)
+    if (!signal?.aborted) {
+      setTrackDetails((prevDetails) => ({
+        ...prevDetails,
+        [trackId]: {
+          ...prevDetails[trackId],
+          ...trackDetails,
+          features: trackDetails.features || prevDetails[trackId]?.features || {},
+          analysis: trackDetails.analysis || prevDetails[trackId]?.analysis || {},
+          genres: trackDetails.genres || prevDetails[trackId]?.genres || [],
+        },
+      }));
+    }
   } catch (error) {
+    // Don't log errors if the request was aborted
+    if (error.name === 'AbortError' || error.name === 'CanceledError') {
+      return;
+    }
     console.error(
       `Error fetching and updating track details for ${trackId}:`,
       error.response?.data || error.message

@@ -760,6 +760,205 @@ app.delete(
   }
 );
 
+app.put(
+  "/api/playlists/:playlistId/reorder",
+  ensureValidAccessToken,
+  async (req, res) => {
+    const { playlistId } = req.params;
+    const { range_start, insert_before, range_length, snapshot_id } = req.body;
+
+    if (!playlistId) {
+      return res.status(400).json({ error: "Playlist ID is required" });
+    }
+
+    if (range_start === undefined || insert_before === undefined) {
+      return res.status(400).json({
+        error: "range_start and insert_before are required"
+      });
+    }
+
+    try {
+      const body = {
+        range_start: parseInt(range_start),
+        insert_before: parseInt(insert_before),
+      };
+
+      // Optional parameters
+      if (range_length !== undefined) {
+        body.range_length = parseInt(range_length);
+      }
+      if (snapshot_id) {
+        body.snapshot_id = snapshot_id;
+      }
+
+      const response = await axios.put(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        body,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      res.json(response.data);
+    } catch (error) {
+      console.error(
+        "Error reordering playlist tracks:",
+        error.response?.data || error.message
+      );
+      res
+        .status(error.response?.status || 500)
+        .json(
+          error.response?.data || { error: "Failed to reorder playlist tracks" }
+        );
+    }
+  }
+);
+
+app.put(
+  "/api/playlists/:playlistId/details",
+  ensureValidAccessToken,
+  async (req, res) => {
+    const { playlistId } = req.params;
+    const { name, description, public: isPublic } = req.body;
+
+    if (!playlistId) {
+      return res.status(400).json({ error: "Playlist ID is required" });
+    }
+
+    try {
+      const updateData = {};
+      if (name !== undefined) updateData.name = name;
+      if (description !== undefined) updateData.description = description;
+      if (isPublic !== undefined) updateData.public = isPublic;
+
+      const response = await axios.put(
+        `https://api.spotify.com/v1/playlists/${playlistId}`,
+        updateData,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      res.json(response.data);
+    } catch (error) {
+      console.error(
+        "Error updating playlist details:",
+        error.response?.data || error.message
+      );
+      res
+        .status(error.response?.status || 500)
+        .json(
+          error.response?.data || { error: "Failed to update playlist details" }
+        );
+    }
+  }
+);
+
+app.delete(
+  "/api/playlists/:playlistId/tracks",
+  ensureValidAccessToken,
+  async (req, res) => {
+    const { playlistId } = req.params;
+    const { tracks, snapshot_id } = req.body;
+
+    if (!playlistId) {
+      return res.status(400).json({ error: "Playlist ID is required" });
+    }
+
+    if (!tracks || !Array.isArray(tracks) || tracks.length === 0) {
+      return res.status(400).json({ error: "Tracks array is required" });
+    }
+
+    try {
+      // Format tracks for Spotify API
+      // tracks should be an array of URIs: ["spotify:track:xxx", ...]
+      const body = {
+        tracks: tracks.map(uri => ({ uri }))
+      };
+
+      if (snapshot_id) {
+        body.snapshot_id = snapshot_id;
+      }
+
+      const response = await axios.delete(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          data: body,
+        }
+      );
+
+      res.json(response.data);
+    } catch (error) {
+      console.error(
+        "Error removing tracks from playlist:",
+        error.response?.data || error.message
+      );
+      res
+        .status(error.response?.status || 500)
+        .json(
+          error.response?.data || { error: "Failed to remove tracks from playlist" }
+        );
+    }
+  }
+);
+
+app.delete(
+  "/api/me/tracks",
+  ensureValidAccessToken,
+  async (req, res) => {
+    const { tracks } = req.body;
+
+    if (!tracks || !Array.isArray(tracks) || tracks.length === 0) {
+      return res.status(400).json({ error: "Tracks array is required" });
+    }
+
+    try {
+      // Extract track IDs from URIs (spotify:track:xxx -> xxx)
+      const trackIds = tracks.map(uri => {
+        if (uri.startsWith('spotify:track:')) {
+          return uri.replace('spotify:track:', '');
+        }
+        return uri;
+      });
+
+      const response = await axios.delete(
+        'https://api.spotify.com/v1/me/tracks',
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          data: {
+            ids: trackIds
+          },
+        }
+      );
+
+      res.json(response.data);
+    } catch (error) {
+      console.error(
+        "Error unliking tracks:",
+        error.response?.data || error.message
+      );
+      res
+        .status(error.response?.status || 500)
+        .json(
+          error.response?.data || { error: "Failed to unlike tracks" }
+        );
+    }
+  }
+);
+
 app.get("/api/playlist-tracks", ensureValidAccessToken, async (req, res) => {
   const { playlistId, offset = 0, limit = 50 } = req.query;
   if (!playlistId) {

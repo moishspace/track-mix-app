@@ -60,3 +60,24 @@ div.button-container .playlist-dropdown {
 div.button-container .button-group-container {
   box-shadow: none !important;
 }
+
+/* Delete button styles */
+div.button-container .delete-button {
+  background: rgba(40, 24, 24, 0.9);
+  color: #ff6b6b;
+  border-color: rgba(255, 68, 68, 0.2);
+}
+
+div.button-container .delete-button:hover:not(:disabled) {
+  background: rgba(255, 68, 68, 0.15);
+  color: #ff4444;
+  border-color: rgba(255, 68, 68, 0.3);
+}
+
+div.button-container .delete-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(24, 24, 24, 0.5);
+  color: #666;
+  border-color: rgba(255, 255, 255, 0.05);
+}
